@@ -1,0 +1,80 @@
+## 🎯 **OBJECTIVE – Related Elements**
+
+### 🔸 **Metadata / Properties**
+- `rdfs:label`: Title/name of the objective
+- `dct:description`: Detailed description
+- `rdfs:comment`: Additional context or note
+- `owl:versionInfo`: Version
+- `dct:created`: Creation date
+- `dct:modified`: Last update date
+
+### 🔸 **Relations to Other Objectives**
+- `objectives:contributesTo`: Higher-level objective it supports
+- `objectives:needs`: Dependencies on other objectives
+
+### 🔸 **Relations to Key Results**
+- `objectives:hasKeyResult`: Connects to one or more Key Results
+
+### 🔸 **Category / Classification**
+- `objectives:category`: e.g. `strategic`, `tactical`, `operational` (SKOS Concept from the ontology)
+
+### 🔸 **Lifecycle & Time**
+- `lifecycle:state`: Current state (e.g., Planned, InProgress, Completed)
+- `dct:temporal`: Links to a `time:Interval` (with start & end dates)
+
+---
+
+## 📈 **KEY RESULT – Related Elements**
+
+### 🔸 **Metadata / Properties**
+- `rdfs:label`: Title/name of the key result
+- `dct:description`: Detailed explanation
+- `rdfs:comment`: Additional context
+- `dct:created` / `dct:modified`: Timestamps
+- `objectives:progress`: Decimal progress (0.0–1.0)
+
+### 🔸 **Relations**
+- `objectives:isKeyResultOf`: Links back to the parent Objective
+
+### 🔸 **Lifecycle**
+- `lifecycle:state`: State (from the lifecycle SKOS taxonomy)
+
+---
+
+## 🧑‍💼 **RESPONSIBILITY / PEOPLE – Related to Objectives**
+
+Each `Objective` has formal role-based links to people (defined in `common-semantics.ttl` and the responsibility ontology):
+
+### 🔸 **Roles Linked via:**
+- `responsibility:isAccountableFor`: e.g., FounderCEO (ultimate owner)
+- `responsibility:caresFor`: e.g., ProductManager (stakeholder)
+- `responsibility:operates`: e.g., someone actively working on it
+
+### 🔸 **Person Data (`foaf:Person`):**
+For each person linked via a role:
+- `foaf:name`: Full name
+- `foaf:email`: Contact email
+- `foaf:accountName`: Internal username / ID
+- `vcard:hasAddress` → `vcard:locality`: City (e.g., "Furtwangen")
+
+### 🔸 **Post / Role Details**
+Each role is a `org:Post`, with:
+- `org:role`: Job title (e.g., "Product Manager")
+- `dct:description`: Description of their responsibilities
+- `org:heldBy`: Links the post to a `foaf:Person`
+
+---
+
+## 🧠 Example Chain (How it Connects)
+```
+Objective
+  ├── hasKeyResult → Key Result
+  ├── contributesTo / needs → Other Objectives
+  ├── category → SKOS Concept (strategic/tactical/etc.)
+  ├── lifecycle:state → SKOS Concept (Planned/etc.)
+  ├── dct:temporal → Interval (start/end dates)
+  └── responsibility:
+        ├── isAccountableFor → Post → Person
+        ├── caresFor → Post → Person
+        └── operates → Post → Person
+```
