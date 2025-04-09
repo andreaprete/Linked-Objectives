@@ -11,5 +11,9 @@ Technologies we plan to use:
 
 
 ## DataBase
+- download GraphDB by Ontotex
+- get a valid licence and upload it through the workbench
 - workbench online (cool): https://graph.openbiodiv.net/
-- docker image: https://hub.docker.com/r/ontotext/graphdb/
+- set it up?
+- pupolate?
+
