@@ -3,14 +3,9 @@ export async function GET(req, { params }) {
   const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
 
   const sparqlQuery = `
-    PREFIX dct: <http://purl.org/dc/terms/>
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    
-    SELECT ?label ?comment ?description 
+    SELECT ?predicate ?object
     WHERE {
-      OPTIONAL { <${objUri}> rdfs:label ?label . }
-      OPTIONAL { <${objUri}> rdfs:comment ?comment . }
-      OPTIONAL { <${objUri}> dct:description ?description . }
+      <${objUri}> ?predicate ?object .
     }
   `;
 
@@ -21,7 +16,7 @@ export async function GET(req, { params }) {
         method: "POST",
         headers: {
           "Content-Type": "application/sparql-query",
-          "Accept": "application/sparql-results+json",
+          Accept: "application/sparql-results+json",
         },
         body: sparqlQuery,
       }
@@ -34,14 +29,59 @@ export async function GET(req, { params }) {
     }
 
     const json = await response.json();
-    const binding = json.results.bindings[0];
+    const dataMap = {};
+
+    json.results.bindings.forEach((binding) => {
+      const predicate = binding.predicate.value;
+      const object = binding.object.value;
+
+      switch (predicate) {
+        case "http://www.w3.org/2000/01/rdf-schema#label":
+          dataMap.title = object;
+          break;
+
+        case "http://www.w3.org/2000/01/rdf-schema#comment":
+          dataMap.comment = object;
+          break;
+
+        case "http://purl.org/dc/terms/description":
+          dataMap.description = object;
+          break;
+
+        case "http://purl.org/dc/terms/created":
+          dataMap.created = object;
+          break;
+
+        case "http://purl.org/dc/terms/modified":
+          dataMap.modified = object;
+          break;
+
+        case "http://www.w3.org/2002/07/owl#versionInfo":
+          dataMap.version = object;
+          break;
+
+        case "https://data.sick.com/voc/sam/objectives-model/category":
+          dataMap.category = object.split('/').pop(); 
+          break;
+
+        case "https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state":
+          dataMap.state = object.split('/').pop(); 
+          break;
+
+        case "https://data.sick.com/voc/sam/objectives-model/hasKeyResult":
+          dataMap.keyResult = dataMap.keyResult || [];
+          dataMap.keyResult.push(object.split('/').pop()); 
+          break;
+
+        default:
+          break;
+      }
+    });
 
     return new Response(
       JSON.stringify({
-        label: binding?.label?.value || null,
-        comment: binding?.comment?.value || null,
-        description: binding?.description?.value || null,
-        source: objUri,
+        id,
+        data: dataMap,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
