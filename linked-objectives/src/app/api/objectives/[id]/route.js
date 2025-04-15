@@ -1,5 +1,5 @@
-export async function GET(req, { params }) {
-  const { id } = params;
+export async function GET(req, context) {
+  const { id } = context.params;
   const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
 
   const sparqlQuery = `

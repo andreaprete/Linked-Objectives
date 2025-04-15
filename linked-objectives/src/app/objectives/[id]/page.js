@@ -27,7 +27,8 @@ export default function ObjectivePage() {
   }, [id]);
 
   if (loading) return <p className="p-6 text-lg">Loading OKR...</p>;
-  if (!data) return <p className="p-6 text-red-500">Failed to load OKR.</p>;
+  if (!data || Object.keys(data).length === 0)
+    return <p className="p-6 text-red-500">Failed to load OKR.</p>;
 
   return (
     <div className="max-w-2xl mx-auto p-6">
