@@ -13,8 +13,9 @@ export default function ObjectivePage() {
 
     async function fetchOkr() {
       try {
-        const res = await fetch(`http://localhost:3001/api/objectives/${id}`);
+        const res = await fetch(`/api/objectives/${id}`);
         const json = await res.json();
+        console.log('Fetched OKR data:', json.data);
         setData(json.data);
       } catch (err) {
         console.error('Failed to load OKR data:', err);
@@ -40,6 +41,11 @@ export default function ObjectivePage() {
         <p><strong>Created:</strong> {data.created}</p>
         <p><strong>Modified:</strong> {data.modified}</p>
         <p><strong>Version:</strong> {data.version}</p>
+        <p><strong>Type:</strong> {data.type}</p>
+        <p><strong>Accountable For:</strong> {data.accountableFor}</p>
+        <p><strong>Cares For:</strong> {data.caresFor}</p>
+        <p><strong>Operates:</strong> {data.operates}</p>
+        <p><strong>Temporal:</strong> {data.temporal}</p>
       </div>
     </div>
   );
