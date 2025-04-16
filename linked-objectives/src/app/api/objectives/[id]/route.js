@@ -60,6 +60,36 @@ export async function GET(req, context) {
           dataMap.version = object;
           break;
 
+        case "http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
+          dataMap.type = object.split('/').pop();
+          break;
+
+        case "https://data.sick.com/voc/sam/responsibility-model/isAccountableFor":
+          dataMap.accountableFor = object.split('/').pop();
+          break;
+
+        case "https://data.sick.com/voc/sam/responsibility-model/caresFor":
+          dataMap.caresFor = object.split('/').pop();
+          break;
+
+        case "https://data.sick.com/voc/sam/responsibility-model/operates":
+          dataMap.operates = object.split('/').pop();
+          break;
+
+        case "https://data.sick.com/voc/sam/objectives-model/contributesTo":
+          dataMap.contributesTo = dataMap.contributesTo || [];
+          dataMap.contributesTo.push(object.split('/').pop()); 
+          break;
+        
+        case "http://purl.org/dc/terms/temporal":
+          dataMap.temporal = object.split('/').pop(); 
+          break;
+        
+        case "https://data.sick.com/voc/sam/responsibility-model/hasFormalResponsibilityFor":
+          dataMap.hasFormalResponsibilityFor = dataMap.hasFormalResponsibilityFor || [];
+          dataMap.hasFormalResponsibilityFor.push(object.split('/').pop());
+          break;
+        
         case "https://data.sick.com/voc/sam/objectives-model/category":
           dataMap.category = object.split('/').pop(); 
           break;
