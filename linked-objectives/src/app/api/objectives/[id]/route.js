@@ -75,19 +75,9 @@ export async function GET(req, { params }) {
         case "https://data.sick.com/voc/sam/responsibility-model/operates":
           dataMap.operates = object.split('/').pop();
           break;
-
-        case "https://data.sick.com/voc/sam/objectives-model/contributesTo":
-          dataMap.contributesTo = dataMap.contributesTo || [];
-          dataMap.contributesTo.push(object.split('/').pop()); 
-          break;
         
         case "http://purl.org/dc/terms/temporal":
           dataMap.temporal = object.split('/').pop(); 
-          break;
-        
-        case "https://data.sick.com/voc/sam/responsibility-model/hasFormalResponsibilityFor":
-          dataMap.hasFormalResponsibilityFor = dataMap.hasFormalResponsibilityFor || [];
-          dataMap.hasFormalResponsibilityFor.push(object.split('/').pop());
           break;
         
         case "https://data.sick.com/voc/sam/objectives-model/category":
@@ -96,6 +86,26 @@ export async function GET(req, { params }) {
 
         case "https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state":
           dataMap.state = object.split('/').pop(); 
+          break;
+
+        case "https://data.sick.com/voc/sam/objectives-model/needs":
+          dataMap.needs = dataMap.needs || [];
+          dataMap.needs.push(object.split('/').pop());
+          break;
+
+        case "https://data.sick.com/voc/sam/responsibility-model/hasResponsibilityFor":
+          dataMap.hasResponsibilityFor = dataMap.hasResponsibilityFor || [];
+          dataMap.hasResponsibilityFor.push(object.split('/').pop());
+          break;
+
+        case "https://data.sick.com/voc/sam/responsibility-model/hasFormalResponsibilityFor":
+          dataMap.hasFormalResponsibilityFor = dataMap.hasFormalResponsibilityFor || [];
+          dataMap.hasFormalResponsibilityFor.push(object.split('/').pop());
+          break;
+
+        case "https://data.sick.com/voc/sam/objectives-model/contributesTo":
+          dataMap.contributesTo = dataMap.contributesTo || [];
+          dataMap.contributesTo.push(object.split('/').pop()); 
           break;
 
         case "https://data.sick.com/voc/sam/objectives-model/hasKeyResult":
