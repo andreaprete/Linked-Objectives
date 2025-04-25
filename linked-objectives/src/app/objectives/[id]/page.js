@@ -42,10 +42,40 @@ export default function ObjectivePage() {
         <p><strong>Modified:</strong> {data.modified}</p>
         <p><strong>Version:</strong> {data.version}</p>
         <p><strong>Type:</strong> {data.type}</p>
-        <p><strong>Accountable For:</strong> {data.accountableFor}</p>
-        <p><strong>Cares For:</strong> {data.caresFor}</p>
+        <p><strong>Accountable for:</strong> {data.accountableFor}</p>
+        <p><strong>Cares for:</strong> {data.caresFor}</p>
         <p><strong>Operates:</strong> {data.operates}</p>
         <p><strong>Temporal:</strong> {data.temporal}</p>
+        <p><strong>Key Results:</strong></p>
+          <ul>
+            {data?.keyResult?.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        <p><strong>Contributes to:</strong></p>
+          <ul>
+            {data?.contributesTo?.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        <p><strong>Has formal responsibility for:</strong></p>
+          <ul>
+            {data?.hasFormalResponsibilityFor?.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        <p><strong>Has responsibility for:</strong></p>
+          <ul>
+            {data?.hasResponsibilityFor?.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        <p><strong>Needs:</strong></p>
+          <ul>
+          {data?.needs?.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
       </div>
     </div>
   );
