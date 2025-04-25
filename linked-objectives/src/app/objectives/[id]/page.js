@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function ObjectivePage() {
   const { id } = useParams(); 
@@ -48,35 +49,56 @@ export default function ObjectivePage() {
         <p><strong>Operates:</strong> {data.operates}</p>
         <p><strong>Temporal:</strong> {data.temporal}</p>
         <p><strong>Key Results:</strong></p>
-          <ul>
-            {data?.keyResult?.map((item, index) => (
-              <li key={index}>{item}</li>
+          <ul className="list-disc pl-5">
+            {data.keyResult?.map((id) => (
+              <li key={id}>
+                <Link
+                  href={`/key-results/${id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {id}
+                </Link>
+              </li>
             ))}
           </ul>
         <p><strong>Contributes to:</strong></p>
-          <ul>
-            {data?.contributesTo?.map((item, index) => (
-              <li key={index}>{item}</li>
+          <ul className="list-disc pl-5">
+            {data.contributesTo?.map((id) => (
+              <li key={id}>
+                <Link
+                  href={`/objectives/${id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {id}
+                </Link>
+              </li>
             ))}
           </ul>
         <p><strong>Has formal responsibility for:</strong></p>
-          <ul>
-            {data?.hasFormalResponsibilityFor?.map((item, index) => (
-              <li key={index}>{item}</li>
+          <ul className="list-disc pl-5">
+            {data.hasFormalResponsibilityFor?.map((id) => (
+              <li key={id}>{id}</li>
             ))}
           </ul>
         <p><strong>Has responsibility for:</strong></p>
-          <ul>
-            {data?.hasResponsibilityFor?.map((item, index) => (
-              <li key={index}>{item}</li>
+          <ul className="list-disc pl-5">
+            {data.hasResponsibilityFor?.map((id) => (
+              <li key={id}>{id}</li>
             ))}
           </ul>
         <p><strong>Needs:</strong></p>
-          <ul>
-          {data?.needs?.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
+        <ul className="list-disc pl-5">
+            {data.needs?.map((id) => (
+              <li key={id}>
+                <Link
+                  href={`/objectives/${id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {id}
+                </Link>
+              </li>
+            ))}
+          </ul>
       </div>
     </div>
   );
