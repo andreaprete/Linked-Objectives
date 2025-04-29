@@ -4,6 +4,13 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
+import KeyResultHeader from '@/components/KeyResultHeader';
+import ProgressBar from '@/components/ProgressBar';
+import MetaInfo from '@/components/MetaInfo';
+import DescriptionBox from '@/components/DescriptionBox';
+import LinkedOkrCard from '@/components/LinkedOkrCard';
+import SidebarLayout from '@/components/SidebarLayout';
+
 export default function ObjectivePage() {
   const { id } = useParams(); 
   const [data, setData] = useState(null);
@@ -32,38 +39,22 @@ export default function ObjectivePage() {
     return <p className="p-6 text-red-500">Failed to load Key Result.</p>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">{data.title}</h1>
-      <p className="text-gray-700 italic mb-4">{data.comment}</p>
-      <div className="space-y-2 text-sm text-gray-800">
-        <p><strong>Description:</strong> {data.description}</p>
-        <p><strong>State:</strong> {data.state}</p>
-        <p><strong>Created:</strong> {data.created}</p>
-        <p><strong>Modified:</strong> {data.modified}</p>
-        <p><strong>Progress:</strong> {data.progress}</p>
-        <p><strong>Is part of:</strong> {
-          data.isPartOf?.map((id) => (
-            <Link
-              key={id}
-              href={`/objectives/${id}`}
-              className="text-blue-600 hover:underline ml-1"
-            >
-              {id}
-            </Link>
-          ))
-        }</p>
-        <p><strong>Is key result of:</strong> {
-          data.isKeyResultOf?.map((id) => (
-            <Link
-              key={id}
-              href={`/objectives/${id}`}
-              className="text-blue-600 hover:underline ml-1"
-            >
-              {id}
-            </Link>
-          ))
-        }</p>
+    <SidebarLayout>
+      <div className="flex justify-center items-start bg-gray-100 pt-4">
+        <div className="bg-white rounded-xl shadow p-8 space-y-6 max-w-5xl w-full">
+          <KeyResultHeader title={data.title} comment={data.comment} />
+          <div className="flex space-x-6">
+            <div className="flex-3">  
+              <ProgressBar progress={data.progress} />
+            </div>
+            <div className="flex-1">
+              <MetaInfo created={data.created} modified={data.modified} />
+            </div>
+          </div>
+          <DescriptionBox description={data.description} />
+          <LinkedOkrCard progress={60} />  
+        </div>
       </div>
-    </div>
+    </SidebarLayout>
   );
 }
