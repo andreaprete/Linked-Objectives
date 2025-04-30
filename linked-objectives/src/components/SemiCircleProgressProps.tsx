@@ -1,49 +1,96 @@
-type SemiCircleProgressProps = {
-  progress: number; // 0 - 100
+import React from "react";
+
+type ISemiCircleProgress = {
+  strokeWidth: number;
+  strokeLinecap?: "butt" | "round" | "square" | "inherit";
+  percentage: number;
+  percentageSeperator?: string;
+  size: {
+    width: number;
+    height: number;
+  };
+  strokeColor?: string;
+  fontStyle?: {
+    fontSize: string;
+    fontFamily?: string;
+    fontWeight: string;
+    fill: string;
+  };
+  hasBackground?: boolean;
+  bgStrokeColor?: string;
 };
 
-export default function SemiCircleProgress({ progress }: SemiCircleProgressProps) {
-  const width = 150;
-  const radius = width / 2;
-  const stroke = 10;
-  const normalizedRadius = radius - stroke / 2;
-  const circumference = Math.PI * normalizedRadius;
-  const strokeDashoffset = circumference * (progress / 100); // Reversed calculation
+const SemiCircleProgress = ({
+  strokeWidth,
+  percentage,
+  strokeColor,
+  size,
+  strokeLinecap = "round",
+  percentageSeperator = "%",
+  fontStyle,
+  hasBackground = false,
+  bgStrokeColor = "#d3d3d3",
+}: ISemiCircleProgress) => {
+  if (percentage < 0 || percentage > 100) {
+    throw new Error("Percentage must be between 0 and 100");
+  }
+
+  const radius = 50 - strokeWidth / 2;
+  const circumference = Math.PI * radius;
+  const dashOffset = circumference * (1 - percentage / 100);
+
+  // Flip path to go from left to right (clockwise)
+  const pathD = `M ${strokeWidth / 2},50 A ${radius},${radius} 0 0 1 ${
+    100 - strokeWidth / 2
+  },50`;
 
   return (
-    <div className="relative w-[150px] h-[90px] mx-auto">
-      <svg
-        width={width}
-        height={radius + stroke / 2}
-        viewBox={`0 0 ${width} ${radius + stroke / 2}`}
+    <svg
+      width={size.width}
+      height={size.height}
+      viewBox="0 0 100 65"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {hasBackground && (
+        <path
+          d={pathD}
+          stroke={bgStrokeColor}
+          strokeWidth={strokeWidth}
+          strokeLinecap={strokeLinecap}
+          fill="none"
+        />
+      )}
+      <path
+        d={pathD}
+        stroke={strokeColor || "#04001b"}
+        strokeWidth={strokeWidth}
+        strokeLinecap={strokeLinecap}
+        fill="none"
+        strokeDasharray={circumference}
+        strokeDashoffset={dashOffset}
+        style={{ transition: "stroke-dashoffset 0.5s ease" }}
+      />
+
+      <text
+        x="50"
+        y="40"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        style={fontStyle}
       >
-        {/* Background semicircle */}
-        <path
-          d={`M ${stroke}, ${radius} A ${normalizedRadius},${normalizedRadius} 0 0,1 ${width - stroke}, ${radius}`}
-          fill="none"
-          stroke="#e5e7eb"
-          strokeWidth={stroke}
-        />
-        {/* Progress semicircle */}
-        <path
-          d={`M ${stroke}, ${radius} A ${normalizedRadius},${normalizedRadius} 0 0,1 ${width - stroke}, ${radius}`}
-          fill="none"
-          stroke="#2563eb"
-          strokeWidth={stroke}
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </svg>
+        {percentage}
+        {percentageSeperator}
+      </text>
 
-      {/* Centered Percentage */}
-      <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 text-blue-600 font-semibold">
-        {progress}%
-      </div>
-
-      {/* 0% and 100% Labels */}
-      <div className="absolute left-0 bottom-0 text-xs text-gray-500">0%</div>
-      <div className="absolute right-0 bottom-0 text-xs text-gray-500">100%</div>
-    </div>
+      {/* 0% and 100% labels slightly lower */}
+      <text x="0" y="65" fontSize="10" fill="#666">
+        0%
+      </text>
+      <text x="100" y="65" fontSize="10" fill="#666" textAnchor="end">
+        100%
+      </text>
+    </svg>
   );
-}
+};
+
+export default SemiCircleProgress;

@@ -52,7 +52,7 @@ export default function ObjectivePage() {
             </div>
           </div>
           <DescriptionBox description={data.description} />
-          <LinkedOkrCard progress={60} />  
+          <LinkedOkrCard progress={55} />  
         </div>
       </div>
     </SidebarLayout>

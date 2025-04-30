@@ -1,5 +1,4 @@
-import SemiCircleProgress from './SemiCircleProgressProps'; // adjust path as needed
-
+import SemiCircleProgress from './SemiCircleProgressProps';
 
 type LinkedOkrCardProps = {
   progress: number;
@@ -17,7 +16,20 @@ export default function LinkedOkrCard({ progress }: LinkedOkrCardProps) {
       </div>
 
       <div className="flex-shrink-0">
-        <SemiCircleProgress progress={progress} />
+        <SemiCircleProgress
+          strokeWidth={10}
+          percentage={progress}
+          size={{ width: 200, height: 100 }}
+          strokeColor="#2563eb"
+          bgStrokeColor="#e5e7eb"
+          hasBackground={true}
+          percentageSeperator="%"
+          fontStyle={{
+            fontSize: "16px",
+            fontWeight: "bold",
+            fill: "#2563eb",
+          }}
+        />
       </div>
     </div>
   );

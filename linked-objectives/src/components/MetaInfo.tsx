@@ -5,9 +5,15 @@ type MetaInfoProps = {
 
 export default function MetaInfo({ created, modified }: MetaInfoProps) {
   return (
-    <div className="flex flex-col justify-center items-center text-sm text-gray-500 space-y-4 h-full">
-      <p><strong>Created:</strong> {created}</p>
-      <p><strong>Modified:</strong> {modified}</p>
+    <div className="border p-4 rounded-md bg-gray-50 text-sm text-gray-700 w-full max-w-xl space-y-2">
+      <div className="flex justify-between">
+        <p className="font-semibold">Created:</p>
+        <p>{created}</p>
+      </div>
+      <div className="flex justify-between">
+        <p className="font-semibold">Modified:</p>
+        <p>{modified}</p>
+      </div>
     </div>
   );
 }
