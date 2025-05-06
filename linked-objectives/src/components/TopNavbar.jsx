@@ -1,11 +1,6 @@
 import Link from 'next/link';
 
-type TopNavbarProps = {
-  title?: string;
-  id?: string;
-};
-
-export default function TopNavbar({ title, id }: TopNavbarProps) {
+export default function TopNavbar({ title, id }) {
   return (
     <div className="w-full bg-white shadow px-6 py-4 flex justify-between items-center border-b">
       <h2 className="text-lg font-semibold text-gray-800">

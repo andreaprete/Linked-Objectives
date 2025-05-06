@@ -32,7 +32,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/components/DescriptionBox.jsx", "src/components/KeyResultHeader.jsx"  ],
   "exclude": [
     "node_modules"
   ]

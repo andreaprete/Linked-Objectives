@@ -1,12 +1,8 @@
-type ProgressBarProps = {
-  progress: number;
-};
-
-export default function ProgressBar({ progress }: ProgressBarProps) {
+export default function ProgressBar({ progress }) {
   return (
-    <div className="w-full max-w-lg"> {/* Medium width */}
+    <div className="w-full max-w-lg">
       <p className="text-blue-600 font-semibold uppercase text-sm">In Progress</p>
-      <div className="relative w-full bg-gray-200 rounded-full h-6 mt-2"> {/* Tall bar */}
+      <div className="relative w-full bg-gray-200 rounded-full h-6 mt-2">
         <div
           className="bg-blue-600 h-6 rounded-full"
           style={{ width: `${progress}%` }}

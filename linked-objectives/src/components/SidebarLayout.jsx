@@ -1,12 +1,6 @@
-import TopNavbar from './TopNavbar';
+import TopNavbar from './TopNavbar.jsx';
 
-type SidebarLayoutProps = {
-  children: React.ReactNode;
-  title?: string;
-  id?: string;
-};
-
-export default function SidebarLayout({ children, title, id }: SidebarLayoutProps) {
+export default function SidebarLayout({ children, title, id }) {
   return (
     <div className="flex min-h-screen">
       <div className="w-60 bg-gray-800 text-white p-4">

@@ -1,16 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import SemiCircleProgress from './SemiCircleProgressProps';
-
-type LinkedOkrCardProps = {
-  progress: number;
-  id?: string;
-  title?: string;
-  description?: string;
-  state?: string;
-  category?: string;
-};
+import SemiCircleProgress from './SemiCircleProgressProps.jsx';
 
 export default function LinkedOkrCard({
   progress,
@@ -19,7 +10,7 @@ export default function LinkedOkrCard({
   description = "No description available.",
   state = "N/A",
   category = "N/A",
-}: LinkedOkrCardProps) {
+}) {
   // Build the URL to the objective detail page
   const objectiveUrl = id ? `/objectives/${id}` : '#';
 
@@ -31,7 +22,6 @@ export default function LinkedOkrCard({
 
       <div className="flex justify-between items-start">
         <div className="max-w-[70%] space-y-1">
-          {/* Use Link without an <a> child */}
           <h3 className="text-lg font-medium">
             {id ? (
               <Link href={objectiveUrl} className="text-blue-600 hover:underline">

@@ -1,9 +1,4 @@
-type MetaInfoProps = {
-  created: string;
-  modified: string;
-};
-
-export default function MetaInfo({ created, modified }: MetaInfoProps) {
+export default function MetaInfo({ created, modified }) {
   return (
     <div className="border p-4 rounded-md bg-gray-50 text-sm text-gray-700 w-full max-w-xl space-y-2">
       <div className="flex justify-between">

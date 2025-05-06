@@ -1,25 +1,5 @@
 import React from "react";
 
-type ISemiCircleProgress = {
-  strokeWidth: number;
-  strokeLinecap?: "butt" | "round" | "square" | "inherit";
-  percentage: number;
-  percentageSeperator?: string;
-  size: {
-    width: number;
-    height: number;
-  };
-  strokeColor?: string;
-  fontStyle?: {
-    fontSize: string;
-    fontFamily?: string;
-    fontWeight: string;
-    fill: string;
-  };
-  hasBackground?: boolean;
-  bgStrokeColor?: string;
-};
-
 const SemiCircleProgress = ({
   strokeWidth,
   percentage,
@@ -30,7 +10,7 @@ const SemiCircleProgress = ({
   fontStyle,
   hasBackground = false,
   bgStrokeColor = "#d3d3d3",
-}: ISemiCircleProgress) => {
+}) => {
   if (percentage < 0 || percentage > 100) {
     throw new Error("Percentage must be between 0 and 100");
   }
@@ -39,10 +19,7 @@ const SemiCircleProgress = ({
   const circumference = Math.PI * radius;
   const dashOffset = circumference * (1 - percentage / 100);
 
-  // Flip path to go from left to right (clockwise)
-  const pathD = `M ${strokeWidth / 2},50 A ${radius},${radius} 0 0 1 ${
-    100 - strokeWidth / 2
-  },50`;
+  const pathD = `M ${strokeWidth / 2},50 A ${radius},${radius} 0 0 1 ${100 - strokeWidth / 2},50`;
 
   return (
     <svg
@@ -70,7 +47,6 @@ const SemiCircleProgress = ({
         strokeDashoffset={dashOffset}
         style={{ transition: "stroke-dashoffset 0.5s ease" }}
       />
-
       <text
         x="50"
         y="40"
@@ -81,8 +57,6 @@ const SemiCircleProgress = ({
         {percentage}
         {percentageSeperator}
       </text>
-
-      {/* 0% and 100% labels slightly lower */}
       <text x="0" y="65" fontSize="10" fill="#666">
         0%
       </text>

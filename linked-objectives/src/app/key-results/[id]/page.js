@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-import KeyResultHeader from '@/components/KeyResultHeader';
-import ProgressBar from '@/components/ProgressBar';
-import MetaInfo from '@/components/MetaInfo';
-import DescriptionBox from '@/components/DescriptionBox';
-import LinkedOkrCard from '@/components/LinkedOkrCard';
-import SidebarLayout from '@/components/SidebarLayout';
+import KeyResultHeader from '@/components/KeyResultHeader.jsx';
+import ProgressBar from '@/components/ProgressBar.jsx';
+import MetaInfo from '@/components/MetaInfo.jsx';
+import DescriptionBox from '@/components/DescriptionBox.jsx';
+import LinkedOkrCard from '@/components/LinkedOkrCard.jsx';
+import SidebarLayout from '@/components/SidebarLayout.jsx';
 
 export default function ObjectivePage() {
   const { id } = useParams(); 
