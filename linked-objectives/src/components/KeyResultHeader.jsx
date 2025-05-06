@@ -1,4 +1,4 @@
-export default function KeyResultHeader({ title, comment }) {
+export default function KeyResultHeader({ title, comment, setModalOpen }) {
   // Function to get the first two letters of the first two words from the title
   const getInitials = (title) => {
     const words = title.split(' '); // Split title into words
@@ -23,7 +23,12 @@ export default function KeyResultHeader({ title, comment }) {
           <p className="text-gray-600 italic">{comment}</p>
         </div>
       </div>
-      <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Edit</button>
+      <button
+        onClick={() => setModalOpen(true)} // Trigger modal opening
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        Edit
+      </button>
     </div>
   );
 }

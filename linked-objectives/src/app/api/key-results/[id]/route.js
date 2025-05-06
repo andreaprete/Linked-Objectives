@@ -126,6 +126,9 @@ export async function GET(req, context) {
           case "https://data.sick.com/voc/sam/objectives-model/category":
             linkedOkrData.category = obj.split("/").pop();
             break;
+          case "https://data.sick.com/voc/sam/objectives-model/progress":
+            linkedOkrData.progress = parseFloat(obj); 
+            break;
           default:
             break;
         }
@@ -149,3 +152,60 @@ export async function GET(req, context) {
   }
 }
 
+export async function PUT(req, context) {
+  const { id } = context.params;
+  const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
+  const body = await req.json();
+
+  // Construct a SPARQL DELETE/INSERT query to update fields
+  const sparqlUpdate = `
+    DELETE {
+      <${objUri}> ?p ?o .
+    }
+    INSERT {
+      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
+      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${body.comment}" .
+      <${objUri}> <http://purl.org/dc/terms/description> "${body.description}" .
+      <${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .
+      <${objUri}> <http://purl.org/dc/terms/modified> "${new Date().toISOString()}" .
+    }
+    WHERE {
+      <${objUri}> ?p ?o .
+      FILTER(?p IN (
+        <http://www.w3.org/2000/01/rdf-schema#label>,
+        <http://www.w3.org/2000/01/rdf-schema#comment>,
+        <http://purl.org/dc/terms/description>,
+        <https://data.sick.com/voc/sam/objectives-model/progress>,
+        <http://purl.org/dc/terms/modified>
+      ))
+    }
+  `;
+
+  try {
+    const response = await fetch(
+      'http://localhost:7200/repositories/linked-objectives/statements',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/sparql-update',
+        },
+        body: sparqlUpdate,
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed SPARQL update: ${errorText}`);
+    }
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
