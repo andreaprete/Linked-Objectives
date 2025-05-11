@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Sidebar from '@/app/componentsUser/Sidebar';
+import UserProfileCard from '@/app/componentsUser/UserProfileCard';
+import OkrCard from '@/app/componentsUser/OkrCard';
+import OkrSection from '@/app/componentsUser/OkrSection';
 
 export default function ObjectivePage() {
   const { id } = useParams(); 
@@ -32,6 +36,7 @@ export default function ObjectivePage() {
   if (!data || Object.keys(data).length === 0)
     return <p className="p-6 text-red-500">Failed to load OKR.</p>;
 
+  /*
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">{data.title}</h1>
@@ -102,4 +107,39 @@ export default function ObjectivePage() {
       </div>
     </div>
   );
+  */
+
+  const placeholderOkr = {
+    title: data.title,
+    description: data.description,
+    progress: 50
+  };
+
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <div className="flex-1 bg-gray-100 p-6">
+        <UserProfileCard />
+
+        <h2 className="text-2xl font-semibold mt-6 mb-4">{data.title.split('-')[0]}'s OKRs</h2>
+
+        <div className="mb-6">
+          <h3 className="text-gray-500 text-sm uppercase mb-2">Cares For</h3>
+          <OkrCard title={data.title} description={data.description} progress={50} />
+          <OkrCard title={data.title} description={data.description} progress={50} />
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-gray-500 text-sm uppercase mb-2">Operates</h3>
+          <div className="text-sm text-gray-400 italic">No items available yet.</div>
+        </div>
+
+        <div>
+          <h3 className="text-gray-500 text-sm uppercase mb-2">Accountable For</h3>
+          <div className="text-sm text-gray-400 italic">No items available yet.</div>
+        </div>
+      </div>
+    </div>
+  );
+
 }
