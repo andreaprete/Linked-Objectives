@@ -73,16 +73,69 @@ export async function GET(req, context) {
           dataMap.isPartOf.push(object.split('/').pop()); 
           break;
 
-
         case "https://data.sick.com/voc/sam/objectives-model/isKeyResultOf":
-          dataMap.isKeyResultOf = dataMap.isKeyResultOf || [];
-          dataMap.isKeyResultOf.push(object.split('/').pop()); 
+          dataMap.isKeyResultOf = object.split('/').pop();
           break;
 
         default:
           break;
       }
     });
+    // Fetch linked objective if available
+    if (dataMap.isKeyResultOf) {
+      const linkedObjectiveUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${dataMap.isKeyResultOf}`;
+      const linkedObjectiveQuery = `
+        SELECT ?predicate ?object
+        WHERE {
+          <${linkedObjectiveUri}> ?predicate ?object .
+        }
+      `;
+
+      const linkedRes = await fetch(`http://localhost:7200/repositories/linked-objectives`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/sparql-query",
+          Accept: "application/sparql-results+json",
+        },
+        body: linkedObjectiveQuery,
+      });
+
+      if (!linkedRes.ok) {
+        const errorText = await linkedRes.text();
+        console.error("Failed to fetch linked Objective:", errorText);
+        throw new Error(`Linked Objective query failed: ${errorText}`);
+      }
+
+      const linkedJson = await linkedRes.json();
+      const linkedOkrData = {};
+
+      linkedJson.results.bindings.forEach((binding) => {
+        const pred = binding.predicate.value;
+        const obj = binding.object.value;
+
+        switch (pred) {
+          case "http://www.w3.org/2000/01/rdf-schema#label":
+            linkedOkrData.title = obj;
+            break;
+          case "http://purl.org/dc/terms/description":
+            linkedOkrData.description = obj;
+            break;
+          case "https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state":
+            linkedOkrData.state = obj.split("/").pop();
+            break;
+          case "https://data.sick.com/voc/sam/objectives-model/category":
+            linkedOkrData.category = obj.split("/").pop();
+            break;
+          case "https://data.sick.com/voc/sam/objectives-model/progress":
+            linkedOkrData.progress = parseFloat(obj); 
+            break;
+          default:
+            break;
+        }
+      });
+
+      dataMap.linkedObjective = linkedOkrData;
+    }
 
     return new Response(
       JSON.stringify({
@@ -99,68 +152,60 @@ export async function GET(req, context) {
   }
 }
 
-// CODE TO GET EVERYHTING
+export async function PUT(req, context) {
+  const { id } = context.params;
+  const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
+  const body = await req.json();
 
-// export async function GET(req, { params }) {
-//   const { id } = params;
-//   const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
+  // Construct a SPARQL DELETE/INSERT query to update fields
+  const sparqlUpdate = `
+    DELETE {
+      <${objUri}> ?p ?o .
+    }
+    INSERT {
+      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
+      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${body.comment}" .
+      <${objUri}> <http://purl.org/dc/terms/description> "${body.description}" .
+      <${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .
+      <${objUri}> <http://purl.org/dc/terms/modified> "${new Date().toISOString()}" .
+    }
+    WHERE {
+      <${objUri}> ?p ?o .
+      FILTER(?p IN (
+        <http://www.w3.org/2000/01/rdf-schema#label>,
+        <http://www.w3.org/2000/01/rdf-schema#comment>,
+        <http://purl.org/dc/terms/description>,
+        <https://data.sick.com/voc/sam/objectives-model/progress>,
+        <http://purl.org/dc/terms/modified>
+      ))
+    }
+  `;
 
-//   const sparqlQuery = `
-//     SELECT ?predicate ?object
-//     WHERE {
-//       <${objUri}> ?predicate ?object .
-//     }
-//   `;
+  try {
+    const response = await fetch(
+      'http://localhost:7200/repositories/linked-objectives/statements',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/sparql-update',
+        },
+        body: sparqlUpdate,
+      }
+    );
 
-//   try {
-//     const response = await fetch(
-//       `http://localhost:7200/repositories/linked-objectives`,
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/sparql-query",
-//           Accept: "application/sparql-results+json",
-//         },
-//         body: sparqlQuery,
-//       }
-//     );
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed SPARQL update: ${errorText}`);
+    }
 
-//     if (!response.ok) {
-//       const errorText = await response.text();
-//       console.error("SPARQL error:", errorText);
-//       throw new Error(`GraphDB query failed: ${errorText}`);
-//     }
-
-//     const json = await response.json();
-//     const dataMap = {};
-
-//     json.results.bindings.forEach((binding) => {
-//       const predicate = binding.predicate.value;
-//       const object = binding.object.value;
-
-//       // Allow multiple values for the same predicate
-//       if (dataMap[predicate]) {
-//         // Convert to array if not already
-//         if (!Array.isArray(dataMap[predicate])) {
-//           dataMap[predicate] = [dataMap[predicate]];
-//         }
-//         dataMap[predicate].push(object);
-//       } else {
-//         dataMap[predicate] = object;
-//       }
-//     });
-
-//     return new Response(
-//       JSON.stringify({
-//         id,
-//         data: dataMap,
-//       }),
-//       { status: 200, headers: { "Content-Type": "application/json" } }
-//     );
-//   } catch (err) {
-//     return new Response(JSON.stringify({ error: err.message }), {
-//       status: 500,
-//       headers: { "Content-Type": "application/json" },
-//     });
-//   }
-// }
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
