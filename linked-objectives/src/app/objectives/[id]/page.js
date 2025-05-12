@@ -25,6 +25,7 @@ export default function ObjectivePage() {
       }
     }
 
+    
     fetchOkr();
   }, [id]);
 

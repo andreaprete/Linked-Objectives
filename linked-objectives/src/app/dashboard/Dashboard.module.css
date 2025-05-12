@@ -1,0 +1,209 @@
+/* src/app/dashboard/Dashboard.module.css */
+
+/* --- Basic Page Layout Styles --- */
+/* Replicated from Strategy Map or move to shared Layout.module.css */
+.pageWrapper {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    font-family: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+    background-color: #f4f7f9;
+    overflow: hidden;
+  }
+  
+  .rightContentWrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+  }
+  /* --- End Basic Layout Styles --- */
+  
+  
+  /* --- Dashboard Specific Content Area --- */
+  .dashboardContent {
+    flex: 1; /* Takes remaining vertical space below top bar */
+    overflow-y: auto; /* Allow scrolling for the main dashboard area */
+    padding: 25px; /* Padding around the grid */
+    background-color: #f4f7f9; /* Background matches page */
+  }
+  
+  /* --- Profile Header Section --- */
+  .profileHeader {
+    background: linear-gradient(to right, #4a6de5, #7656d9);
+    color: white;
+    padding: 30px 25px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* Animation styles */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+  .profileHeaderVisible { /* Applied via JS when loaded */
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .profileHeaderPic {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #eee;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .profileHeaderPic > svg {
+      font-size: 2em;
+      color: #555;
+  }
+  .profileHeaderText h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.8em;
+    font-weight: 600;
+  }
+  .profileHeaderText p {
+    margin: 0;
+    font-size: 1em;
+    opacity: 0.9;
+  }
+  
+  
+  /* --- KPI Row Styles --- */
+  .kpiRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 25px;
+    margin-bottom: 25px;
+  }
+  .kpiCard {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 15px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+    text-align: center;
+    /* Animation styles */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    /* transition-delay handled inline in JS */
+  }
+  .kpiValue {
+    font-size: 2em;
+    font-weight: 600;
+    color: #007bff;
+    margin-bottom: 5px;
+  }
+  .kpiLabel {
+    font-size: 0.9em;
+    color: #6c757d;
+    font-weight: 500;
+  }
+  
+  /* --- Dashboard Grid (Using CSS Grid) --- */
+  .dashboardGrid {
+    display: grid;
+    /* Define columns (e.g., 3 columns default) */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+  }
+  
+  /* --- General Widget Card Style --- */
+  .widgetCard {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px 25px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent content bleed */
+    /* Animation styles */
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+     /* transition-delay handled inline in JS */
+  }
+  
+  /* Spanning classes for CSS Grid */
+  .spanTwo {
+      grid-column: span 2;
+  }
+  .spanThree {
+      grid-column: span 3;
+  }
+  /* Example assignments */
+  .okrWidget { grid-column: span 2; grid-row: span 2; } /* Span 2 cols, 2 rows high */
+  .activityWidget { grid-column: span 1; }
+  .deadlinesWidget { grid-column: span 1; }
+  .notificationsWidget { grid-column: span 1; }
+  .progressWidget { grid-column: span 2; }
+  
+  /* Adjust widget heights if needed, often determined by content or grid rows */
+  /* Example: Give OKR list more implicit height */
+  .okrWidget { min-height: 300px; } /* Or adjust grid row span */
+  
+  
+  /* --- Visible class for animations --- */
+  .widgetVisible {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+  
+  .widgetTitle {
+    font-size: 1.25em;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+  }
+  
+  /* --- Specific Widget Content Styles --- */
+  /* OKR Overview Styles */
+  .okrList { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+  .okrItem { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; border-bottom: 1px solid #f0f0f0; }
+  .okrItem:last-child { border-bottom: none; padding-bottom: 5px; }
+  .okrTitle { font-weight: 500; color: #2c3e50; margin-right: 15px; }
+  .okrDetails { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+  .okrProgressWrap { width: 100px; height: 8px; background-color: #e9ecef; border-radius: 4px; overflow: hidden; }
+  .okrProgressBar { height: 100%; background-color: #3498db; border-radius: 4px; transition: width 0.3s ease; }
+  .okrProgressBar[data-status="Done"] { background-color: #28a745; }
+  .okrProgressBar[data-status="NotStarted"] { background-color: #e9ecef; }
+  .okrStatus { font-size: 0.8em; padding: 3px 10px; border-radius: 12px; font-weight: 600; text-align: center; min-width: 80px; }
+  .statusInProgress { background-color: #eaf5ff; color: #007bff; border: 1px solid #b8daff; }
+  .statusNotStarted { background-color: #f8f9fa; color: #6c757d; border: 1px solid #dee2e6; }
+  .statusDone { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+  
+  /* Activity Feed Styles */
+  .activityFeed { list-style: none; padding: 0; margin: 0; /* max-height: 300px; */ overflow-y: auto; flex-grow: 1; }
+  .activityItem { padding: 10px 5px; font-size: 0.9em; border-bottom: 1px solid #f0f0f0; line-height: 1.4; }
+  .activityItem:last-child { border-bottom: none; }
+  .activityUser { font-weight: 600; color: #333; /* Fixed color */ }
+  .activityTime { font-size: 0.8em; color: #0e0e0e; /* Fixed color */ margin-left: 8px; white-space: nowrap; }
+  
+  /* Notifications Widget Styles */
+  .notificationsList { list-style: none; padding: 0; margin: 0; }
+  .notificationItem { padding: 10px 5px; font-size: 0.9em; color: #555; border-bottom: 1px solid #f0f0f0; }
+  .notificationItem:last-child{ border-bottom: none; }
+  .notificationImportant { font-weight: 600; color: #c92a2a; }
+  .notificationLink { font-size: 0.9em; color: #007bff; text-decoration: none; display: inline-block; margin-top: 15px; }
+  .notificationLink:hover { text-decoration: underline; }
+  
+  /* Deadlines Widget Styles */
+  .deadlinesList { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; /* max-height: 300px; */ }
+  .deadlineItem { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; font-size: 0.9em; border-bottom: 1px solid #f0f0f0; }
+  .deadlineItem:last-child { border-bottom: none; }
+  .deadlineTitle { color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px; flex: 1; }
+  .deadlineDate { font-weight: 600; color: #dc3545; white-space: nowrap; font-size: 0.9em; padding: 2px 6px; border-radius: 4px; background-color: #fbebee; }
+  .deadlineDateSoon { color: #b8860b; background-color: #fff3cd; }
+  
+  /* Progress Graph Styles */
+  .progressChartContainer { flex-grow: 1; min-height: 250px; width: 100%; display: flex; align-items: center; justify-content: center; }
+  .progressGraphPlaceholder { color: #aaa; font-style: italic; text-align: center; padding: 20px; border: 1px dashed #ccc; border-radius: 6px; width: 90%; height: 80%; display: flex; align-items: center; justify-content: center; }
