@@ -1,0 +1,37 @@
+/* styles/ProgressBar.css */
+
+.progress-bar-container {
+  width: 100%;
+  max-width: 32rem; /* max-w-lg */
+}
+
+.progress-bar-label {
+  color: #2563eb; /* text-blue-600 */
+  font-weight: 600; /* font-semibold */
+  text-transform: uppercase; /* uppercase */
+  font-size: 0.875rem; /* text-sm */
+}
+
+.progress-bar-wrapper {
+  position: relative;
+  width: 100%;
+  background-color: #e5e7eb; /* bg-gray-200 */
+  border-radius: 9999px; /* rounded-full */
+  height: 1.5rem; /* h-6 */
+  margin-top: 0.5rem; /* mt-2 */
+}
+
+.progress-bar-fill {
+  background-color: #2563eb; /* bg-blue-600 */
+  height: 100%;
+  border-radius: 9999px; /* rounded-full */
+}
+
+.progress-bar-percentage {
+  position: absolute;
+  right: 0.5rem; /* right-2 */
+  top: -1.5rem; /* -top-6 */
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 600; /* font-semibold */
+  color: #2563eb; /* text-blue-600 */
+}

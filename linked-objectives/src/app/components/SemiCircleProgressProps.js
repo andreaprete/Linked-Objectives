@@ -1,8 +1,8 @@
-import React from "react";
+import '@/app/styles/SemiCircleProgress.css';
 
 const SemiCircleProgress = ({
   strokeWidth,
-  percentage,
+  percentage = 60, // TO UPDATE WITH VALUE OF GENERAL OBJECTIVE PROGRESSS
   strokeColor,
   size,
   strokeLinecap = "round",
@@ -23,6 +23,7 @@ const SemiCircleProgress = ({
 
   return (
     <svg
+      className="semi-circle-svg"
       width={size.width}
       height={size.height}
       viewBox="0 0 100 65"
@@ -45,22 +46,20 @@ const SemiCircleProgress = ({
         fill="none"
         strokeDasharray={circumference}
         strokeDashoffset={dashOffset}
-        style={{ transition: "stroke-dashoffset 0.5s ease" }}
       />
       <text
+        className="semi-circle-text semi-circle-percent"
         x="50"
         y="40"
-        textAnchor="middle"
-        dominantBaseline="middle"
         style={fontStyle}
       >
         {percentage}
         {percentageSeperator}
       </text>
-      <text x="0" y="65" fontSize="10" fill="#666">
+      <text className="semi-circle-axis-text" x="0" y="65">
         0%
       </text>
-      <text x="100" y="65" fontSize="10" fill="#666" textAnchor="end">
+      <text className="semi-circle-axis-text" x="100" y="65" textAnchor="end">
         100%
       </text>
     </svg>

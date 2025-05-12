@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import SemiCircleProgress from './SemiCircleProgressProps.jsx';
+import SemiCircleProgress from './SemiCircleProgressProps.js';
+import '@/app/styles/LinkedOkrCard.css';
 
 export default function LinkedOkrCard({
   progress,
@@ -11,30 +12,27 @@ export default function LinkedOkrCard({
   state = "N/A",
   category = "N/A",
 }) {
-  // Build the URL to the objective detail page
   const objectiveUrl = id ? `/objectives/${id}` : '#';
 
   return (
-    <div className="border p-4 rounded-md bg-gray-50 mb-4">
-      <div className="w-full text-center mb-2">
-        <p className="font-semibold">Linked to OKR:</p>
+    <div className="linked-okr-card">
+      <div className="linked-okr-header">
+        <p>Linked to OKR:</p>
       </div>
 
-      <div className="flex justify-between items-start">
-        <div className="max-w-[70%] space-y-1">
-          <h3 className="text-lg font-medium">
+      <div className="linked-okr-content">
+        <div className="linked-okr-text">
+          <h3 className="linked-okr-title">
             {id ? (
-              <Link href={objectiveUrl} className="text-blue-600 hover:underline">
-                {title}
-              </Link>
+              <Link href={objectiveUrl}>{title}</Link>
             ) : (
               title
             )}
           </h3>
-          <p className="text-sm text-gray-700">{description}</p>
+          <p className="linked-okr-description">{description}</p>
         </div>
 
-        <div className="flex-shrink-0 flex flex-col items-center">
+        <div className="linked-okr-stats">
           <SemiCircleProgress
             strokeWidth={10}
             percentage={progress}
@@ -49,7 +47,7 @@ export default function LinkedOkrCard({
               fill: "#2563eb",
             }}
           />
-          <div className="mt-2 text-sm text-gray-600 text-center">
+          <div className="linked-okr-meta">
             <p>State: {state}</p>
             <p>Category: {category}</p>
           </div>

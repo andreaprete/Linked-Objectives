@@ -3,17 +3,20 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-import KeyResultHeader from '@/components/KeyResultHeader.jsx';
-import ProgressBar from '@/components/ProgressBar.jsx';
-import MetaInfo from '@/components/MetaInfo.jsx';
-import DescriptionBox from '@/components/DescriptionBox.jsx';
-import LinkedOkrCard from '@/components/LinkedOkrCard.jsx';
-import SidebarLayout from '@/components/SidebarLayout.jsx';
-import EditModal from '@/components/EditModal.jsx'; // Ensure this import is included
+import KeyResultHeader from '@/app/components/KeyResultHeader.js';
+import ProgressBar from '@/app/components/ProgressBar.js';
+import MetaInfo from '@/app/components/MetaInfo.js';
+import DescriptionBox from '@/app/components/DescriptionBox.js';
+import LinkedOkrCard from '@/app/components/LinkedOkrCard.js';
+import SidebarLayout from '@/app/components/SidebarLayout.js';
+import EditModal from '@/app/components/EditModal.js';
+
+import styles from '@/app/styles/KeyResult.css';  
 
 export default function ObjectivePage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
+  const [lifecycleStates, setLifecycleStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
 
@@ -24,6 +27,9 @@ export default function ObjectivePage() {
       try {
         const res = await fetch(`http://localhost:3000/api/key-results/${id}`);
         const json = await res.json();
+        if (json.lifecycleStates && Array.isArray(json.lifecycleStates)) {
+          setLifecycleStates(json.lifecycleStates); // Set lifecycleStates from the response
+        }
         setData(json.data);
       } catch (err) {
         console.error('Failed to load OKR data:', err);
@@ -61,7 +67,7 @@ export default function ObjectivePage() {
     <>
       <SidebarLayout title={data.linkedObjective?.title || 'Objective'} id={data.isKeyResultOf} blur={isModalOpen}>
         <div className="flex justify-center items-start bg-gray-100 pt-4">
-          <div className="bg-white rounded-xl shadow p-8 space-y-6 max-w-5xl w-full">
+          <div className={`bg-white rounded-xl shadow p-8 space-y-6 max-w-5xl w-full`}>
             <KeyResultHeader
               title={data.title}
               comment={data.comment}
@@ -69,7 +75,7 @@ export default function ObjectivePage() {
             />
             <div className="flex space-x-6">
               <div className="flex-3">
-                <ProgressBar progress={data.progress} />
+                <ProgressBar progress={data.progress} state={data.state} />
               </div>
               <div className="flex-1">
                 <MetaInfo created={data.created} modified={data.modified} />
@@ -87,28 +93,21 @@ export default function ObjectivePage() {
           </div>
         </div>
       </SidebarLayout>
-  
-      {isModalOpen && (
-        <>
-          {/* Blurring overlay */}
-          <style jsx global>{`
-            .layout-content {
-              filter: blur(6px);
-              pointer-events: none;
-              user-select: none;
-            }
-          `}</style>
 
-          {/* Modal */}
-          <div className="fixed inset-0 z-50 flex justify-center items-center">
-            <EditModal
-              initialData={data}
-              isOpen={isModalOpen}
-              onClose={() => setModalOpen(false)}
-              onSave={handleSave}
-            />
+      {isModalOpen && (
+        <div className="modal-portal">
+          <div className="modal-wrapper">
+            <div className="modal-inside-layout">
+              <EditModal
+                initialData={data}
+                lifecycleStates={lifecycleStates}
+                isOpen={isModalOpen}
+                onClose={() => setModalOpen(false)}
+                onSave={handleSave}
+              />
+            </div>
           </div>
-        </>
+        </div>
       )}
     </>
   );
