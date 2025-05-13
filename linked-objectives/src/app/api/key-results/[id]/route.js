@@ -1,11 +1,11 @@
 export async function GET(req, context) {
   const { id } = context.params;
-  const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
+  const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
 
   const sparqlQuery = `
     SELECT ?predicate ?object
     WHERE {
-      <${objUri}> ?predicate ?object .
+      <${krUri}> ?predicate ?object .
     }
   `;
 
@@ -192,23 +192,23 @@ export async function GET(req, context) {
 
 export async function PUT(req, context) {
   const { id } = context.params;
-  const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
+  const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const body = await req.json();
 
   // Construct a SPARQL DELETE/INSERT query to update fields
   const sparqlUpdate = `
     DELETE {
-      <${objUri}> ?p ?o .
+      <${krUri}> ?p ?o .
     }
     INSERT {
-      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
-      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${body.comment}" .
-      <${objUri}> <http://purl.org/dc/terms/description> "${body.description}" .
-      <${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .
-      <${objUri}> <http://purl.org/dc/terms/modified> "${new Date().toISOString()}" .
+      <${krUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
+      <${krUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${body.comment}" .
+      <${krUri}> <http://purl.org/dc/terms/description> "${body.description}" .
+      <${krUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .
+      <${krUri}> <http://purl.org/dc/terms/modified> "${new Date().toISOString()}" .
     }
     WHERE {
-      <${objUri}> ?p ?o .
+      <${krUri}> ?p ?o .
       FILTER(?p IN (
         <http://www.w3.org/2000/01/rdf-schema#label>,
         <http://www.w3.org/2000/01/rdf-schema#comment>,
