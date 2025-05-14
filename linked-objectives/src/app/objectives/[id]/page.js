@@ -3,10 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import Sidebar from '@/app/componentsUser/Sidebar';
-import Header from '@/app/componentsUser/Header';
-import UserProfile from '@/app/componentsUser/UserProfile';
-import OkrList from '@/app/componentsUser/OkrList';
 
 export default function ObjectivePage() {
   const { id } = useParams(); 
@@ -32,68 +28,78 @@ export default function ObjectivePage() {
     fetchOkr();
   }, [id]);
 
-  if (loading) return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex-1 p-6">
-        <p className="text-lg">Loading OKR...</p>
-      </div>
-    </div>
-  );
-  
+  if (loading) return <p className="p-6 text-lg">Loading OKR...</p>;
   if (!data || Object.keys(data).length === 0)
-    return (
-      <div className="flex h-screen">
-        <Sidebar />
-        <div className="flex-1 p-6">
-          <p className="text-red-500">Failed to load OKR.</p>
-        </div>
-      </div>
-    );
+    return <p className="p-6 text-red-500">Failed to load OKR.</p>;
 
-  // Mock user data for the demo
-  const userData = {
-    name: "Firstname Lastname",
-    role: "Role of the user",
-    description: "Description",
-    email: "Email:",
-    username: "Username:",
-    location: "Location:",
-    team: "Team:",
-    department: "Department:",
-    company: "Company:",
-    profileImage: "/profileImage.jpg" // Path to profile image
-  };
-
-  // Mock OKRs data
-  const okrData = [
-    {
-      id: "okr1",
-      title: "OKR title",
-      description: "OKR description",
-      category: "category",
-      status: "status",
-      progress: 50
-    },
-    {
-      id: "okr2",
-      title: "OKR title",
-      description: "OKR description",
-      category: "category",
-      status: "status",
-      progress: 50
-    }
-  ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header username="User Name" />
-        <div className="flex-1 p-6 overflow-y-auto">
-          <UserProfile user={userData} />
-          <OkrList username="Firstname" okrs={okrData} />
-        </div>
+    <div className="max-w-2xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">{data.title}</h1>
+      <p className="text-gray-700 italic mb-4">{data.comment}</p>
+      <div className="space-y-2 text-sm text-gray-800">
+        <p><strong>Description:</strong> {data.description}</p>
+        <p><strong>Category:</strong> {data.category}</p>
+        <p><strong>State:</strong> {data.state}</p>
+        <p><strong>Created:</strong> {data.created}</p>
+        <p><strong>Modified:</strong> {data.modified}</p>
+        <p><strong>Version:</strong> {data.version}</p>
+        <p><strong>Type:</strong> {data.type}</p>
+        <p><strong>Accountable for:</strong> {data.accountableFor}</p>
+        <p><strong>Cares for:</strong> {data.caresFor}</p>
+        <p><strong>Operates:</strong> {data.operates}</p>
+        <p><strong>Temporal:</strong> {data.temporal}</p>
+        <p><strong>Key Results:</strong></p>
+          <ul className="list-disc pl-5">
+            {data.keyResult?.map((id) => (
+              <li key={id}>
+                <Link
+                  href={`/key-results/${id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {id}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        <p><strong>Contributes to:</strong></p>
+          <ul className="list-disc pl-5">
+            {data.contributesTo?.map((id) => (
+              <li key={id}>
+                <Link
+                  href={`/objectives/${id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {id}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        <p><strong>Has formal responsibility for:</strong></p>
+          <ul className="list-disc pl-5">
+            {data.hasFormalResponsibilityFor?.map((id) => (
+              <li key={id}>{id}</li>
+            ))}
+          </ul>
+        <p><strong>Has responsibility for:</strong></p>
+          <ul className="list-disc pl-5">
+            {data.hasResponsibilityFor?.map((id) => (
+              <li key={id}>{id}</li>
+            ))}
+          </ul>
+        <p><strong>Needs:</strong></p>
+        <ul className="list-disc pl-5">
+            {data.needs?.map((id) => (
+              <li key={id}>
+                <Link
+                  href={`/objectives/${id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {id}
+                </Link>
+              </li>
+            ))}
+          </ul>
       </div>
     </div>
   );

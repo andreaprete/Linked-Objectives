@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Sidebar from '@/app/componentsUser/Sidebar';
-import OkrCard from '@/app/componentsUser/OkrCard';
-import OkrList from '@/app/componentsUser/OkrList';
+import Sidebar from '@/app/componentsJason/Sidebar';
+import OkrCard from '@/app/componentsJason/OkrCard';
+import OkrList from '@/app/componentsJason/OkrList';
 import Image from 'next/image';
 
 export default function Page() {

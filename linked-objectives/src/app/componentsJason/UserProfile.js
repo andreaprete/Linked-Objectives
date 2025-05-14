@@ -19,14 +19,14 @@ export default function UserProfile({ user }) {
           
           <div className="grid grid-cols-2 gap-x-12 gap-y-1 text-sm">
             <div>
-              <p><span className="font-medium">{user.email}</span></p>
-              <p><span className="font-medium">{user.username}</span></p>
-              <p><span className="font-medium">{user.location}</span></p>
+              <p><span className="font-medium">E-mail: {user.email}</span></p>
+              <p><span className="font-medium">Username: {user.username}</span></p>
+              <p><span className="font-medium">Location: {user.location}</span></p>
             </div>
             <div>
-              <p><span className="font-medium">{user.team}</span></p>
-              <p><span className="font-medium">{user.department}</span></p>
-              <p><span className="font-medium">{user.company}</span></p>
+              <p><span className="font-medium">Team: {user.team}</span></p>
+              <p><span className="font-medium">Department: {user.department}</span></p>
+              <p><span className="font-medium">Company: {user.company}</span></p>
             </div>
           </div>
         </div>
