@@ -1,11 +1,11 @@
 export async function GET(req, context) {
   const { id } = context.params;
-  const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
+  const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
 
   const sparqlQuery = `
     SELECT ?predicate ?object
     WHERE {
-      <${objUri}> ?predicate ?object .
+      <${krUri}> ?predicate ?object .
     }
   `;
 
@@ -81,6 +81,43 @@ export async function GET(req, context) {
           break;
       }
     });
+
+    // Fetch all lifecycle states dynamically
+    const lifecycleStatesQuery = `
+      PREFIX lifecycle: <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/>
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+      SELECT ?object
+      WHERE {
+        ?state skos:prefLabel ?object .
+        FILTER (STRSTARTS(STR(?state), STR(lifecycle:)))
+      }
+    `;
+
+    const lifecycleStatesRes = await fetch(
+      'http://localhost:7200/repositories/linked-objectives',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/sparql-query',
+          Accept: 'application/sparql-results+json',
+        },
+        body: lifecycleStatesQuery,
+      }
+    );
+
+    if (!lifecycleStatesRes.ok) {
+      const errorText = await lifecycleStatesRes.text();
+      console.error("SPARQL error fetching lifecycle states:", errorText);
+      throw new Error(`Failed to fetch lifecycle states: ${errorText}`);
+    }
+
+    const lifecycleStatesJson = await lifecycleStatesRes.json();
+    const lifecycleStates = lifecycleStatesJson.results.bindings.map(binding => ({
+      label: binding.object.value,
+      value: binding.object.value.split('/').pop(),
+    }));
+
     // Fetch linked objective if available
     if (dataMap.isKeyResultOf) {
       const linkedObjectiveUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${dataMap.isKeyResultOf}`;
@@ -141,6 +178,7 @@ export async function GET(req, context) {
       JSON.stringify({
         id,
         data: dataMap,
+        lifecycleStates, // Include lifecycle states for dropdown
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
@@ -154,23 +192,23 @@ export async function GET(req, context) {
 
 export async function PUT(req, context) {
   const { id } = context.params;
-  const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
+  const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const body = await req.json();
 
   // Construct a SPARQL DELETE/INSERT query to update fields
   const sparqlUpdate = `
     DELETE {
-      <${objUri}> ?p ?o .
+      <${krUri}> ?p ?o .
     }
     INSERT {
-      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
-      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${body.comment}" .
-      <${objUri}> <http://purl.org/dc/terms/description> "${body.description}" .
-      <${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .
-      <${objUri}> <http://purl.org/dc/terms/modified> "${new Date().toISOString()}" .
+      <${krUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
+      <${krUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${body.comment}" .
+      <${krUri}> <http://purl.org/dc/terms/description> "${body.description}" .
+      <${krUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .
+      <${krUri}> <http://purl.org/dc/terms/modified> "${new Date().toISOString()}" .
     }
     WHERE {
-      <${objUri}> ?p ?o .
+      <${krUri}> ?p ?o .
       FILTER(?p IN (
         <http://www.w3.org/2000/01/rdf-schema#label>,
         <http://www.w3.org/2000/01/rdf-schema#comment>,

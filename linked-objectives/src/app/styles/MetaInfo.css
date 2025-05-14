@@ -1,0 +1,24 @@
+/* styles/MetaInfo.css */
+
+.meta-info {
+  border: 1px solid #e5e7eb; /* Tailwind border */
+  padding: 1rem;
+  border-radius: 0.375rem; /* rounded-md */
+  background-color: #f9fafb; /* bg-gray-50 */
+  font-size: 0.875rem; /* text-sm */
+  color: #374151; /* text-gray-700 */
+  width: 100%;
+  max-width: 36rem; /* max-w-xl */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* space-y-2 */
+}
+
+.meta-info-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.meta-info-label {
+  font-weight: 600; /* font-semibold */
+}
