@@ -69,7 +69,7 @@
   padding-top: 1rem;
 }
 
-.team-card {
+.team-card-dep {
   background-color: #f9fafb;
   padding: 0.5rem;
   margin-bottom: 0.5rem;
@@ -80,7 +80,7 @@
   transition: background-color 0.2s ease;
 }
 
-.team-card:hover {
+.team-card-dep:hover {
   background-color: #f3f4f6;
 }
 

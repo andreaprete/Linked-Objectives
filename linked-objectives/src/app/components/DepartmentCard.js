@@ -38,13 +38,13 @@ export default function DepartmentCard({ department, index }) {
           {department.teams.map((team) => (
             <div
               key={team.id || team.name}
-              className="team-card"
+              className="team-card-dep"
               onClick={() =>
                 window.location.href = `/teams/${encodeURIComponent(team.id || department.name)}`
               }
               style={{ cursor: 'pointer' }}
             >
-              <div className="team-card-link">
+              <div className="team-card-dep-link">
                 <div className="team-name">{team.name}</div>
 
                 <div
