@@ -1,13 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import { useEffect, useState, useRef } from 'react';
+
+import SidebarLayout from '@/app/components/SidebarLayout';
+import DepartmentHeader from '@/app/components/DepartmentHeader';
+import TeamCard from '@/app/components/TeamCard';
+import OkrTable from '@/app/components/OkrTable';
 
 export default function DepartmentPage() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const teamsRef = useRef(null);
+  const okrsRef = useRef(null);
 
   useEffect(() => {
     if (!id) return;
@@ -16,9 +23,12 @@ export default function DepartmentPage() {
       try {
         const res = await fetch(`/api/departments/${id}`);
         const json = await res.json();
+
+        if (!res.ok) throw new Error(json.error || 'Unknown error');
         setData(json);
       } catch (err) {
         console.error('Failed to load department data:', err);
+        setData(null);
       } finally {
         setLoading(false);
       }
@@ -27,45 +37,60 @@ export default function DepartmentPage() {
     fetchDepartment();
   }, [id]);
 
-  if (loading) return <p className="p-6 text-lg">Loading Department...</p>;
+  if (loading) return <p className="p-6 text-lg">Loading department...</p>;
   if (!data) return <p className="p-6 text-red-500">Failed to load department.</p>;
 
+  const employeeCount = Object.values(data.teams || {}).reduce(
+    (acc, team) => acc + team.members.length,
+    0
+  );
+
+  const handleStatClick = (section) => {
+    if (section === 'teams' || section === 'employees') {
+      teamsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } else if (section === 'okrs') {
+      okrsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-2">{data.department}</h1>
-      <p className="text-gray-500 mb-6">Company: <Link className="text-blue-600 hover:underline" href={`/companies/${data.company}`}>{data.company}</Link></p>
+    <SidebarLayout title="Department Overview">
+      <div className="flex justify-center py-6 bg-gray-100 min-h-screen">
+        <div className="max-w-5xl w-full space-y-6 px-4">
+          <DepartmentHeader
+            name={data.department}
+            company={data.company}
+            homepage={data.homepage}
+            stats={{
+              teamCount: Object.keys(data.teams || {}).length,
+              employeeCount,
+              okrCount: data.okrs.length,
+            }}
+            onStatClick={handleStatClick}
+          />
 
-      <h2 className="text-xl font-semibold mb-4">Teams</h2>
-      {Object.entries(data.teams).map(([teamId, team]) => (
-        <div key={teamId} className="mb-4 border p-4 rounded-md">
-          <Link href={`/teams/${teamId}`}>
-            <h3 className="text-lg font-bold hover:underline">{team.name}</h3>
-          </Link>
-          {team.members.map((person) => (
-            <p key={person.id}>
-              <Link href={`/people/${person.id}`} className="text-blue-600 hover:underline">
-                {person.name}
-              </Link>{" "}
-              – {person.roleTitle} ({person.username}, {person.location})
-            </p>
-          ))}
+          {/* Teams Section */}
+          <div ref={teamsRef} className="bg-white rounded-xl shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Teams</h2>
+            {data.teams && Object.keys(data.teams).length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {Object.entries(data.teams).map(([teamId, team]) => (
+                  <TeamCard key={teamId} teamId={teamId} team={team} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No teams found in this department.</p>
+            )}
+          </div>
+
+          {/* OKRs Section */}
+          {data.okrs.length > 0 && (
+            <div ref={okrsRef}>
+              <OkrTable okrs={data.okrs} />
+            </div>
+          )}
         </div>
-      ))}
-
-      {data.okrs.length > 0 && (
-        <>
-          <h2 className="text-xl font-semibold mt-8 mb-4">Related OKRs</h2>
-          <ul className="list-disc pl-6 text-sm">
-            {data.okrs.map((okr) => (
-              <li key={okr.id}>
-                <Link href={`/objectives/${okr.id}`} className="text-blue-600 hover:underline">
-                  {okr.label} (ID: {okr.id})
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

@@ -1,0 +1,59 @@
+.team-card {
+  background-color: #0078c8; /* Blue base */
+  border: 1px solid #e5e5e5;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  cursor: pointer;
+  color: #ffffff; /* White text by default */
+  position: relative;
+  overflow: hidden;
+}
+
+.team-card:hover {
+  background-color: #ffffff; /* On hover: white background */
+  color: #000000; /* Black text on white */
+}
+
+.team-card-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.team-members-container {
+  margin-top: 0.5rem;
+  max-height: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease, max-height 0.5s ease;
+  overflow: hidden;
+}
+
+.team-card:hover .team-members-container {
+  opacity: 1;
+  max-height: 500px;
+}
+
+.member-entry {
+  padding: 0.5rem;
+  border-top: 1px solid #e5e5e5;
+  background-color: transparent;
+  transition: background-color 0.3s ease;
+}
+
+.member-entry:hover {
+  background-color: #f0f0f0; /* Light gray on hover */
+}
+
+.member-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: inherit;
+}
+
+.member-info {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
