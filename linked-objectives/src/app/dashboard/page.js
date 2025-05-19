@@ -1,111 +1,289 @@
+// src/app/dashboard/page.js
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import "@/app/styles/Dashboard.css";
+import React, { useState, useEffect, useMemo } from 'react';
+import "@/app/styles/Dashboard.css"; // Your custom dashboard styles
 
 import LeftSidebar from '@/app/components/Layout/LeftSidebar';
 import TopBar from '@/app/components/Layout/TopBar';
 
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+    ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip,
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, RadialBarChart, RadialBar, PolarAngleAxis,
+    LineChart, Line
 } from 'recharts';
+// import { parseISO, differenceInDays, format } from 'date-fns'; // Needed if displaying formatted upcomingDeadlines list
 
-import { parseISO, differenceInDays, format } from 'date-fns';
-
-// import { FaUserCircle } from 'react-icons/fa';
-
-const MOCK_USER_OKRS = [
-    { id: 'OKR4', title: 'Improve Development Skills', status: 'InProgress', progress: 65, keyResultsCount: 3, dueDate: '2025-06-30' },
-    { id: 'OKR5', title: 'Contribute to Team Project X', status: 'InProgress', progress: 80, keyResultsCount: 2, dueDate: '2025-05-20' },
-    { id: 'OKR6', title: 'Client Communication Enhancement', status: 'NotStarted', progress: 0, keyResultsCount: 4, dueDate: '2025-07-15' },
-    { id: 'OKR1', title: 'Market Leadership (Shared)', status: 'Done', progress: 100, keyResultsCount: 2, dueDate: '2025-04-30' },
-    { id: 'OKR7', title: 'Learn New JS Framework', status: 'InProgress', status: 'InProgress', progress: 25, keyResultsCount: 3, dueDate: '2025-05-31' },
-];
-const MOCK_ACTIVITY_FEED = [
-    { id: 'a1', user: 'Alice', action: 'updated progress for KR 4.1', timestamp: '35m ago'}, { id: 'a2', user: 'Bob', action: 'commented on OKR5', timestamp: '1h ago'},
-    { id: 'a3', user: 'You', action: 'created OKR6', timestamp: '3h ago'}, { id: 'a4', user: 'Alice', action: 'marked OKR1 as Done', timestamp: 'yesterday'},
-    { id: 'a5', user: 'System', action: 'KR 5.2 is approaching deadline', timestamp: 'yesterday'}, { id: 'a6', user: 'Charlie', action: 'assigned OKR7 to you', timestamp: '2 days ago'},
-];
-const MOCK_DASHBOARD_NOTIFICATIONS = [
-    { id: 2, text: "KR 5.2 is nearing its due date", important: true}, { id: 1, text: "Bob commented on OKR5", important: false},
-    { id: 3, text: "OKR6 (Client Comms) assigned to you", important: true}, { id: 4, text: "Reminder: Update OKR4 progress", important: false},
-];
-const MOCK_PROGRESS_DATA = [
-  { week: 'W1', progress: 10 }, { week: 'W2', progress: 15 }, { week: 'W3', progress: 30 }, { week: 'W4', progress: 45 },
-  { week: 'W5', progress: 60 }, { week: 'W6', progress: 75 }, { week: 'W7', progress: 85 }, { week: 'W8', progress: 90 },
+// Light Theme Chart Colors
+const LIGHT_CHART_COLORS = [
+    '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1', '#06B6D4', '#6B7280'
 ];
 
-
-const defaultDotStyle = { r: 4, fill: '#007bff' };
-const defaultActiveDotStyle = { r: 6, fill: '#007bff' };
-
-function ProgressChart({ data }) {
-     if (!data || data.length === 0) { return <div className="progress-graph-placeholder">No progress data available.</div>; }
-     return (
-        <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis dataKey="week" stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                <Tooltip
-                  contentClassName="dashboard-tooltip-content"
-                  itemClassName="dashboard-tooltip-item"
-                  formatter={(value) => [`${value}%`, "Progress"]}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="progress"
-                  stroke="#007bff"
-                  strokeWidth={2}
-                  activeDot={defaultActiveDotStyle}
-                  dot={defaultDotStyle}
-                />
-            </LineChart>
-        </ResponsiveContainer>
-    );
-}
-
-const getStatusClass = (status) => {
-    if (status === 'InProgress') return 'status-in-progress';
-    if (status === 'Done') return 'status-done';
-    return 'status-not-started';
+const getLightStatusColor = (status) => {
+    const lowerStatus = status ? status.toLowerCase().replace(/\s+/g, '') : 'unknown';
+    const colorMap = {
+        inprogress: LIGHT_CHART_COLORS[0], done: LIGHT_CHART_COLORS[1], completed: LIGHT_CHART_COLORS[1],
+        planned: LIGHT_CHART_COLORS[6], onhold: LIGHT_CHART_COLORS[2], aborted: LIGHT_CHART_COLORS[3],
+        evaluating: LIGHT_CHART_COLORS[4], notstarted: LIGHT_CHART_COLORS[8], unknown: LIGHT_CHART_COLORS[8],
+    };
+    return colorMap[lowerStatus] || LIGHT_CHART_COLORS[8];
 };
 
+const AnimatedCard = ({ children, className = "", title, cardType = "widget", delay = 0 }) => {
+    const [isVisible, setIsVisible] = useState(false);
+    useEffect(() => {
+        const timer = setTimeout(() => setIsVisible(true), delay);
+        return () => clearTimeout(timer);
+    }, [delay]);
+    const baseCardClass = cardType === "kpi" ? "kpiCard" : "widgetCard";
+    return (
+        <div
+            className={`${baseCardClass} ${className} ${isVisible ? 'widgetVisible' : ''}`}
+            style={{ transitionDelay: `${delay}ms` }}
+        >
+            {title && <h3 className="widgetTitle">{title}</h3>}
+            <div className={`widgetContentArea min-h-[250px]`}>
+                {children}
+            </div>
+        </div>
+    );
+};
+
+const MetricCard = ({ title, value, description, delay }) => {
+    const [isVisible, setIsVisible] = useState(false);
+    useEffect(() => {
+        const jitterDelay = delay + Math.random() * 100;
+        const timer = setTimeout(() => setIsVisible(true), jitterDelay);
+        return () => clearTimeout(timer);
+    }, [delay]);
+    return (
+        <div
+            className={`kpiCard ${isVisible ? 'widgetVisible' : ''}`}
+            style={{ transitionDelay: `${delay || 0}ms`}}
+        >
+            <div className="kpiValue">{value}</div>
+            <div className="kpiLabel">{title}</div>
+            {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
+        </div>
+    );
+};
+
+const ChartPlaceholder = ({ message = "No data available." }) => (
+    <div className="chartPlaceholder">{message}</div>
+);
+
+// --- Chart Component Definitions ---
+function ObjectivesByStatusPieChart({ data }) {
+    if (!data || data.length === 0) return <ChartPlaceholder message="No status data." />;
+    return (
+        <ResponsiveContainer width="100%" height={240}>
+            <PieChart>
+                <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={70} innerRadius={35} dataKey="value" nameKey="name" label={({ name, percent, value }) => value > 0 ? `${name}: ${(percent * 100).toFixed(0)}%` : null}>
+                    {data.map((entry, index) => (<Cell key={`cell-${index}`} fill={getLightStatusColor(entry.name)} stroke="#ffffff" strokeWidth={1.5} />))}
+                </Pie>
+                <Tooltip /> <Legend iconType="circle"/>
+            </PieChart>
+        </ResponsiveContainer>
+    );
+}
+
+function OverallProgressGaugeChart({ progress = 0 }) {
+    const roundedProgress = Math.round(progress);
+    const gaugeData = [{ name: 'Overall Progress', value: roundedProgress }];
+    let progressColor = LIGHT_CHART_COLORS[0];
+    if (roundedProgress >= 75) progressColor = LIGHT_CHART_COLORS[1]; else if (roundedProgress <= 25) progressColor = LIGHT_CHART_COLORS[3];
+    return (
+        <ResponsiveContainer width="100%" height={240}>
+            <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="80%" barSize={25} data={gaugeData} startAngle={90} endAngle={-270}>
+                <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                <RadialBar background={{ fill: '#edf2f7' }} dataKey="value" angleAxisId={0} fill={progressColor} cornerRadius={12} />
+                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-current text-gray-700">{`${roundedProgress}%`}</text>
+            </RadialBarChart>
+        </ResponsiveContainer>
+    );
+}
+
+function ObjectivesByCategoryBarChart({ data }) {
+    const chartData = useMemo(() => data?.sort((a, b) => b.value - a.value) || [], [data]);
+    if (!chartData || chartData.length === 0) return <ChartPlaceholder message="No category data." />;
+    return (
+        <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 25, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 opacity-75" />
+                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#4A5568' }} />
+                <YAxis dataKey="name" type="category" width={110} interval={0} tick={{ fontSize: 11, fill: '#4A5568' }} />
+                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }}/>
+                <Bar dataKey="value" name="Objectives" barSize={18}>
+                    {chartData.map((entry, index) => (<Cell key={`cell-${index}`} fill={LIGHT_CHART_COLORS[index % LIGHT_CHART_COLORS.length]} />))}
+                </Bar>
+            </BarChart>
+        </ResponsiveContainer>
+    );
+}
+
+function ObjectivesByProgressDistributionChart({ data }) {
+    const chartData = useMemo(() => data?.filter(d => d.value > 0) || [], [data]);
+    if (!chartData || chartData.length === 0) return <ChartPlaceholder message="No progress distribution data." />;
+    return (
+        <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={chartData} margin={{ top: 20, right: 25, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 opacity-75" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#4A5568' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#4A5568' }}/>
+                <Tooltip />
+                <Bar dataKey="value" name="OKRs Count" barSize={25}>
+                    {chartData.map((entry, index) => (<Cell key={`cell-${index}`} fill={LIGHT_CHART_COLORS[index % LIGHT_CHART_COLORS.length]} />))}
+                </Bar>
+            </BarChart>
+        </ResponsiveContainer>
+    );
+}
+
+function KeyResultScoresTrendChart({ data }) {
+    const placeholderData = [
+        { date: 'Jan', target: 0.8, score: 0.2 }, { date: 'Feb', target: 0.8, score: 0.3 },
+        { date: 'Mar', target: 0.85, score: 0.5 }, { date: 'Apr', target: 0.9, score: 0.65 },
+        { date: 'May', target: 0.9, score: 0.75 }, { date: 'Jun', target: 0.9, score: 0.8 }
+    ];
+    const chartData = (data && data.length > 0) ? data : placeholderData;
+    const showPlaceholderMessage = !(data && data.length > 0);
+
+    if (chartData.length === 0 && showPlaceholderMessage) return <ChartPlaceholder message="KR trend data requires historical backend data." />;
+
+    return (
+        <>
+            <ResponsiveContainer width="100%" height={240}>
+                <LineChart data={chartData} margin={{ top: 5, right: 25, left: 0, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 opacity-75" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#4A5568' }} />
+                    <YAxis domain={[0, 1]} tickFormatter={(val) => (val * 100) + '%'} tick={{ fontSize: 11, fill: '#4A5568' }} />
+                    <Tooltip formatter={(value, name) => [`${(typeof value === 'number' ? value * 100 : 0).toFixed(0)}%`, name]} />
+                    <Legend iconType="plainline" />
+                    <Line type="monotone" dataKey="target" name="Target" stroke={LIGHT_CHART_COLORS[8]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }} />
+                    <Line type="monotone" dataKey="score" name="Score" stroke={LIGHT_CHART_COLORS[0]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }} />
+                </LineChart>
+            </ResponsiveContainer>
+            {showPlaceholderMessage &&
+                <p className="text-xs text-center text-gray-400 mt-1 w-full px-2">
+                    Displaying sample trend. Real data pending backend implementation.
+                </p>
+            }
+        </>
+    );
+}
 
 export default function DashboardPage() {
-    const [activeSidebarItem, setActiveSidebarItem] = useState('Dashboard');
-    const [isLoading, setIsLoading] = useState(false);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [activeSidebarItem, setActiveSidebarItem] = useState('Dashboard');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isFullyLoaded, setIsFullyLoaded] = useState(false);
 
-    useEffect(() => {
-        const timer = setTimeout(() => setIsLoaded(true), 100);
-        return () => clearTimeout(timer);
-    }, []);
+    // States to hold data from the API
+    const [summaryMetrics, setSummaryMetrics] = useState({});
+    const [distributionData, setDistributionData] = useState({});
+    const [keyResultScoresTrendData, setKeyResultScoresTrendData] = useState([]);
+    // const [userOkrsList, setUserOkrsList] = useState([]); // Optional: if you need the raw list for other UI elements
 
-    const handleSidebarClick = (itemName) => { setActiveSidebarItem(itemName); };
+    useEffect(() => {
+        async function fetchDashboardData() {
+            setIsLoading(true); setError(null);
+            try {
+                const res = await fetch('/api/dashboard');
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: `API request failed: Status ${res.status}` }));
+                    throw new Error(errorData.error || `API request failed: Status ${res.status}`);
+                }
+                const data = await res.json();
 
-    const activeOkrCount = MOCK_USER_OKRS.filter(okr => okr.status === 'InProgress').length;
-    const totalKrCount = MOCK_USER_OKRS.reduce((sum, okr) => sum + (okr.keyResultsCount || 0), 0);
-    const inProgressOkrs = MOCK_USER_OKRS.filter(okr => okr.status === 'InProgress');
-    const overallProgress = inProgressOkrs.length > 0 ? Math.round(inProgressOkrs.reduce((sum, okr) => sum + okr.progress, 0) / inProgressOkrs.length) : 0;
+                // Destructure and set state based on your API's response structure
+                setSummaryMetrics(data.summaryMetrics || {});
+                setDistributionData(data.distributions || {});
+                setKeyResultScoresTrendData(data.keyResultScoresTrend || []); // Will be empty
+                // if (data.userOkrs) setUserOkrsList(data.userOkrs); // Store if needed
+                // if (data.detailedLists?.upcomingDeadlines) setUpcomingDeadlines(data.detailedLists.upcomingDeadlines);
 
-    const now = new Date();
-    const upcomingDeadlines = MOCK_USER_OKRS
-        .filter(okr => okr.status !== 'Done' && okr.dueDate)
-        .map(okr => ({ ...okr, parsedDate: parseISO(okr.dueDate), daysRemaining: differenceInDays(parseISO(okr.dueDate), now) }))
-        .filter(okr => okr.daysRemaining >= 0 && okr.daysRemaining <= 30)
-        .sort((a, b) => a.daysRemaining - b.daysRemaining);
+                setTimeout(() => setIsFullyLoaded(true), 100);
+            } catch (err) {
+                console.error('Failed to load dashboard data:', err);
+                setError(err.message || "An unknown error occurred.");
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchDashboardData();
+    }, []);
 
-    return (
-        <div className="page-wrapper">
-            <LeftSidebar activeItem={activeSidebarItem} onNavItemClick={handleSidebarClick} />
-            <div className="right-content-wrapper">
-                <TopBar pageTitle="Dashboard" />
-
-                <main className="dashboard-content">
-                </main>
-              
+    if (isLoading) {
+        return (
+            <div className="pageWrapper">
+                <LeftSidebar activeItem={activeSidebarItem} onNavItemClick={setActiveSidebarItem} />
+                <div className="rightContentWrapper">
+                    <TopBar pageTitle="Dashboard" />
+                    <main className="dashboardContent flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                            <p className="text-md text-gray-600">Loading Dashboard Data...</p>
+                        </div>
+                    </main>
                 </div>
-            </div>
-        );
+            </div>
+        );
+    }
+    if (error) {
+         return (
+             <div className="pageWrapper">
+                <LeftSidebar activeItem={activeSidebarItem} onNavItemClick={setActiveSidebarItem} />
+                <div className="rightContentWrapper">
+                    <TopBar pageTitle="Dashboard Error" />
+                    <main className="dashboardContent flex flex-col items-center justify-center p-6 text-center">
+                        <h2 className="text-xl font-semibold text-red-500 mb-3">Data Fetching Error</h2>
+                        <p className="text-red-600 bg-red-50 p-3 rounded-md border border-red-200 mb-5 max-w-lg">
+                            {error}
+                        </p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-5 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition-colors"
+                        >
+                            Retry
+                        </button>
+                    </main>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="pageWrapper">
+            <LeftSidebar activeItem={activeSidebarItem} onNavItemClick={setActiveSidebarItem} />
+            <div className="rightContentWrapper">
+                <TopBar pageTitle="OKR Dashboard Insights" />
+                <main className={`dashboardContent space-y-5 md:space-y-6 transition-opacity duration-500 ease-out ${isFullyLoaded ? 'opacity-100' : 'opacity-0'}`}>
+                    <section className="kpiRow">
+                        <MetricCard title="Themes" value={summaryMetrics.uniqueCategoryCount || 0} description="Unique Categories" delay={100} />
+                        <MetricCard title="Objectives" value={summaryMetrics.totalOkrCount || 0} delay={150}/>
+                        <MetricCard title="Key Results" value={summaryMetrics.totalKrCount || 0} description="Total KRs" delay={200} />
+                        <MetricCard title="Avg. Progress" value={`${summaryMetrics.overallProgress || 0}%`} description="Active OKRs" delay={250}/>
+                    </section>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6">
+                        <AnimatedCard title="Objectives by Status" cardType="widget" className="xl:col-span-1" delay={300}>
+                            <ObjectivesByStatusPieChart data={distributionData.objectivesByStatus} />
+                        </AnimatedCard>
+                        <AnimatedCard title="Overall Progress (Active)" cardType="widget" className="xl:col-span-1" delay={350}>
+                            <OverallProgressGaugeChart progress={summaryMetrics.overallProgress} />
+                        </AnimatedCard>
+                         <AnimatedCard title="Objectives by Category" cardType="widget" className="xl:col-span-1" delay={400}>
+                            <ObjectivesByCategoryBarChart data={distributionData.objectivesByCategory} />
+                        </AnimatedCard>
+                        <AnimatedCard title="Objectives by Progress Range" cardType="widget" className="md:col-span-2 xl:col-span-2" delay={450}>
+                            <ObjectivesByProgressDistributionChart data={distributionData.objectivesByProgress} />
+                        </AnimatedCard>
+                        <AnimatedCard title="Key Result Scores Trend" cardType="widget" className="md:col-span-2 xl:col-span-1" delay={500}>
+                            <KeyResultScoresTrendChart data={keyResultScoresTrendData} />
+                        </AnimatedCard>
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
 }

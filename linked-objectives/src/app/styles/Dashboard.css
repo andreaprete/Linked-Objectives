@@ -1,209 +1,176 @@
-/* src/app/dashboard/Dashboard.module.css */
+/* src/app/styles/Dashboard.css */
 
 /* --- Basic Page Layout Styles --- */
-/* Replicated from Strategy Map or move to shared Layout.module.css */
 .pageWrapper {
     display: flex;
     flex-direction: row;
     height: 100vh;
     font-family: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-    background-color: #f4f7f9;
+    background-color: #f0f4f8; /* Slightly softer light blue-gray background */
+    color: #2d3748; /* Default dark gray text (Tailwind gray-800) */
     overflow: hidden;
-  }
-  
-  .rightContentWrapper {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      overflow: hidden;
-  }
-  /* --- End Basic Layout Styles --- */
-  
-  
-  /* --- Dashboard Specific Content Area --- */
-  .dashboardContent {
-    flex: 1; /* Takes remaining vertical space below top bar */
-    overflow-y: auto; /* Allow scrolling for the main dashboard area */
-    padding: 25px; /* Padding around the grid */
-    background-color: #f4f7f9; /* Background matches page */
-  }
-  
-  /* --- Profile Header Section --- */
-  .profileHeader {
-    background: linear-gradient(to right, #4a6de5, #7656d9);
-    color: white;
-    padding: 30px 25px;
-    margin-bottom: 25px;
-    border-radius: 8px;
+}
+
+.rightContentWrapper {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.dashboardContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px; /* Standardized padding */
+    background-color: #f0f4f8; /* Consistent with pageWrapper */
+}
+
+/* --- KPI Card Styles --- */
+.kpiRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Slightly larger min-width for KPIs */
     gap: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    /* Animation styles */
+    margin-bottom: 20px;
+}
+
+.kpiCard {
+    background-color: #ffffff;
+    border-radius: 12px; /* More rounded */
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Softer shadow */
+    text-align: center;
     opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-  }
-  .profileHeaderVisible { /* Applied via JS when loaded */
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .profileHeaderPic {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #eee;
-    border: 3px solid rgba(255, 255, 255, 0.5);
+    transform: translateY(15px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out, box-shadow 0.35s ease-out; /* Smoother, slightly longer transition */
+}
+
+.kpiCard:hover {
+    /* Blue shadow effect */
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2), 0 4px 6px -2px rgba(59, 130, 246, 0.1); /* Tailwind blue-500 based shadow */
+    transform: translateY(-3px); /* Slightly more lift */
+}
+
+.kpiValue {
+    font-size: 2.5em; /* Larger KPI value */
+    font-weight: 700;
+    color: #1e3a8a; /* Darker blue (Tailwind blue-800) */
+    margin-bottom: 4px;
+}
+
+.kpiLabel {
+    font-size: 0.9em;
+    color: #4a5568; /* Tailwind gray-700 */
+    font-weight: 500;
+}
+
+/* --- General Widget Card Style (for charts) --- */
+.widgetCard {
+    background-color: #ffffff;
+    color: #2d3748;
+    border-radius: 12px;
+    /* padding handled by title/content divs within the component for better control */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out, box-shadow 0.35s ease-out; /* Smoother transition */
+}
+
+.widgetCard:hover {
+    /* Blue shadow highlight */
+    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.25), 0 4px 8px -2px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+}
+
+.widgetVisible { /* This class triggers the load-in animation */
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+.widgetTitle {
+    font-size: 1.15em; /* Slightly adjusted */
+    font-weight: 600;
+    color: #1f2937; /* Tailwind gray-800 */
+    margin: 0;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb; /* Tailwind gray-200 */
+    flex-shrink: 0;
+}
+
+/* For card content area if title is present */
+.widgetCard > .widgetContentArea { /* Define a class for the content area */
+    padding: 16px 24px;
+    flex-grow: 1; /* Ensure it takes up space */
+    display: flex; /* To help center placeholder if needed */
+    align-items: center;
+    justify-content: center;
+}
+/* If no title, the card itself needs padding (handled by Tailwind in component if preferred) */
+.widgetCard:not(:has(.widgetTitle)) {
+    padding: 24px;
+}
+
+/* Chart Placeholder Style */
+.chartPlaceholder {
+    color: #9ca3af; /* Tailwind gray-400 */
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    /* border: 1px dashed #d1d5db; */ /* Optional border */
+    border-radius: 6px;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-  }
-  .profileHeaderPic > svg {
-      font-size: 2em;
-      color: #555;
-  }
-  .profileHeaderText h2 {
-    margin: 0 0 5px 0;
-    font-size: 1.8em;
-    font-weight: 600;
-  }
-  .profileHeaderText p {
-    margin: 0;
-    font-size: 1em;
-    opacity: 0.9;
-  }
-  
-  
-  /* --- KPI Row Styles --- */
-  .kpiRow {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 25px;
-    margin-bottom: 25px;
-  }
-  .kpiCard {
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 15px 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
-    text-align: center;
-    /* Animation styles */
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-    /* transition-delay handled inline in JS */
-  }
-  .kpiValue {
-    font-size: 2em;
-    font-weight: 600;
-    color: #007bff;
-    margin-bottom: 5px;
-  }
-  .kpiLabel {
-    font-size: 0.9em;
-    color: #6c757d;
-    font-weight: 500;
-  }
-  
-  /* --- Dashboard Grid (Using CSS Grid) --- */
-  .dashboardGrid {
-    display: grid;
-    /* Define columns (e.g., 3 columns default) */
-    grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-  }
-  
-  /* --- General Widget Card Style --- */
-  .widgetCard {
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 20px 25px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Prevent content bleed */
-    /* Animation styles */
-    opacity: 0;
-    transform: translateY(15px);
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-     /* transition-delay handled inline in JS */
-  }
-  
-  /* Spanning classes for CSS Grid */
-  .spanTwo {
-      grid-column: span 2;
-  }
-  .spanThree {
-      grid-column: span 3;
-  }
-  /* Example assignments */
-  .okrWidget { grid-column: span 2; grid-row: span 2; } /* Span 2 cols, 2 rows high */
-  .activityWidget { grid-column: span 1; }
-  .deadlinesWidget { grid-column: span 1; }
-  .notificationsWidget { grid-column: span 1; }
-  .progressWidget { grid-column: span 2; }
-  
-  /* Adjust widget heights if needed, often determined by content or grid rows */
-  /* Example: Give OKR list more implicit height */
-  .okrWidget { min-height: 300px; } /* Or adjust grid row span */
-  
-  
-  /* --- Visible class for animations --- */
-  .widgetVisible {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-  }
-  
-  .widgetTitle {
-    font-size: 1.25em;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 15px 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    flex-shrink: 0;
-  }
-  
-  /* --- Specific Widget Content Styles --- */
-  /* OKR Overview Styles */
-  .okrList { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
-  .okrItem { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; border-bottom: 1px solid #f0f0f0; }
-  .okrItem:last-child { border-bottom: none; padding-bottom: 5px; }
-  .okrTitle { font-weight: 500; color: #2c3e50; margin-right: 15px; }
-  .okrDetails { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
-  .okrProgressWrap { width: 100px; height: 8px; background-color: #e9ecef; border-radius: 4px; overflow: hidden; }
-  .okrProgressBar { height: 100%; background-color: #3498db; border-radius: 4px; transition: width 0.3s ease; }
-  .okrProgressBar[data-status="Done"] { background-color: #28a745; }
-  .okrProgressBar[data-status="NotStarted"] { background-color: #e9ecef; }
-  .okrStatus { font-size: 0.8em; padding: 3px 10px; border-radius: 12px; font-weight: 600; text-align: center; min-width: 80px; }
-  .statusInProgress { background-color: #eaf5ff; color: #007bff; border: 1px solid #b8daff; }
-  .statusNotStarted { background-color: #f8f9fa; color: #6c757d; border: 1px solid #dee2e6; }
-  .statusDone { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-  
-  /* Activity Feed Styles */
-  .activityFeed { list-style: none; padding: 0; margin: 0; /* max-height: 300px; */ overflow-y: auto; flex-grow: 1; }
-  .activityItem { padding: 10px 5px; font-size: 0.9em; border-bottom: 1px solid #f0f0f0; line-height: 1.4; }
-  .activityItem:last-child { border-bottom: none; }
-  .activityUser { font-weight: 600; color: #333; /* Fixed color */ }
-  .activityTime { font-size: 0.8em; color: #0e0e0e; /* Fixed color */ margin-left: 8px; white-space: nowrap; }
-  
-  /* Notifications Widget Styles */
-  .notificationsList { list-style: none; padding: 0; margin: 0; }
-  .notificationItem { padding: 10px 5px; font-size: 0.9em; color: #555; border-bottom: 1px solid #f0f0f0; }
-  .notificationItem:last-child{ border-bottom: none; }
-  .notificationImportant { font-weight: 600; color: #c92a2a; }
-  .notificationLink { font-size: 0.9em; color: #007bff; text-decoration: none; display: inline-block; margin-top: 15px; }
-  .notificationLink:hover { text-decoration: underline; }
-  
-  /* Deadlines Widget Styles */
-  .deadlinesList { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; /* max-height: 300px; */ }
-  .deadlineItem { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; font-size: 0.9em; border-bottom: 1px solid #f0f0f0; }
-  .deadlineItem:last-child { border-bottom: none; }
-  .deadlineTitle { color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px; flex: 1; }
-  .deadlineDate { font-weight: 600; color: #dc3545; white-space: nowrap; font-size: 0.9em; padding: 2px 6px; border-radius: 4px; background-color: #fbebee; }
-  .deadlineDateSoon { color: #b8860b; background-color: #fff3cd; }
-  
-  /* Progress Graph Styles */
-  .progressChartContainer { flex-grow: 1; min-height: 250px; width: 100%; display: flex; align-items: center; justify-content: center; }
-  .progressGraphPlaceholder { color: #aaa; font-style: italic; text-align: center; padding: 20px; border: 1px dashed #ccc; border-radius: 6px; width: 90%; height: 80%; display: flex; align-items: center; justify-content: center; }
+    /* background-color: #f9fafb; */ /* Optional light bg for placeholder area */
+}
+
+/* --- Recharts specific overrides for light theme --- */
+.recharts-default-legend {
+    padding-top: 15px !important; /* More space */
+}
+.recharts-legend-item-text {
+    color: #4b5568 !important; /* Tailwind gray-600 */
+    font-size: 12px !important; /* Slightly larger */
+}
+.recharts-cartesian-axis-tick-value {
+    fill: #6b7280 !important; /* Tailwind gray-500 */
+    font-size: 11px !important;
+}
+.recharts-tooltip-wrapper {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    border-radius: 8px !important; /* More rounded */
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important; /* Tailwind gray-200 */
+    padding: 8px 12px !important; /* Adjust padding */
+}
+.recharts-tooltip-item {
+    color: #1f2937 !important; /* Tailwind gray-800 */
+    font-size: 13px !important; /* Slightly larger */
+}
+.recharts-tooltip-label {
+    color: #1f2937 !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+}
+
+/* Example for your existing classes if you want to ensure light theme consistency */
+.profileHeader {
+    /* ... your existing styles ... */
+    color: white; /* Keep if background is dark gradient */
+}
+.profileHeaderPic > svg {
+    color: #4a5568; /* Darker icon for light theme */
+}
+
+/* Ensure other text colors are dark for light theme */
+.activityUser { font-weight: 600; color: #1e40af; /* Dark blue */ }
+.activityTime { font-size: 0.8em; color: #4b5568; /* Gray */ margin-left: 8px; white-space: nowrap; }
+.notificationItem { color: #374151; /* Dark gray */ }
+.notificationImportant { font-weight: 600; color: #c2410c; /* Dark orange/red */ }
+.deadlineTitle { color: #1f2937; /* Dark gray */ }
+.deadlineDate { background-color: #fee2e2; color: #b91c1c; /* Redish for deadline */ }
+.deadlineDateSoon { background-color: #fef3c7; color: #b45309; /* Amber for soon */ }
