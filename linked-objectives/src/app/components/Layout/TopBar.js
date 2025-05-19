@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import styles from './TopBar.module.css';
+import "@/app/styles/TopBar.css"
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 
 // Mock data (should ideally come from props or context)
@@ -14,7 +14,7 @@ const MOCK_NOTIFICATIONS = [
 
 // Internal Dropdown Component
 function DropdownMenu({ children, style }) {
-    return ( <div className={styles.dropdown} style={style}> {children} </div> );
+    return ( <div className="dropdown" style={style}> {children} </div> );
 }
 
 function TopBar({ pageTitle = "Page", canvasName = "Untitled", onNewCanvasClick = () => {} }) {
@@ -83,13 +83,13 @@ function TopBar({ pageTitle = "Page", canvasName = "Untitled", onNewCanvasClick 
 
 
   return (
-    <header className={styles.topBar}>
-      <div className={styles.topLeft}>
-        <h1 className={styles.pageHeading}>
+    <header className="topBar">
+      <div className="topLeft">
+        <h1 className="pageHeading">
             {pageTitle} {/* Use prop */}
             <span
                 ref={questionMarkRef}
-                className={styles.questionMark}
+                className="questionMark"
                 onMouseEnter={() => handleQuestionMarkHover(true)}
                 onMouseLeave={() => handleQuestionMarkHover(false)}
                 onClick={handleQuestionMarkClick}
@@ -99,44 +99,44 @@ function TopBar({ pageTitle = "Page", canvasName = "Untitled", onNewCanvasClick 
         {/* Conditionally render canvas buttons only if needed based on page? Or pass as children? */}
         {/* For now, assuming they are specific to Strategy Map, maybe pass them via props if needed here */}
         {pageTitle === "Editor Map" && (
-             <div className={styles.topCanvasButtons}>
-                <button className={styles.button} title="Current canvas name">
+             <div className="topCanvasButtons">
+                <button className="button" title="Current canvas name">
                     {canvasName}
                 </button>
-                <button className={`${styles.button} ${styles.buttonPrimary}`} onClick={onNewCanvasClick}>
+                <button className= "button buttonPrimary" onClick={onNewCanvasClick}>
                     + New canvas
                 </button>
              </div>
         )}
       </div>
-      <div className={styles.topRight}>
-          <input type="search" placeholder="Search globally..." className={styles.globalSearchInput} />
+      <div className="topRight">
+          <input type="search" placeholder="Search globally..." className="globalSearchInput" />
           <div style={{ position: 'relative' }} ref={notificationsButtonRef}>
-              <button className={styles.iconButton} onClick={toggleNotifications} title="Notifications"> <FaBell /> </button>
+              <button className="iconButton" onClick={toggleNotifications} title="Notifications"> <FaBell /> </button>
               {showNotifications && (
                   <div ref={notificationsDropdownRef}> {/* Ref for click outside */}
                       <DropdownMenu style={{ right: '0px', top: '45px' }}>
                           <h4>Notifications</h4> <hr/>
-                          {MOCK_NOTIFICATIONS.length > 0 ? MOCK_NOTIFICATIONS.map(n => ( <div key={n.id} className={styles.notificationItem}> {n.text}<br/><small style={{color: '#777'}}>{n.time}</small> </div> )) : <p>No new notifications.</p>}
+                          {MOCK_NOTIFICATIONS.length > 0 ? MOCK_NOTIFICATIONS.map(n => ( <div key={n.id} className="notificationItem"> {n.text}<br/><small style={{color: '#777'}}>{n.time}</small> </div> )) : <p>No new notifications.</p>}
                       </DropdownMenu>
                   </div>
               )}
           </div>
           <div style={{ position: 'relative' }} ref={profileButtonRef}>
-              <button className={styles.iconButton} onClick={toggleProfile} title="Profile"> <div className={styles.profilePic}> <FaUserCircle size="0.8em" /> </div> </button>
+              <button className="iconButton" onClick={toggleProfile} title="Profile"> <div className="profilePic"> <FaUserCircle size="0.8em" /> </div> </button>
               {showProfile && (
                   <div ref={profileDropdownRef}> {/* Ref for click outside */}
                       <DropdownMenu style={{ right: '0px', top: '45px' }}>
-                          <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px'}}> <div className={styles.profilePic} style={{width: '40px', height: '40px'}}> <FaUserCircle size="1.2em" /> </div> <div> <strong>User Name</strong><br/><small>user.email@example.com</small> </div> </div> <hr/>
-                          <button className={styles.button} style={{width: '100%', marginBottom: '5px'}}>Settings</button>
-                          <button className={styles.button} style={{width: '100%'}}>Logout</button>
+                          <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px'}}> <div className="profilePic" style={{width: '40px', height: '40px'}}> <FaUserCircle size="1.2em" /> </div> <div> <strong>User Name</strong><br/><small>user.email@example.com</small> </div> </div> <hr/>
+                          <button className="button" style={{width: '100%', marginBottom: '5px'}}>Settings</button>
+                          <button className="button" style={{width: '100%'}}>Logout</button>
                       </DropdownMenu>
                   </div>
               )}
           </div>
       </div>
        {/* Tooltip Element */}
-       {showTooltip && ( <div className={styles.tooltip} style={{ top: tooltipPosition.top, left: tooltipPosition.left }}> {tooltipContent} </div> )}
+       {showTooltip && ( <div className="tooltip" style={{ top: tooltipPosition.top, left: tooltipPosition.left }}> {tooltipContent} </div> )}
     </header>
   );
 }

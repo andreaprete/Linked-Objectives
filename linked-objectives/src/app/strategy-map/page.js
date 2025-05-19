@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import styles from './StrategyMap.module.css';
+import "@/app/styles/StrategyMap.css"
 
 // --- CORRECTED IMPORTS using path alias ---
 import LeftSidebar from '@/app/components/Layout/LeftSidebar'; // Correct alias path
@@ -14,7 +14,7 @@ const Excalidraw = dynamic(
   async () => (await import('@excalidraw/excalidraw')).Excalidraw,
   {
     ssr: false,
-    loading: () => <div className={styles.placeholder}><p>Initializing Canvas...</p></div>,
+    loading: () => <div className="placeholder"><p>Initializing Canvas...</p></div>,
   }
 );
 
@@ -88,14 +88,14 @@ export default function StrategyMapPage() {
   return (
     // Use the main page wrapper style from this page's CSS module if needed,
     // or create a common Layout.module.css
-    <div className={styles.pageWrapper}>
+    <div className="pageWrapper">
 
         <LeftSidebar
             activeItem={activeSidebarItem}
             onNavItemClick={handleSidebarClick}
         />
 
-        <div className={styles.rightContentWrapper}>
+        <div className="rightContentWrapper">
 
             <TopBar
                 pageTitle="Editor Map"
@@ -105,10 +105,10 @@ export default function StrategyMapPage() {
             />
 
             {/* Content Area specific to Strategy Map */}
-            <main className={styles.contentArea}>
+            <main className="contentArea">
                  {/* Excalidraw Canvas Wrapper */}
                  <div
-                    className={styles.excalidrawWrapper}
+                    className="excalidrawWrapper"
                     ref={excalidrawWrapperRef}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
@@ -122,19 +122,19 @@ export default function StrategyMapPage() {
                             UIOptions={{ canvasActions: { clearCanvas: false } }}
                         />
                     ) : (
-                        <div className={styles.placeholder}><p>Preparing Canvas...</p></div>
+                        <div className="placeholder"><p>Preparing Canvas...</p></div>
                     )}
                  </div>
 
                  {/* OKR Catalog Area */}
-                 <aside className={styles.okrCatalogArea}>
-                    <div className={styles.catalogSearchWrapper}>
-                        <input type="search" placeholder="Search OKRs..." className={styles.searchInput} />
+                 <aside className="okrCatalogArea">
+                    <div className="catalogSearchWrapper">
+                        <input type="search" placeholder="Search OKRs..." className="searchInput" />
                     </div>
-                    <div className={styles.okrCatalog}>
-                         <h3 className={styles.catalogTitle}>OKRs</h3>
+                    <div className="okrCatalog">
+                         <h3 className="catalogTitle">OKRs</h3>
                          {objectivesOnly.map(okr => (
-                             <div key={okr.id} draggable="true" onDragStart={(e) => handleDragStart(e, okr)} className={styles.okrItem} title={okr.description || ''}>
+                             <div key={okr.id} draggable="true" onDragStart={(e) => handleDragStart(e, okr)} className="okrItem" title={okr.description || ''}>
                                  {okr.title}
                              </div>
                           ))}

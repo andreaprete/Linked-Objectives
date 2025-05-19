@@ -2,13 +2,13 @@
 "use client"; // Keep client directive if using hooks/handlers, though maybe not needed if just props
 
 import React from 'react';
-import styles from './LeftSidebar.module.css';
+import "@/app/styles/LeftSidebar.css"
 import { FaHome, FaBullseye, FaUsers, FaUserCog, FaThLarge } from 'react-icons/fa'; // Import icons here
 
 // Sidebar Item Component (can be internal or separate)
 function SidebarItem({ icon, label, isActive, onClick }) {
     const IconComponent = icon;
-    const itemClass = isActive ? styles.navItemActive : styles.navItem;
+    const itemClass = isActive ? "navItemActive" : "navItem";
     return (
         <li className={itemClass}>
             <button onClick={onClick}>
@@ -24,9 +24,9 @@ function LeftSidebar({ activeItem, onNavItemClick }) {
   const handleClick = onNavItemClick || ((itemName) => console.log(`${itemName} clicked`));
 
   return (
-    <nav className={styles.leftSidebar}>
-      <h2 className={styles.sidebarTitle}>OKR Tool</h2>
-      <ul className={styles.navList}>
+    <nav className="leftSidebar">
+      <h2 className="sidebarTitle">OKR Tool</h2>
+      <ul className="navList">
         <SidebarItem
           icon={FaHome}
           label="Home"
