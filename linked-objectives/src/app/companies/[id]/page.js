@@ -1,13 +1,24 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRef } from 'react';
+
+import SidebarLayout from '@/app/components/SidebarLayout';
+import CompanyHeader from '@/app/components/CompanyHeader';
+import DepartmentCard from '@/app/components/DepartmentCard';
+import OkrTable from '@/app/components/OkrTable';
 
 export default function CompanyPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [visibleDepts, setVisibleDepts] = useState(3);
+  const departmentSectionRef = useRef(null);
+
+  const scrollToDepartments = () => {
+    departmentSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -18,7 +29,7 @@ export default function CompanyPage() {
         const json = await res.json();
         setData(json);
       } catch (err) {
-        console.error("Failed to load company data:", err);
+        console.error('Failed to load company data:', err);
       } finally {
         setLoading(false);
       }
@@ -27,67 +38,36 @@ export default function CompanyPage() {
     fetchCompany();
   }, [id]);
 
-  if (loading) return <p className="p-6 text-lg">Loading Company...</p>;
-  if (!data) return <p className="p-6 text-red-500">Failed to load company data.</p>;
+  if (loading) return <p className="p-6 text-lg">Loading company data...</p>;
+  if (!data) return <p className="p-6 text-red-500">Error loading company data.</p>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
-      <h1 className="text-3xl font-bold">Company: {data.name}</h1>
+    <SidebarLayout title="Company Overview">
+      <div className="flex justify-center py-6 bg-gray-100 min-h-screen">
+        <div className="max-w-5xl w-full space-y-6 px-4">
+          <CompanyHeader name={data.name} homepage={data.homepage} stats={data.stats} onDepartmentsClick={scrollToDepartments}/>
 
-      {data.departments?.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">Departments</h2>
-          {data.departments.map((dept) => (
-            <div key={dept.id} className="mb-6 border-b pb-4">
-              <h3 className="text-xl font-medium mb-1">
-                <Link href={`/departments/${dept.id}`} className="text-blue-600 hover:underline">
-                  {dept.name}
-                </Link>
-              </h3>
-              {dept.teams?.length > 0 && (
-                <div className="pl-4">
-                  <h4 className="font-semibold mb-1">Teams:</h4>
-                  <ul className="list-disc ml-5">
-                    {dept.teams.map((team) => (
-                      <li key={team.id} className="mb-1">
-                        <Link href={`/teams/${team.id}`} className="text-blue-600 hover:underline">
-                          {team.name}
-                        </Link>
-                        {team.members?.length > 0 && (
-                          <ul className="list-disc ml-5 mt-1 text-sm text-gray-700">
-                            {team.members.map((person) => (
-                              <li key={person.id}>
-                                <Link href={`/people/${person.id}`} className="hover:underline">
-                                  {person.name} ({person.roleTitle})
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+          <div className="bg-white rounded-xl shadow p-6" ref={departmentSectionRef}>
+            <h2 className="text-xl font-semibold mb-4">Departments</h2>
+            <div className="space-y-3">
+              {data.departments?.slice(0, visibleDepts).map((dept, i) => (
+                <DepartmentCard key={dept.id} department={dept} index={i} />
+              ))}
+
+              {visibleDepts < data.departments.length && (
+                <div
+                  className="text-blue-600 text-sm hover:underline cursor-pointer"
+                  onClick={() => setVisibleDepts((prev) => prev + 3)}
+                >
+                  Show More ...
                 </div>
               )}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
 
-      {data.okrs?.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-semibold mt-8 mb-3">OKRs</h2>
-          <ul className="list-disc ml-5 text-sm">
-            {data.okrs.map((okr) => (
-              <li key={okr.id}>
-                <Link href={`/objectives/${okr.id}`} className="text-blue-600 hover:underline">
-                  {okr.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <OkrTable okrs={data.okrs} />
         </div>
-      )}
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }
