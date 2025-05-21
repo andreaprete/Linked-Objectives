@@ -14,7 +14,7 @@ export default function PersonPage() {
 
     async function fetchPerson() {
       try {
-        const res = await fetch(`http://localhost:3001/api/people/${id}`);
+        const res = await fetch(`http://localhost:3000/api/people/${id}`);
         const json = await res.json();
         setData(json.data);
         setOkrs(json.okrs || []);
