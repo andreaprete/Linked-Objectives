@@ -1,8 +1,10 @@
-import { SidebarNav } from "@/components/SidebarNav";
-import { TopNavbar } from "@/components/TopNavbar";
-import { WelcomeBanner } from "@/components/WelcomeBanner";
-import { WeeklyOverview } from "@/components/WeeklyOverview";
-import { GoalsTabs } from "@/components/GoalsTabs";
+'use client';
+import { SidebarNav } from './components/SidebarNav';
+import { TopNavbar } from './components/TopNavbar';
+import { WelcomeBanner } from './components/WelcomeBanner';
+import { WeeklyOverview } from './components/WeeklyOverview';
+import { GoalsTabs } from './components/GoalsTabs';
+import { GoalsCard } from './components/GoalsTabs';
 
 export default function HomePage() {
   return (
