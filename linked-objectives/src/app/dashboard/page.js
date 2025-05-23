@@ -6,6 +6,11 @@ import "@/app/styles/Dashboard.css"; // Your custom dashboard styles
 
 import LeftSidebar from '@/app/components/Layout/LeftSidebar';
 import TopBar from '@/app/components/Layout/TopBar';
+import TopObjectivesTable from "@/app/dashboard/components/TopObjectivesTable"
+import HighRiskObjectives from "@/app/dashboard/components/HighRiskObjectives"
+import UpcomingDeadlinesPanel from "@/app/dashboard/components/UpcomingDeadlinesPanel"
+import OkrVelocityChart from "@/app/dashboard/components/OkrVelocityChart"
+
 
 import {
     ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip,
@@ -184,34 +189,49 @@ export default function DashboardPage() {
     const [keyResultScoresTrendData, setKeyResultScoresTrendData] = useState([]);
     // const [userOkrsList, setUserOkrsList] = useState([]); // Optional: if you need the raw list for other UI elements
 
-    useEffect(() => {
-        async function fetchDashboardData() {
-            setIsLoading(true); setError(null);
-            try {
-                const res = await fetch('/api/dashboard');
-                if (!res.ok) {
-                    const errorData = await res.json().catch(() => ({ error: `API request failed: Status ${res.status}` }));
-                    throw new Error(errorData.error || `API request failed: Status ${res.status}`);
-                }
-                const data = await res.json();
+    const [topObjectives, setTopObjectives] = useState([]);
+    const [highRiskData, setHighRiskData] = useState({});
+    const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
+    const [objectiveVelocity, setObjectiveVelocity] = useState([]);
 
-                // Destructure and set state based on your API's response structure
-                setSummaryMetrics(data.summaryMetrics || {});
-                setDistributionData(data.distributions || {});
-                setKeyResultScoresTrendData(data.keyResultScoresTrend || []); // Will be empty
-                // if (data.userOkrs) setUserOkrsList(data.userOkrs); // Store if needed
-                // if (data.detailedLists?.upcomingDeadlines) setUpcomingDeadlines(data.detailedLists.upcomingDeadlines);
 
-                setTimeout(() => setIsFullyLoaded(true), 100);
-            } catch (err) {
-                console.error('Failed to load dashboard data:', err);
-                setError(err.message || "An unknown error occurred.");
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchDashboardData();
-    }, []);
+useEffect(() => {
+  async function fetchDashboardData() {
+    setIsLoading(true); setError(null);
+    try {
+      const res = await fetch('/api/dashboard');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: `API request failed: Status ${res.status}` }));
+        throw new Error(errorData.error || `API request failed: Status ${res.status}`);
+      }
+      const data = await res.json();
+
+      // Log raw data to confirm structure
+      console.log("✅ API response:", data);
+
+      // Apply backend payload
+      setSummaryMetrics(data.summaryMetrics || {});
+      setDistributionData(data.distributions || {});
+      setKeyResultScoresTrendData(data.keyResultScoresTrend || []); // placeholder for future
+
+      // Optional for new widgets
+      setTopObjectives(data.topObjectives || []);
+      setHighRiskData(data.highRisk || {});
+      setUpcomingDeadlines(data.upcomingDeadlines || []);
+      setObjectiveVelocity(data.objectiveVelocity || []);
+
+      setTimeout(() => setIsFullyLoaded(true), 100);
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+      setError(err.message || "An unknown error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  fetchDashboardData();
+}, []);
+
 
     if (isLoading) {
         return (
@@ -258,30 +278,49 @@ export default function DashboardPage() {
             <div className="rightContentWrapper">
                 <TopBar pageTitle="OKR Dashboard Insights" />
                 <main className={`dashboardContent space-y-5 md:space-y-6 transition-opacity duration-500 ease-out ${isFullyLoaded ? 'opacity-100' : 'opacity-0'}`}>
-                    <section className="kpiRow">
-                        <MetricCard title="Themes" value={summaryMetrics.uniqueCategoryCount || 0} description="Unique Categories" delay={100} />
-                        <MetricCard title="Objectives" value={summaryMetrics.totalOkrCount || 0} delay={150}/>
-                        <MetricCard title="Key Results" value={summaryMetrics.totalKrCount || 0} description="Total KRs" delay={200} />
-                        <MetricCard title="Avg. Progress" value={`${summaryMetrics.overallProgress || 0}%`} description="Active OKRs" delay={250}/>
-                    </section>
+                    <section className="kpiRow grid grid-cols-2 md:grid-cols-4 gap-4">
+  <MetricCard title="Themes" value={summaryMetrics.uniqueCategoryCount || 0} description="Unique Categories" delay={100} />
+  <MetricCard title="Objectives" value={summaryMetrics.totalOkrCount || 0} delay={150}/>
+  <MetricCard title="Key Results" value={summaryMetrics.totalKrCount || 0} description="Total KRs" delay={200} />
+  <MetricCard title="Avg. Progress" value={`${summaryMetrics.overallProgress || 0}%`} description="Active OKRs" delay={250}/>
+</section>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6">
-                        <AnimatedCard title="Objectives by Status" cardType="widget" className="xl:col-span-1" delay={300}>
-                            <ObjectivesByStatusPieChart data={distributionData.objectivesByStatus} />
-                        </AnimatedCard>
-                        <AnimatedCard title="Overall Progress (Active)" cardType="widget" className="xl:col-span-1" delay={350}>
-                            <OverallProgressGaugeChart progress={summaryMetrics.overallProgress} />
-                        </AnimatedCard>
-                         <AnimatedCard title="Objectives by Category" cardType="widget" className="xl:col-span-1" delay={400}>
-                            <ObjectivesByCategoryBarChart data={distributionData.objectivesByCategory} />
-                        </AnimatedCard>
-                        <AnimatedCard title="Objectives by Progress Range" cardType="widget" className="md:col-span-2 xl:col-span-2" delay={450}>
-                            <ObjectivesByProgressDistributionChart data={distributionData.objectivesByProgress} />
-                        </AnimatedCard>
-                        <AnimatedCard title="Key Result Scores Trend" cardType="widget" className="md:col-span-2 xl:col-span-1" delay={500}>
-                            <KeyResultScoresTrendChart data={keyResultScoresTrendData} />
-                        </AnimatedCard>
-                    </div>
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+  <AnimatedCard title="Objectives by Status" delay={300}>
+    <ObjectivesByStatusPieChart data={distributionData.objectivesByStatus} />
+  </AnimatedCard>
+  <AnimatedCard title="Overall Progress (Active)" delay={350}>
+    <OverallProgressGaugeChart progress={summaryMetrics.overallProgress} />
+  </AnimatedCard>
+  <AnimatedCard title="Objectives by Category" delay={400}>
+    <ObjectivesByCategoryBarChart data={distributionData.objectivesByCategory} />
+  </AnimatedCard>
+  <AnimatedCard title="Objectives by Progress Range" delay={450}>
+    <ObjectivesByProgressDistributionChart data={distributionData.objectivesByProgress} />
+  </AnimatedCard>
+  <AnimatedCard title="Key Result Scores Trend" delay={500}>
+    <KeyResultScoresTrendChart data={keyResultScoresTrendData} />
+  </AnimatedCard>
+  <AnimatedCard title="OKR Creation Velocity" delay={550}>
+    <OkrVelocityChart data={objectiveVelocity} />
+  </AnimatedCard>
+</div>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+  <AnimatedCard title="High Risk Objectives" delay={600}>
+    <HighRiskObjectives overdue={highRiskData.overdue} stale={highRiskData.stale} />
+  </AnimatedCard>
+  <AnimatedCard title="Upcoming Deadlines" delay={650}>
+    <UpcomingDeadlinesPanel items={upcomingDeadlines} />
+  </AnimatedCard>
+</div>
+
+<AnimatedCard title="Top Objectives (Upcoming)" delay={700}>
+  <TopObjectivesTable objectives={topObjectives} />
+</AnimatedCard>
+
+
+
+
                 </main>
             </div>
         </div>

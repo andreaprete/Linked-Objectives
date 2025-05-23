@@ -174,3 +174,54 @@
 .deadlineTitle { color: #1f2937; /* Dark gray */ }
 .deadlineDate { background-color: #fee2e2; color: #b91c1c; /* Redish for deadline */ }
 .deadlineDateSoon { background-color: #fef3c7; color: #b45309; /* Amber for soon */ }
+
+
+
+/* --- Enterprise UI Extensions --- */
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.tableStyle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.tableStyle th, .tableStyle td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+.tableStyle th {
+  font-weight: 600;
+  color: #1f2937;
+}
+.tableStyle td {
+  color: #374151;
+}
+
+.cardTag {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background-color: #e5e7eb;
+  color: #374151;
+}
+.cardTag.success { background-color: #d1fae5; color: #065f46; }
+.cardTag.warning { background-color: #fef3c7; color: #92400e; }
+.cardTag.danger  { background-color: #fee2e2; color: #991b1b; }
+
+.kpiRow {
+  margin-bottom: 1.5rem;
+}
+.widgetCard, .kpiCard {
+  min-height: 200px; /* reduce from 250px */
+}
+.widgetContentArea {
+  padding: 1rem;
+}
+
+
