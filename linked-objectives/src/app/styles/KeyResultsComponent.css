@@ -1,0 +1,32 @@
+.keyresults-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .keyresult-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .keyresult-title {
+    font-weight: 600;
+  }
+  
+  .keyresult-comment {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-top: 0.25rem;
+  }
+  
+  .keyresult-progress {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2563eb;
+  }
+  
