@@ -1,7 +1,6 @@
 /* styles/SemiCircleProgress.css */
 
 .semi-circle-svg {
-<<<<<<< HEAD
   transition: stroke-dashoffset 0.5s ease;
 }
 
@@ -20,24 +19,3 @@
   font-size: 0.625rem; /* font-size: 10px */
   fill: #666;
 }
-=======
-    transition: stroke-dashoffset 0.5s ease;
-  }
-  
-  .semi-circle-text {
-    text-anchor: middle;
-    dominant-baseline: middle;
-    font-weight: bold;
-  }
-  
-  .semi-circle-percent {
-    font-size: 0.875rem; /* Use a consistent font size */
-    fill: #04001b; /* Default stroke color */
-  }
-  
-  .semi-circle-axis-text {
-    font-size: 0.625rem; /* font-size: 10px */
-    fill: #666;
-  }
-  
->>>>>>> a2324d971cbe98cdeea2ed9746720105f9d48098
