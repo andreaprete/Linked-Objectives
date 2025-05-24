@@ -1,11 +1,14 @@
 export async function GET(req, context) {
   const { id } = context.params;
+
   const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
+
 
   const sparqlQuery = `
     SELECT ?predicate ?object
     WHERE {
       <${krUri}> ?predicate ?object .
+
     }
   `;
 
@@ -81,6 +84,7 @@ export async function GET(req, context) {
           break;
       }
     });
+
 
     // Fetch all lifecycle states dynamically
     const lifecycleStatesQuery = `
@@ -179,6 +183,7 @@ export async function GET(req, context) {
         id,
         data: dataMap,
         lifecycleStates, // Include lifecycle states for dropdown
+
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
@@ -189,6 +194,7 @@ export async function GET(req, context) {
     });
   }
 }
+
 
 export async function PUT(req, context) {
   const { id } = context.params;

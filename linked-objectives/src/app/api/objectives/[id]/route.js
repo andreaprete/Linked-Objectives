@@ -111,7 +111,6 @@ export async function GET(req, context) {
           dataMap.needs.push(object.split("/").pop());
           break;
 
-        
         case "http://purl.org/dc/terms/temporal":
           dataMap.temporal = object.split("/").pop();
           break;
@@ -120,12 +119,12 @@ export async function GET(req, context) {
             dataMap.hasFormalResponsibilityFor || [];
           dataMap.hasFormalResponsibilityFor.push(object.split("/").pop());
           break;
-        
         case "https://data.sick.com/voc/sam/objectives-model/category":
           dataMap.category = object.split("/").pop();
           break;
         case "https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state":
           dataMap.state = object.split("/").pop();
+
           break;
 
         case "https://data.sick.com/voc/sam/objectives-model/needs":
@@ -146,8 +145,8 @@ export async function GET(req, context) {
         case "https://data.sick.com/voc/sam/objectives-model/contributesTo":
           dataMap.contributesTo = dataMap.contributesTo || [];
           dataMap.contributesTo.push(object.split('/').pop()); 
-          break;
 
+          break;
         case "https://data.sick.com/voc/sam/objectives-model/hasKeyResult":
           dataMap.keyResult = dataMap.keyResult || [];
           dataMap.keyResult.push(object.split("/").pop());

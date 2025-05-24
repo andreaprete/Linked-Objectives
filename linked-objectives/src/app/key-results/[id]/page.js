@@ -20,6 +20,7 @@ export default function ObjectivePage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
 
+
   useEffect(() => {
     if (!id) return;
 
@@ -30,6 +31,7 @@ export default function ObjectivePage() {
         if (json.lifecycleStates && Array.isArray(json.lifecycleStates)) {
           setLifecycleStates(json.lifecycleStates); // Set lifecycleStates from the response
         }
+
         setData(json.data);
       } catch (err) {
         console.error('Failed to load OKR data:', err);
@@ -112,3 +114,4 @@ export default function ObjectivePage() {
     </>
   );
 }
+
