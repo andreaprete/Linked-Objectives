@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import AppLayout from '@/app/components/AppLayout'; // Unified layout!
-import UserProfile from '@/app/componentsJason/UserProfile';
-import OkrList from '@/app/componentsJason/OkrList';
+import UserProfile from '@/app/components/UserProfile';
+import OkrList from '@/app/components/OkrList';
 
 export default function PersonPage() {
   const { id } = useParams();
