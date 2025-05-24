@@ -1,16 +1,13 @@
-// src/app/dashboard/page.js
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import "@/app/styles/Dashboard.css"; // Your custom dashboard styles
+import "@/app/styles/Dashboard.css";
 
-import LeftSidebar from '@/app/components/Layout/LeftSidebar';
-import TopBar from '@/app/components/Layout/TopBar';
-import TopObjectivesTable from "@/app/dashboard/components/TopObjectivesTable"
-import HighRiskObjectives from "@/app/dashboard/components/HighRiskObjectives"
-import UpcomingDeadlinesPanel from "@/app/dashboard/components/UpcomingDeadlinesPanel"
-import OkrVelocityChart from "@/app/dashboard/components/OkrVelocityChart"
-
+import AppLayout from '@/app/components/AppLayout'; 
+import TopObjectivesTable from "@/app/components/TopObjectivesTable"
+import HighRiskObjectives from "@/app/components/HighRiskObjectives"
+import UpcomingDeadlinesPanel from "@/app/components/UpcomingDeadlinesPanel"
+import OkrVelocityChart from "@/app/components/OkrVelocityChart"
 
 import {
     ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip,
@@ -178,151 +175,123 @@ function KeyResultScoresTrendChart({ data }) {
 }
 
 export default function DashboardPage() {
-    const [activeSidebarItem, setActiveSidebarItem] = useState('Dashboard');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isFullyLoaded, setIsFullyLoaded] = useState(false);
 
-    // States to hold data from the API
     const [summaryMetrics, setSummaryMetrics] = useState({});
     const [distributionData, setDistributionData] = useState({});
     const [keyResultScoresTrendData, setKeyResultScoresTrendData] = useState([]);
-    // const [userOkrsList, setUserOkrsList] = useState([]); // Optional: if you need the raw list for other UI elements
-
     const [topObjectives, setTopObjectives] = useState([]);
     const [highRiskData, setHighRiskData] = useState({});
     const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
     const [objectiveVelocity, setObjectiveVelocity] = useState([]);
 
+    useEffect(() => {
+        async function fetchDashboardData() {
+            setIsLoading(true); setError(null);
+            try {
+                const res = await fetch('/api/dashboard');
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: `API request failed: Status ${res.status}` }));
+                    throw new Error(errorData.error || `API request failed: Status ${res.status}`);
+                }
+                const data = await res.json();
 
-useEffect(() => {
-  async function fetchDashboardData() {
-    setIsLoading(true); setError(null);
-    try {
-      const res = await fetch('/api/dashboard');
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ error: `API request failed: Status ${res.status}` }));
-        throw new Error(errorData.error || `API request failed: Status ${res.status}`);
-      }
-      const data = await res.json();
+                setSummaryMetrics(data.summaryMetrics || {});
+                setDistributionData(data.distributions || {});
+                setKeyResultScoresTrendData(data.keyResultScoresTrend || []);
+                setTopObjectives(data.topObjectives || []);
+                setHighRiskData(data.highRisk || {});
+                setUpcomingDeadlines(data.upcomingDeadlines || []);
+                setObjectiveVelocity(data.objectiveVelocity || []);
 
-      // Log raw data to confirm structure
-      console.log("✅ API response:", data);
+                setTimeout(() => setIsFullyLoaded(true), 100);
+            } catch (err) {
+                setError(err.message || "An unknown error occurred.");
+            } finally {
+                setIsLoading(false);
+            }
+        }
 
-      // Apply backend payload
-      setSummaryMetrics(data.summaryMetrics || {});
-      setDistributionData(data.distributions || {});
-      setKeyResultScoresTrendData(data.keyResultScoresTrend || []); // placeholder for future
-
-      // Optional for new widgets
-      setTopObjectives(data.topObjectives || []);
-      setHighRiskData(data.highRisk || {});
-      setUpcomingDeadlines(data.upcomingDeadlines || []);
-      setObjectiveVelocity(data.objectiveVelocity || []);
-
-      setTimeout(() => setIsFullyLoaded(true), 100);
-    } catch (err) {
-      console.error('Failed to load dashboard data:', err);
-      setError(err.message || "An unknown error occurred.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  fetchDashboardData();
-}, []);
-
+        fetchDashboardData();
+    }, []);
 
     if (isLoading) {
         return (
-            <div className="pageWrapper">
-                <LeftSidebar activeItem={activeSidebarItem} onNavItemClick={setActiveSidebarItem} />
-                <div className="rightContentWrapper">
-                    <TopBar pageTitle="Dashboard" />
-                    <main className="dashboardContent flex items-center justify-center">
-                        <div className="text-center">
-                            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                            <p className="text-md text-gray-600">Loading Dashboard Data...</p>
-                        </div>
-                    </main>
-                </div>
-            </div>
+            <AppLayout>
+                <main className="dashboardContent flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                        <p className="text-md text-gray-600">Loading Dashboard Data...</p>
+                    </div>
+                </main>
+            </AppLayout>
         );
     }
     if (error) {
-         return (
-             <div className="pageWrapper">
-                <LeftSidebar activeItem={activeSidebarItem} onNavItemClick={setActiveSidebarItem} />
-                <div className="rightContentWrapper">
-                    <TopBar pageTitle="Dashboard Error" />
-                    <main className="dashboardContent flex flex-col items-center justify-center p-6 text-center">
-                        <h2 className="text-xl font-semibold text-red-500 mb-3">Data Fetching Error</h2>
-                        <p className="text-red-600 bg-red-50 p-3 rounded-md border border-red-200 mb-5 max-w-lg">
-                            {error}
-                        </p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="px-5 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition-colors"
-                        >
-                            Retry
-                        </button>
-                    </main>
-                </div>
-            </div>
+        return (
+            <AppLayout>
+                <main className="dashboardContent flex flex-col items-center justify-center p-6 text-center min-h-[60vh]">
+                    <h2 className="text-xl font-semibold text-red-500 mb-3">Data Fetching Error</h2>
+                    <p className="text-red-600 bg-red-50 p-3 rounded-md border border-red-200 mb-5 max-w-lg">
+                        {error}
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-5 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition-colors"
+                    >
+                        Retry
+                    </button>
+                </main>
+            </AppLayout>
         );
     }
 
     return (
-        <div className="pageWrapper">
-            <LeftSidebar activeItem={activeSidebarItem} onNavItemClick={setActiveSidebarItem} />
-            <div className="rightContentWrapper">
-                <TopBar pageTitle="OKR Dashboard Insights" />
-                <main className={`dashboardContent space-y-5 md:space-y-6 transition-opacity duration-500 ease-out ${isFullyLoaded ? 'opacity-100' : 'opacity-0'}`}>
-                    <section className="kpiRow grid grid-cols-2 md:grid-cols-4 gap-4">
-  <MetricCard title="Themes" value={summaryMetrics.uniqueCategoryCount || 0} description="Unique Categories" delay={100} />
-  <MetricCard title="Objectives" value={summaryMetrics.totalOkrCount || 0} delay={150}/>
-  <MetricCard title="Key Results" value={summaryMetrics.totalKrCount || 0} description="Total KRs" delay={200} />
-  <MetricCard title="Avg. Progress" value={`${summaryMetrics.overallProgress || 0}%`} description="Active OKRs" delay={250}/>
-</section>
+        <AppLayout>
+            <main className={`dashboardContent space-y-5 md:space-y-6 transition-opacity duration-500 ease-out ${isFullyLoaded ? 'opacity-100' : 'opacity-0'}`}>
+                <section className="kpiRow grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <MetricCard title="Themes" value={summaryMetrics.uniqueCategoryCount || 0} description="Unique Categories" delay={100} />
+                    <MetricCard title="Objectives" value={summaryMetrics.totalOkrCount || 0} delay={150}/>
+                    <MetricCard title="Key Results" value={summaryMetrics.totalKrCount || 0} description="Total KRs" delay={200} />
+                    <MetricCard title="Avg. Progress" value={`${summaryMetrics.overallProgress || 0}%`} description="Active OKRs" delay={250}/>
+                </section>
 
-<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-  <AnimatedCard title="Objectives by Status" delay={300}>
-    <ObjectivesByStatusPieChart data={distributionData.objectivesByStatus} />
-  </AnimatedCard>
-  <AnimatedCard title="Overall Progress (Active)" delay={350}>
-    <OverallProgressGaugeChart progress={summaryMetrics.overallProgress} />
-  </AnimatedCard>
-  <AnimatedCard title="Objectives by Category" delay={400}>
-    <ObjectivesByCategoryBarChart data={distributionData.objectivesByCategory} />
-  </AnimatedCard>
-  <AnimatedCard title="Objectives by Progress Range" delay={450}>
-    <ObjectivesByProgressDistributionChart data={distributionData.objectivesByProgress} />
-  </AnimatedCard>
-  <AnimatedCard title="Key Result Scores Trend" delay={500}>
-    <KeyResultScoresTrendChart data={keyResultScoresTrendData} />
-  </AnimatedCard>
-  <AnimatedCard title="OKR Creation Velocity" delay={550}>
-    <OkrVelocityChart data={objectiveVelocity} />
-  </AnimatedCard>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-  <AnimatedCard title="High Risk Objectives" delay={600}>
-    <HighRiskObjectives overdue={highRiskData.overdue} stale={highRiskData.stale} />
-  </AnimatedCard>
-  <AnimatedCard title="Upcoming Deadlines" delay={650}>
-    <UpcomingDeadlinesPanel items={upcomingDeadlines} />
-  </AnimatedCard>
-</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <AnimatedCard title="Objectives by Status" delay={300}>
+                        <ObjectivesByStatusPieChart data={distributionData.objectivesByStatus} />
+                    </AnimatedCard>
+                    <AnimatedCard title="Overall Progress (Active)" delay={350}>
+                        <OverallProgressGaugeChart progress={summaryMetrics.overallProgress} />
+                    </AnimatedCard>
+                    <AnimatedCard title="Objectives by Category" delay={400}>
+                        <ObjectivesByCategoryBarChart data={distributionData.objectivesByCategory} />
+                    </AnimatedCard>
+                    <AnimatedCard title="Objectives by Progress Range" delay={450}>
+                        <ObjectivesByProgressDistributionChart data={distributionData.objectivesByProgress} />
+                    </AnimatedCard>
+                    <AnimatedCard title="Key Result Scores Trend" delay={500}>
+                        <KeyResultScoresTrendChart data={keyResultScoresTrendData} />
+                    </AnimatedCard>
+                    <AnimatedCard title="OKR Creation Velocity" delay={550}>
+                        <OkrVelocityChart data={objectiveVelocity} />
+                    </AnimatedCard>
+                </div>
 
-<AnimatedCard title="Top Objectives (Upcoming)" delay={700}>
-  <TopObjectivesTable objectives={topObjectives} />
-</AnimatedCard>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <AnimatedCard title="High Risk Objectives" delay={600}>
+                        <HighRiskObjectives overdue={highRiskData.overdue} stale={highRiskData.stale} />
+                    </AnimatedCard>
+                    <AnimatedCard title="Upcoming Deadlines" delay={650}>
+                        <UpcomingDeadlinesPanel items={upcomingDeadlines} />
+                    </AnimatedCard>
+                </div>
 
-
-
-
-                </main>
-            </div>
-        </div>
+                <AnimatedCard title="Top Objectives (Upcoming)" delay={700}>
+                    <TopObjectivesTable objectives={topObjectives} />
+                </AnimatedCard>
+            </main>
+        </AppLayout>
     );
 }

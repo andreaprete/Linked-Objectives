@@ -1,10 +1,9 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
-import SidebarLayout from '@/app/components/SidebarLayout';
+import AppLayout from '@/app/components/AppLayout';        // << NEW unified layout!
 import CompanyHeader from '@/app/components/CompanyHeader';
 import DepartmentCard from '@/app/components/DepartmentCard';
 import OkrTable from '@/app/components/OkrTable';
@@ -42,10 +41,15 @@ export default function CompanyPage() {
   if (!data) return <p className="p-6 text-red-500">Error loading company data.</p>;
 
   return (
-    <SidebarLayout title="Company Overview">
+    <AppLayout>
       <div className="flex justify-center py-6 bg-gray-100 min-h-screen">
         <div className="max-w-5xl w-full space-y-6 px-4">
-          <CompanyHeader name={data.name} homepage={data.homepage} stats={data.stats} onDepartmentsClick={scrollToDepartments}/>
+          <CompanyHeader
+            name={data.name}
+            homepage={data.homepage}
+            stats={data.stats}
+            onDepartmentsClick={scrollToDepartments}
+          />
 
           <div className="bg-white rounded-xl shadow p-6" ref={departmentSectionRef}>
             <h2 className="text-xl font-semibold mb-4">Departments</h2>
@@ -68,6 +72,6 @@ export default function CompanyPage() {
           <OkrTable okrs={data.okrs} />
         </div>
       </div>
-    </SidebarLayout>
+    </AppLayout>
   );
 }

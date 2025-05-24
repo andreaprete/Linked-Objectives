@@ -1,0 +1,55 @@
+/* app/styles/Topbar.css */
+
+.topbar {
+  width: 100%;
+  height: 64px;
+  background: #232c3d;            /* matches sidebar dark shade */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  border-bottom: 1px solid #23304e;
+  box-shadow: 0 1px 4px rgba(44, 62, 80, 0.04);
+  z-index: 100;
+}
+
+.topbar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #8affd1;                /* key accent color, matches sidebar logo */
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1rem;
+  color: #fff;
+  background: #28324a;
+  padding: 0.5rem 1rem;
+  border-radius: 22px;
+  box-shadow: 0 1px 4px rgba(44, 62, 80, 0.06);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.topbar-user:hover {
+  background: #34415e;
+}
+
+/* Optional: Add responsive tweak if you want a mobile collapse */
+@media (max-width: 600px) {
+  .topbar {
+    padding: 0 1rem;
+    font-size: 1rem;
+  }
+  .topbar-title {
+    font-size: 1rem;
+  }
+  .topbar-user {
+    font-size: 0.95rem;
+    padding: 0.4rem 0.7rem;
+  }
+}

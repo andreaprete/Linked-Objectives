@@ -3,16 +3,14 @@
 import React, { useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import "@/app/styles/StrategyMap.css";
-import LeftSidebar from '@/app/components/Layout/LeftSidebar';
-import TopBar from '@/app/components/Layout/TopBar';
+import AppLayout from '@/app/components/AppLayout'; // Unified layout
 
-// ✅ Dynamically import Excalidraw to disable SSR and extract named export
+// Dynamically import Excalidraw
 const Excalidraw = dynamic(
   () => import('@excalidraw/excalidraw').then((mod) => mod.Excalidraw),
   { ssr: false }
 );
 
-// ✅ Mock OKRs
 const MOCK_OKRS_DATA = [
   { id: "okr1", type: "Objective", title: "Increase customer satisfaction", description: "Improve NPS" },
   { id: "okr2", type: "Objective", title: "Expand into new markets", description: "Launch in 2 new regions" },
@@ -21,7 +19,6 @@ const MOCK_OKRS_DATA = [
   { id: "okr5", type: "Objective", title: "Boost dev velocity", description: "Cut release time in half" },
 ];
 
-// ✅ Helper functions
 const createOkrElement = (okr, x, y) => ({
   id: `okr-${okr.id}-${Date.now()}`,
   type: "rectangle",
@@ -77,43 +74,29 @@ const createOkrLabelElement = (okr, parentElement) => ({
   baseline: 14,
 });
 
-// ✅ Main Page Component
 export default function StrategyMapPage() {
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
   const [trackedOkrsOnCanvas, setTrackedOkrsOnCanvas] = useState([]);
   const [canvasName, setCanvasName] = useState('Untitled Strategy Map');
-  const [activeSidebarItem, setActiveSidebarItem] = useState('Editor');
-
   const excalidrawWrapperRef = useRef(null);
 
   const handleExcalidrawReady = (api) => {
-    console.log("✅ Excalidraw API is ready via onReady", api);
     setExcalidrawAPI(api);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    console.log("DROP TRIGGERED");
-
-    if (!excalidrawAPI) {
-      console.warn("⛔ Excalidraw API is null at drop");
-      return;
-    }
-
+    if (!excalidrawAPI) return;
     const okrDataString = e.dataTransfer.getData('application/json');
     if (!okrDataString) return;
-
     const okr = JSON.parse(okrDataString);
     const rect = excalidrawWrapperRef.current?.getBoundingClientRect?.();
     if (!rect) return;
-
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
     const box = createOkrElement(okr, x, y);
     const label = createOkrLabelElement(okr, box);
     excalidrawAPI.addElements([box, label]);
-
     setTrackedOkrsOnCanvas(prev => [...prev, okr]);
   };
 
@@ -122,10 +105,6 @@ export default function StrategyMapPage() {
   };
 
   const handleDragOver = (e) => e.preventDefault();
-
-  const handleSidebarClick = (itemName) => {
-    setActiveSidebarItem(itemName);
-  };
 
   const handleNewCanvas = () => {
     if (excalidrawAPI) {
@@ -138,47 +117,49 @@ export default function StrategyMapPage() {
   const objectivesOnly = MOCK_OKRS_DATA.filter(item => item.type === 'Objective');
 
   return (
-    <div className="pageWrapper">
-      <LeftSidebar activeItem={activeSidebarItem} onNavItemClick={handleSidebarClick} />
-      <div className="rightContentWrapper">
-        <TopBar pageTitle="Editor Map" canvasName={canvasName} onNewCanvasClick={handleNewCanvas} />
+    <AppLayout>
+      <main className="contentArea flex flex-col md:flex-row gap-4">
+        <div
+          className="excalidrawWrapper flex-1"
+          ref={excalidrawWrapperRef}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+          <Excalidraw
+            onReady={handleExcalidrawReady}
+            initialData={{ elements: [], appState: { viewBackgroundColor: '#ffffff' } }}
+            theme="light"
+            UIOptions={{ canvasActions: { clearCanvas: false } }}
+          />
+        </div>
 
-        <main className="contentArea">
-          <div
-            className="excalidrawWrapper"
-            ref={excalidrawWrapperRef}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
-            <Excalidraw
-              onReady={handleExcalidrawReady}
-              initialData={{ elements: [], appState: { viewBackgroundColor: '#ffffff' } }}
-              theme="light"
-              UIOptions={{ canvasActions: { clearCanvas: false } }}
-            />
+        <aside className="okrCatalogArea w-full md:w-72">
+          <div className="catalogSearchWrapper">
+            <input type="search" placeholder="Search OKRs..." className="searchInput" />
           </div>
-
-          <aside className="okrCatalogArea">
-            <div className="catalogSearchWrapper">
-              <input type="search" placeholder="Search OKRs..." className="searchInput" />
-            </div>
-            <div className="okrCatalog">
-              <h3 className="catalogTitle">OKRs</h3>
-              {objectivesOnly.map(okr => (
-                <div
-                  key={okr.id}
-                  draggable="true"
-                  onDragStart={(e) => handleDragStart(e, okr)}
-                  className="okrItem"
-                  title={okr.description || ''}
-                >
-                  {okr.title}
-                </div>
-              ))}
-            </div>
-          </aside>
-        </main>
-      </div>
-    </div>
+          <div className="okrCatalog">
+            <h3 className="catalogTitle">OKRs</h3>
+            {objectivesOnly.map(okr => (
+              <div
+                key={okr.id}
+                draggable="true"
+                onDragStart={(e) => handleDragStart(e, okr)}
+                className="okrItem"
+                title={okr.description || ''}
+              >
+                {okr.title}
+              </div>
+            ))}
+            <button
+              className="mt-4 bg-blue-500 text-white px-3 py-1 rounded"
+              onClick={handleNewCanvas}
+              type="button"
+            >
+              New Canvas
+            </button>
+          </div>
+        </aside>
+      </main>
+    </AppLayout>
   );
 }

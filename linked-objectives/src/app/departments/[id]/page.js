@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 
-import SidebarLayout from '@/app/components/SidebarLayout';
+import AppLayout from '@/app/components/AppLayout'; // Use the unified layout!
 import DepartmentHeader from '@/app/components/DepartmentHeader';
 import TeamCard from '@/app/components/TeamCard';
 import OkrTable from '@/app/components/OkrTable';
@@ -37,8 +37,16 @@ export default function DepartmentPage() {
     fetchDepartment();
   }, [id]);
 
-  if (loading) return <p className="p-6 text-lg">Loading department...</p>;
-  if (!data) return <p className="p-6 text-red-500">Failed to load department.</p>;
+  if (loading) return (
+    <AppLayout>
+      <div className="p-6 text-lg">Loading department...</div>
+    </AppLayout>
+  );
+  if (!data) return (
+    <AppLayout>
+      <div className="p-6 text-red-500">Failed to load department.</div>
+    </AppLayout>
+  );
 
   const employeeCount = Object.values(data.teams || {}).reduce(
     (acc, team) => acc + team.members.length,
@@ -54,7 +62,7 @@ export default function DepartmentPage() {
   };
 
   return (
-    <SidebarLayout title="Department Overview">
+    <AppLayout>
       <div className="flex justify-center py-6 bg-gray-100 min-h-screen">
         <div className="max-w-5xl w-full space-y-6 px-4">
           <DepartmentHeader
@@ -91,6 +99,6 @@ export default function DepartmentPage() {
           )}
         </div>
       </div>
-    </SidebarLayout>
+    </AppLayout>
   );
 }

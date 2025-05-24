@@ -23,7 +23,7 @@ body, html, #__next {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* Prevents scrollbars on the body if 100vh components are used */
+  overflow-x: hidden; /* Prevent horizontal scroll, but allow vertical */
 }
 
 * {
