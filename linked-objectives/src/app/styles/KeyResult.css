@@ -1,0 +1,54 @@
+
+
+.sidebar-content-wrapper {
+  position: relative; /* Keep this */
+}
+
+/* Modal overlay styles */
+.modal-overlay {
+  position: absolute; /* Keep this */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex; /* Enable flexbox on the overlay */
+  justify-content: center; /* Center horizontally */
+}
+
+/* Modal container styles */
+.modal-container {
+  width: 100%;
+  max-width: 48rem; /* Tailwind max-w-3xl */
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  z-index: 100; /* Ensure it's above the overlay */
+}
+.modal-portal {
+  position: absolute;
+  top: 0;
+  left: 15rem;
+  width: calc(100% - 15rem);
+  height: 100%; /* Full height to allow vertical centering */
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* <-- This centers vertically */
+}
+
+.modal-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.modal-inside-layout {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  max-width: 48rem;
+  width: 100%;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}

@@ -67,3 +67,4 @@ const SemiCircleProgress = ({
 };
 
 export default SemiCircleProgress;
+

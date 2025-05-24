@@ -1,105 +1,167 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
+"use client";
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import KeyResults from "../../components/KeyResults";
+import RelatedGraph from "../../components/RelatedGraph";
+import PeopleInvolved from "../../components/PeopleInvolved";
+import "@/app/styles/ObjectivesPage.css";
+import SemiCircleProgress from "../../components/SemiCircleProgressProps";
+import EditObjectiveModal from "../../components/EditObjectiveModal";
 
 export default function ObjectivePage() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("keyResults");
+  const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
-
-    async function fetchOkr() {
-      try {
-        const res = await fetch(`/api/objectives/${id}`);
-        const json = await res.json();
-        console.log('Fetched OKR data:', json.data);
-        setData(json.data);
-      } catch (err) {
-        console.error('Failed to load OKR data:', err);
-      } finally {
-        setLoading(false);
-      }
+    async function fetchObjective() {
+      const res = await fetch(`/api/objectives/${id}`);
+      const json = await res.json();
+      setData(json.data);
+      setLoading(false);
     }
-
-    fetchOkr();
+    fetchObjective();
   }, [id]);
 
-  if (loading) return <p className="p-6 text-lg">Loading OKR...</p>;
-  if (!data || Object.keys(data).length === 0)
-    return <p className="p-6 text-red-500">Failed to load OKR.</p>;
+  const handleSave = async (updatedData) => {
+    try {
+      const res = await fetch(`/api/objectives/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!res.ok) throw new Error("Update failed");
+
+      setData((prev) => ({ ...prev, ...updatedData }));
+      setShowEdit(false);
+    } catch (err) {
+      console.error("Failed to update objective:", err);
+      alert("Failed to update objective.");
+    }
+  };
+
+  if (loading) return <p className="p-6 text-lg">Loading...</p>;
+  if (!data) return <p className="p-6 text-red-500">Failed to load data.</p>;
+
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">{data.title}</h1>
-      <p className="text-gray-700 italic mb-4">{data.comment}</p>
-      <div className="space-y-2 text-sm text-gray-800">
-        <p><strong>Description:</strong> {data.description}</p>
-        <p><strong>Category:</strong> {data.category}</p>
-        <p><strong>State:</strong> {data.state}</p>
-        <p><strong>Created:</strong> {data.created}</p>
-        <p><strong>Modified:</strong> {data.modified}</p>
-        <p><strong>Version:</strong> {data.version}</p>
-        <p><strong>Type:</strong> {data.type}</p>
-        <p><strong>Accountable for:</strong> {data.accountableFor}</p>
-        <p><strong>Cares for:</strong> {data.caresFor}</p>
-        <p><strong>Operates:</strong> {data.operates}</p>
-        <p><strong>Temporal:</strong> {data.temporal}</p>
-        <p><strong>Key Results:</strong></p>
-          <ul className="list-disc pl-5">
-            {data.keyResult?.map((id) => (
-              <li key={id}>
-                <Link
-                  href={`/key-results/${id}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  {id}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        <p><strong>Contributes to:</strong></p>
-          <ul className="list-disc pl-5">
-            {data.contributesTo?.map((id) => (
-              <li key={id}>
-                <Link
-                  href={`/objectives/${id}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  {id}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        <p><strong>Has formal responsibility for:</strong></p>
-          <ul className="list-disc pl-5">
-            {data.hasFormalResponsibilityFor?.map((id) => (
-              <li key={id}>{id}</li>
-            ))}
-          </ul>
-        <p><strong>Has responsibility for:</strong></p>
-          <ul className="list-disc pl-5">
-            {data.hasResponsibilityFor?.map((id) => (
-              <li key={id}>{id}</li>
-            ))}
-          </ul>
-        <p><strong>Needs:</strong></p>
-        <ul className="list-disc pl-5">
-            {data.needs?.map((id) => (
-              <li key={id}>
-                <Link
-                  href={`/objectives/${id}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  {id}
-                </Link>
-              </li>
-            ))}
-          </ul>
+    <div className="objective-container">
+      {showEdit && (
+        <div className="modal-portal">
+          <div className="modal-wrapper">
+            <div className="modal-inside-layout">
+              <EditObjectiveModal
+                initialData={data}
+                isOpen={showEdit}
+                onClose={() => setShowEdit(false)}
+                onSave={handleSave}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="objective-card">
+        <div className="objective-header-section row-layout">
+          <div className="objective-left-meta">
+            <h1 className="objective-title">{data.title}</h1>
+            <p className="objective-comment">{data.comment}</p>
+            <div className="objective-meta">
+              <span>
+                <strong>Created:</strong> {data.created}
+              </span>
+              <span>
+                <strong>Version:</strong> {data.version}
+              </span>
+              <span>
+                <strong>Modified:</strong> {data.modified}
+              </span>
+            </div>
+            <div className="objective-category-row">
+              <span>
+                <span className="label">Category:</span>
+                <span className="temporal-text"> {data.category}</span>
+              </span>
+              <span>
+                <span className="label status-label">State:</span>
+                <span className="state"> {data.state}</span>
+              </span>
+            </div>
+            <div className="temporal-timeline">
+              <div className="temporal-labels">
+                <span className="temporal-date">{data.temporal?.start}</span>
+                <span className="temporal-date">{data.temporal?.end}</span>
+              </div>
+              <div className="temporal-line">
+                <span className="dot"></span>
+                <span className="connector"></span>
+                <span className="dot"></span>
+              </div>
+              <div className="temporal-labels">
+                <span className="temporal-text">Beginning Date</span>
+                <span className="temporal-text">End Date</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="objective-progress-visual">
+            <div className="edit-button-container">
+              <button onClick={() => setShowEdit(true)} className="edit-button">
+                EDIT
+              </button>
+            </div>
+            <SemiCircleProgress
+              strokeWidth={8}
+              percentage={data.progress || 0}
+              strokeColor="#3b82f6"
+              size={{ width: 200, height: 130 }}
+              hasBackground={true}
+            />
+          </div>
+        </div>
+
+        <div className="objective-description-box">
+          <p className="label">Description:</p>
+          <p className="objective-description">{data.description}</p>
+        </div>
       </div>
+
+      <div className="objective-tabs">
+        <button
+          onClick={() => setActiveTab("keyResults")}
+          className={`tab-btn ${activeTab === "keyResults" ? "active" : ""}`}
+        >
+          Key results
+        </button>
+        <button
+          onClick={() => setActiveTab("related")}
+          className={`tab-btn ${activeTab === "related" ? "active" : ""}`}
+        >
+          Related OKRs
+        </button>
+        <button
+          onClick={() => setActiveTab("people")}
+          className={`tab-btn ${activeTab === "people" ? "active" : ""}`}
+        >
+          People Involved
+        </button>
+      </div>
+
+      {activeTab === "keyResults" && <KeyResults ids={data.keyResult || []} />}
+      {activeTab === "related" && data && <RelatedGraph data={data} />}
+      {activeTab === "people" && (
+        <>
+          <PeopleInvolved
+            label="Accountable for"
+            people={data.accountableFor}
+          />
+          <PeopleInvolved label="Cares for" people={data.caresFor} />
+          <PeopleInvolved label="Operates" people={data.operates} />
+        </>
+      )}
     </div>
   );
 }

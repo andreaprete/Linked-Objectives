@@ -1,11 +1,32 @@
-export function TopNavbar() {
-    return (
-      <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
-        <input type="text" placeholder="Search..." className="border rounded p-2 w-1/3" />
-        <div className="flex items-center space-x-4">
-          <button>🔔</button>
-          <img src="/avatar.png" className="w-8 h-8 rounded-full" />
+import '@/app/styles/TopNavbar.css'; // Import the CSS file
+
+import Link from 'next/link';
+
+export default function TopNavbar({ title, id }) {
+  return (
+    <div className="top-navbar">
+      <h2 className="text-lg font-semibold text-gray-800">
+        {title && id ? (
+          <Link href={`/objectives/${id}`} passHref>
+            <span className="cursor-pointer">{title} - {id}</span>
+          </Link>
+        ) : (
+          'Objectives'
+        )}
+      </h2>
+
+      <div className="flex items-center gap-4">
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search..."
+            className="px-3 py-1 border rounded text-sm focus:outline-none"
+          />
         </div>
-      </header>
-    );
-  }
+        <button className="user-button">
+          N
+        </button>
+      </div>
+    </div>
+  );
+}
