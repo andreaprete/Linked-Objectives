@@ -3,6 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+import Link from 'next/link';
+import Sidebar from '@/app/componentsJason/Sidebar';
+import Header from '@/app/componentsJason/Header';
+import UserProfile from '@/app/componentsJason/UserProfile';
+import OkrList from '@/app/componentsJason/OkrList';
+
 export default function PersonPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
@@ -31,7 +37,7 @@ export default function PersonPage() {
   if (loading) return <p className="p-6 text-lg">Loading profile...</p>;
   if (!data) return <p className="p-6 text-red-500">Person not found.</p>;
 
-  return (
+/*  return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <div className="bg-gray-100 p-4 rounded-lg shadow">
         <h1 className="text-2xl font-bold">{data.name}</h1>
@@ -65,6 +71,33 @@ export default function PersonPage() {
         ) : (
           <p className="text-sm text-gray-500 italic">No OKRs linked to this post.</p>
         )}
+      </div>
+    </div>
+  );*/
+
+  // Mock user data for the demo
+  const userData = {
+    name: data.name,
+    role: data.roleTitle,
+    description: "Description",
+    email: data.email,
+    username: data.username,
+    location: data.location,
+    team: data.team,
+    department: data.department,
+    company: data.company,
+    profileImage: "/profileImage.jpg" // Path to profile image
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex-1 flex flex-col">
+        <Header username="User Name" />
+        <div className="flex-1 p-6 overflow-y-auto">
+          <UserProfile user={userData} />
+          <OkrList username={data.name} okrs={okrs} />
+        </div>
       </div>
     </div>
   );

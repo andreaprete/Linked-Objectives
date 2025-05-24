@@ -25,7 +25,6 @@ export default function ObjectivePage() {
     fetchObjective();
   }, [id]);
 
-
   const handleSave = async (updatedData) => {
     try {
       const res = await fetch(`/api/objectives/${id}`, {
