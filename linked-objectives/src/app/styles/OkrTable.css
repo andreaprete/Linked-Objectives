@@ -1,0 +1,73 @@
+.okr-table-container {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.okr-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.okr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.okr-table th,
+.okr-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-top: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.okr-table th {
+  background-color: #f9fafb;
+  font-weight: 500;
+  color: #374151;
+}
+
+.okr-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.okr-row:hover {
+  background-color: #f3f4f6;
+}
+
+.okr-empty {
+  font-style: italic;
+  color: #6b7280;
+  padding: 0.5rem 0;
+}
+
+.okr-index {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.okr-state {
+  font-size: 0.85rem;
+  color: #10b981; /* green for 'Active' */
+  font-weight: 500;
+}
+
+.okr-show-more {
+  color: #2563eb;
+  text-align: left;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.okr-show-more:hover {
+  text-decoration: underline;
+  color: #1d4ed8;
+}

@@ -1,0 +1,63 @@
+
+/* styles/LinkedOkrCard.css */
+
+.linked-okr-card {
+  border: 1px solid #e5e7eb; /* Tailwind border */
+  padding: 1rem;
+  border-radius: 0.375rem;
+  background-color: #f9fafb; /* Tailwind's bg-gray-50 */
+  margin-bottom: 1rem;
+}
+
+.linked-okr-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.linked-okr-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.linked-okr-text {
+  max-width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.linked-okr-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.linked-okr-title a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.linked-okr-title a:hover {
+  text-decoration: underline;
+}
+
+.linked-okr-description {
+  font-size: 0.875rem;
+  color: #374151; /* Tailwind's text-gray-700 */
+}
+
+.linked-okr-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.linked-okr-meta {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563; /* Tailwind's text-gray-600 */
+  text-align: center;
+}

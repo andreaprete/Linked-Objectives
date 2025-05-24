@@ -1,0 +1,120 @@
+.department-card-wrapper {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.department-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.department-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.department-initials {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-blue {
+  background-color: #3b82f6;
+}
+
+.bg-green {
+  background-color: #10b981;
+}
+
+.bg-orange {
+  background-color: #f97316;
+}
+
+.department-name {
+  font-size: 1.125rem; /* Slightly larger than base text (18px) */
+  font-weight: 700; /* Bold */
+  color: #111827;
+  display: inline-block;
+}
+
+.department-teams {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+
+.department-card-wrapper:hover .department-teams {
+  max-height: 500px;
+  opacity: 1;
+  transform: translateY(0);
+  padding-top: 1rem;
+}
+
+.team-card-dep {
+  background-color: #f9fafb;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s ease;
+}
+
+.team-card-dep:hover {
+  background-color: #f3f4f6;
+}
+
+.team-name {
+  font-weight: 500; /* Regular weight for team name */
+  margin-bottom: 0.25rem;
+}
+
+.team-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.member-badge {
+  background-color: #e0f2fe;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.member-badge:hover {
+  background-color: #bae6fd;
+}
+
+@media (max-width: 640px) {
+  .department-teams {
+    display: block;
+  }
+
+  .department-card-wrapper:hover .department-teams {
+    max-height: none;
+    padding-top: 1rem;
+  }
+}
