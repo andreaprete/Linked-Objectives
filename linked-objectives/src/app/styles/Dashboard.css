@@ -1,0 +1,227 @@
+/* src/app/styles/Dashboard.css */
+
+/* --- Basic Page Layout Styles --- */
+.pageWrapper {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    font-family: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+    background-color: #f0f4f8; /* Slightly softer light blue-gray background */
+    color: #2d3748; /* Default dark gray text (Tailwind gray-800) */
+    overflow: hidden;
+}
+
+.rightContentWrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.dashboardContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px; /* Standardized padding */
+    background-color: #f0f4f8; /* Consistent with pageWrapper */
+}
+
+/* --- KPI Card Styles --- */
+.kpiRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Slightly larger min-width for KPIs */
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.kpiCard {
+    background-color: #ffffff;
+    border-radius: 12px; /* More rounded */
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Softer shadow */
+    text-align: center;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out, box-shadow 0.35s ease-out; /* Smoother, slightly longer transition */
+}
+
+.kpiCard:hover {
+    /* Blue shadow effect */
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2), 0 4px 6px -2px rgba(59, 130, 246, 0.1); /* Tailwind blue-500 based shadow */
+    transform: translateY(-3px); /* Slightly more lift */
+}
+
+.kpiValue {
+    font-size: 2.5em; /* Larger KPI value */
+    font-weight: 700;
+    color: #1e3a8a; /* Darker blue (Tailwind blue-800) */
+    margin-bottom: 4px;
+}
+
+.kpiLabel {
+    font-size: 0.9em;
+    color: #4a5568; /* Tailwind gray-700 */
+    font-weight: 500;
+}
+
+/* --- General Widget Card Style (for charts) --- */
+.widgetCard {
+    background-color: #ffffff;
+    color: #2d3748;
+    border-radius: 12px;
+    /* padding handled by title/content divs within the component for better control */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out, box-shadow 0.35s ease-out; /* Smoother transition */
+}
+
+.widgetCard:hover {
+    /* Blue shadow highlight */
+    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.25), 0 4px 8px -2px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+}
+
+.widgetVisible { /* This class triggers the load-in animation */
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+.widgetTitle {
+    font-size: 1.15em; /* Slightly adjusted */
+    font-weight: 600;
+    color: #1f2937; /* Tailwind gray-800 */
+    margin: 0;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb; /* Tailwind gray-200 */
+    flex-shrink: 0;
+}
+
+/* For card content area if title is present */
+.widgetCard > .widgetContentArea { /* Define a class for the content area */
+    padding: 16px 24px;
+    flex-grow: 1; /* Ensure it takes up space */
+    display: flex; /* To help center placeholder if needed */
+    align-items: center;
+    justify-content: center;
+}
+/* If no title, the card itself needs padding (handled by Tailwind in component if preferred) */
+.widgetCard:not(:has(.widgetTitle)) {
+    padding: 24px;
+}
+
+/* Chart Placeholder Style */
+.chartPlaceholder {
+    color: #9ca3af; /* Tailwind gray-400 */
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    /* border: 1px dashed #d1d5db; */ /* Optional border */
+    border-radius: 6px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* background-color: #f9fafb; */ /* Optional light bg for placeholder area */
+}
+
+/* --- Recharts specific overrides for light theme --- */
+.recharts-default-legend {
+    padding-top: 15px !important; /* More space */
+}
+.recharts-legend-item-text {
+    color: #4b5568 !important; /* Tailwind gray-600 */
+    font-size: 12px !important; /* Slightly larger */
+}
+.recharts-cartesian-axis-tick-value {
+    fill: #6b7280 !important; /* Tailwind gray-500 */
+    font-size: 11px !important;
+}
+.recharts-tooltip-wrapper {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    border-radius: 8px !important; /* More rounded */
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important; /* Tailwind gray-200 */
+    padding: 8px 12px !important; /* Adjust padding */
+}
+.recharts-tooltip-item {
+    color: #1f2937 !important; /* Tailwind gray-800 */
+    font-size: 13px !important; /* Slightly larger */
+}
+.recharts-tooltip-label {
+    color: #1f2937 !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+}
+
+/* Example for your existing classes if you want to ensure light theme consistency */
+.profileHeader {
+    /* ... your existing styles ... */
+    color: white; /* Keep if background is dark gradient */
+}
+.profileHeaderPic > svg {
+    color: #4a5568; /* Darker icon for light theme */
+}
+
+/* Ensure other text colors are dark for light theme */
+.activityUser { font-weight: 600; color: #1e40af; /* Dark blue */ }
+.activityTime { font-size: 0.8em; color: #4b5568; /* Gray */ margin-left: 8px; white-space: nowrap; }
+.notificationItem { color: #374151; /* Dark gray */ }
+.notificationImportant { font-weight: 600; color: #c2410c; /* Dark orange/red */ }
+.deadlineTitle { color: #1f2937; /* Dark gray */ }
+.deadlineDate { background-color: #fee2e2; color: #b91c1c; /* Redish for deadline */ }
+.deadlineDateSoon { background-color: #fef3c7; color: #b45309; /* Amber for soon */ }
+
+
+
+/* --- Enterprise UI Extensions --- */
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.tableStyle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.tableStyle th, .tableStyle td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+.tableStyle th {
+  font-weight: 600;
+  color: #1f2937;
+}
+.tableStyle td {
+  color: #374151;
+}
+
+.cardTag {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background-color: #e5e7eb;
+  color: #374151;
+}
+.cardTag.success { background-color: #d1fae5; color: #065f46; }
+.cardTag.warning { background-color: #fef3c7; color: #92400e; }
+.cardTag.danger  { background-color: #fee2e2; color: #991b1b; }
+
+.kpiRow {
+  margin-bottom: 1.5rem;
+}
+.widgetCard, .kpiCard {
+  min-height: 200px; /* reduce from 250px */
+}
+.widgetContentArea {
+  padding: 1rem;
+}
+
+

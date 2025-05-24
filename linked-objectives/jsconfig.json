@@ -1,7 +1,12 @@
+// jsconfig.json (Standard for src layout)
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
+      "@/*": ["./src/*"] // <-- Make sure this points to src
+    },
+    "jsx": "preserve"
+  },
+  "include": ["src/**/*.js", "src/**/*.jsx"],
+  "exclude": ["node_modules", ".next"]
 }
