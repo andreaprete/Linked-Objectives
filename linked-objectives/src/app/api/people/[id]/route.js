@@ -1,5 +1,5 @@
 export async function GET(req, context) {
-  const { id } = await context.params;
+  const { id } = context.params;
   const personUri = `https://data.sick.com/res/dev/examples/common-semantics/${id}`;
   const endpoint = `http://localhost:7200/repositories/linked-objectives`;
 
@@ -129,13 +129,85 @@ export async function GET(req, context) {
 
       if (okrResponse.ok) {
         const okrJson = await okrResponse.json();
-        okrs = okrJson.results.bindings.map((row) => ({
-          id: trimUri(row.okr.value),
-          label: row.label.value,
-        }));
+
+        // For each OKR, fetch state and progress (average progress of KRs with "InProgress"/"Active" state)
+        okrs = await Promise.all(
+          okrJson.results.bindings.map(async (row) => {
+            const okrId = trimUri(row.okr.value);
+            const label = row.label.value;
+
+            // --- Fetch state and key results for this objective
+            const objDetailsQuery = `
+              SELECT ?state ?kr ?krProgress ?krState
+              WHERE {
+                OPTIONAL { 
+                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                    <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
+                }
+                OPTIONAL {
+                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                    <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+                  OPTIONAL { ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?krProgress . }
+                  OPTIONAL { ?kr <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?krState . }
+                }
+              }
+            `;
+
+            let state = "Planned";
+            let progress = 0;
+
+            try {
+              const objRes = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/sparql-query",
+                  Accept: "application/sparql-results+json",
+                },
+                body: objDetailsQuery,
+              });
+
+              if (objRes.ok) {
+                const objJson = await objRes.json();
+                // Get first found state
+                state = (
+                  objJson.results.bindings.find((b) => b.state) || {}
+                ).state?.value?.split("/").pop() || "Planned";
+
+                // Filter to only "in progress" KRs and get their progress values
+                const inProgressKRs = objJson.results.bindings.filter(
+                  (b) =>
+                    b.krProgress &&
+                    b.krState &&
+                    (
+                      b.krState.value.toLowerCase().includes("inprogress") ||
+                      b.krState.value.toLowerCase().includes("active")
+                    )
+                );
+
+                if (inProgressKRs.length > 0) {
+                  const total = inProgressKRs.reduce(
+                    (sum, b) => sum + parseFloat(b.krProgress.value || 0),
+                    0
+                  );
+                  progress = total / inProgressKRs.length;
+                }
+              }
+            } catch (err) {
+              progress = 0;
+            }
+
+            return {
+              id: okrId,
+              title: label,
+              state,
+              progress: Math.round(progress),
+            };
+          })
+        );
       }
     }
 
+    // Fix up company/department/team info if missing
     if (!dataMap.company) {
       dataMap.company = dataMap.department;
       dataMap.department = dataMap.team;
@@ -144,6 +216,7 @@ export async function GET(req, context) {
       dataMap.teamName = null;
     }
 
+    // ✅ Always return a Response at the end!
     return new Response(
       JSON.stringify({
         id,

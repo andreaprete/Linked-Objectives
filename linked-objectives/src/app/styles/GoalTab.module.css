@@ -1,0 +1,52 @@
+.goal-tab-section {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.goal-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.goal-tab-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2196f3;
+  border-bottom: 2px solid #2196f3;
+  padding-bottom: 0.25rem;
+  flex: 1;
+}
+
+.goal-tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.goal-tab-filter {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.2rem;
+}
+
+.goal-tab-add {
+  background: #2196f3;
+  color: #fff;
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s;
+}
+
+.goal-tab-add:hover {
+  background: #1565c0;
+}

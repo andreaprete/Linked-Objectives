@@ -1,39 +1,27 @@
 'use client';
+import styles from '@/app/styles/GoalCard.module.css';
+import Link from "next/link";
 
-import Link from 'next/link';
-import '@/app/styles/LinkedOkrCard.css';
-
-export default function LinkedOkrCard({ data, id }) {
-  if (!data) return null;
-
-  const {
-    title = "Untitled Objective",
-    state = "In Progress",
-    progress = 0,
-  } = data;
-
+export default function GoalCard({ id, title, state, progress }) {
+  // For status dot color, optionally set className dynamically
   return (
-    <div className="linked-okr-row">
-      <div className="flex-1">
-        <Link href={`/objectives/${id}`} className="linked-okr-title">
-          {title}
-        </Link>
+    <Link href={`/objectives/${id}`} className={styles['goal-card-row']} style={{ textDecoration: "none" }}>
+      <div className={styles['goal-title']}>{title}</div>
+
+      <div className={styles['goal-status']}>
+        <span className={styles['goal-dot']} />
+        <span className={styles['goal-state']}>{state}</span>
       </div>
 
-      <div className="linked-okr-status">
-        <span className="linked-okr-status-dot" />
-        <span>{state}</span>
-      </div>
-
-      <div className="linked-okr-progress">
-        <div className="linked-okr-progress-bar">
+      <div className={styles['goal-progress-area']}>
+        <div className={styles['goal-progress-bar-bg']}>
           <div
-            className="linked-okr-progress-bar-fill"
-            style={{ width: `${progress}%` }}
+            className={styles['goal-progress-bar-fill']}
+            style={{ width: `${progress || 0}%` }}
           />
         </div>
-        <span className="linked-okr-percentage">{progress}%</span>
+        <span className={styles['goal-percent']}>{Math.round(progress || 0)}%</span>
       </div>
-    </div>
+    </Link>
   );
 }
