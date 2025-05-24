@@ -1,0 +1,87 @@
+.people-section {
+  margin-bottom: 1.5rem;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.people-toggle {
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #1f2937;
+  background: #f9fafb;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+
+.people-toggle:hover {
+  background: #f3f4f6;
+}
+
+.people-list {
+  padding: 0.75rem 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.people-card {
+  background: #ffffff;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.people-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.people-link {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.people-link:hover {
+  text-decoration: underline;
+}
+
+.people-role {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.125rem;
+  font-style: italic;
+}
+
+.people-avatar,
+.people-initials {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.people-initials {
+  background-color: #e5e7eb;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}

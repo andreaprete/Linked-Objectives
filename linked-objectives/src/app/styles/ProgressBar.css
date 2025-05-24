@@ -1,6 +1,7 @@
 /* styles/ProgressBar.css */
 
 .progress-bar-container {
+
   width: 100%;
   max-width: 32rem; /* max-w-lg */
 }
