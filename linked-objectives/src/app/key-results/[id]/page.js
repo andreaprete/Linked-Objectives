@@ -14,7 +14,7 @@ export default function ObjectivePage() {
 
     async function fetchOkr() {
       try {
-        const res = await fetch(`http://localhost:3000/api/key-results/${id}`);
+        const res = await fetch(`/api/key-results/${id}`);
         const json = await res.json();
         setData(json.data);
       } catch (err) {
