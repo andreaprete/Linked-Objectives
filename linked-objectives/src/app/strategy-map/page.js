@@ -1,52 +1,17 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import "@excalidraw/excalidraw/index.css"; // ✅ Excalidraw full UI styles
-import "@/app/styles/StrategyMap.css"; // ✅ Your styles
+import "@excalidraw/excalidraw/index.css";
+import "@/app/styles/StrategyMap.css";
 import AppLayout from "@/app/components/AppLayout";
+import OkrSidebar from "@/app/components/OkrSideBar";
 
-// ✅ Lazy load Excalidraw (App Router-friendly)
 const Excalidraw = dynamic(
   () => import("@excalidraw/excalidraw").then((mod) => mod.Excalidraw),
   { ssr: false }
 );
 
-// ✅ Sample OKRs for testing
-const MOCK_OKRS_DATA = [
-  {
-    id: "okr1",
-    type: "Objective",
-    title: "Increase customer satisfaction",
-    description: "Improve NPS",
-  },
-  {
-    id: "okr2",
-    type: "Objective",
-    title: "Expand into new markets",
-    description: "Launch in 2 new regions",
-  },
-  {
-    id: "okr3",
-    type: "Objective",
-    title: "Improve product reliability",
-    description: "Reduce bugs by 50%",
-  },
-  {
-    id: "okr4",
-    type: "Objective",
-    title: "Enhance communication",
-    description: "Monthly syncs + OKRs",
-  },
-  {
-    id: "okr5",
-    type: "Objective",
-    title: "Boost dev velocity",
-    description: "Cut release time in half",
-  },
-];
-
-// ✅ Helper to create a visual box
 const createOkrElement = (okr, x, y) => ({
   id: `okr-${okr.id}-${Date.now()}`,
   type: "rectangle",
@@ -71,8 +36,7 @@ const createOkrElement = (okr, x, y) => ({
   updated: Date.now(),
 });
 
-// ✅ Helper to create a label
-const createOkrLabelElement = (okr, parentElement) => ({
+const createOkrLabelElement = (okr, parent) => ({
   type: "text",
   version: 1,
   versionNonce: Math.floor(Math.random() * 100000),
@@ -80,12 +44,11 @@ const createOkrLabelElement = (okr, parentElement) => ({
   id: `label-${okr.id}-${Date.now()}`,
   fillStyle: "solid",
   strokeWidth: 1,
-  strokeStyle: "solid",
   roughness: 0,
   opacity: 100,
   angle: 0,
-  x: parentElement.x + 10,
-  y: parentElement.y + 20,
+  x: parent.x + 10,
+  y: parent.y + 20,
   width: 180,
   height: 20,
   seed: Math.floor(Math.random() * 100000),
@@ -105,43 +68,45 @@ const createOkrLabelElement = (okr, parentElement) => ({
 
 export default function StrategyMapPage() {
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
-  const [trackedOkrsOnCanvas, setTrackedOkrsOnCanvas] = useState([]);
-  const excalidrawWrapperRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const [okrs, setOkrs] = useState([]);
 
-  const handleExcalidrawReady = (api) => {
-    setExcalidrawAPI(api);
-  };
+  useEffect(() => {
+    async function fetchOKRs() {
+      try {
+        const res = await fetch("/api/objectiveslist");
+        const data = await res.json();
+        setOkrs(data);
+      } catch (err) {
+        console.error("❌ Failed to fetch OKRs:", err);
+      }
+    }
+    fetchOKRs();
+  }, []);
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    if (!excalidrawAPI) return;
+  const handleInsertOkr = (okr, e) => {
+    if (
+      !excalidrawAPI ||
+      typeof excalidrawAPI.viewportCoordsToSceneCoords !== "function"
+    ) {
+      console.error("❌ Excalidraw API not ready");
+      return;
+    }
 
-    const okrDataString = e.dataTransfer.getData("application/json");
-    if (!okrDataString) return;
+    // ✅ Calculate scene coords based on canvas container
+    const rect = wrapperRef.current.getBoundingClientRect();
+    const coords = excalidrawAPI.viewportCoordsToSceneCoords({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    });
 
-    const okr = JSON.parse(okrDataString);
-    const rect = excalidrawWrapperRef.current?.getBoundingClientRect?.();
-    if (!rect) return;
-
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const box = createOkrElement(okr, x, y);
+    const box = createOkrElement(okr, coords.x, coords.y);
     const label = createOkrLabelElement(okr, box);
-
     excalidrawAPI.addElements([box, label]);
-    setTrackedOkrsOnCanvas((prev) => [...prev, okr]);
   };
-
-  const handleDragStart = (e, okr) => {
-    e.dataTransfer.setData("application/json", JSON.stringify(okr));
-  };
-
-  const handleDragOver = (e) => e.preventDefault();
 
   return (
     <AppLayout>
-      {/* ✅ Canvas header under topbar */}
       <div className="newCanvasBar">
         <button
           className="newCanvasBtn"
@@ -152,48 +117,11 @@ export default function StrategyMapPage() {
       </div>
 
       <main className="contentArea flex flex-col md:flex-row gap-4">
-        <div
-          className="excalidrawWrapper flex-1"
-          ref={excalidrawWrapperRef}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <Excalidraw
-            onReady={handleExcalidrawReady}
-            initialData={{
-              elements: [],
-              appState: { viewBackgroundColor: "#ffffff" },
-            }}
-            theme="light"
-            UIOptions={{ canvasActions: { clearCanvas: false } }}
-          />
+        <div className="excalidrawWrapper flex-1" ref={wrapperRef}>
+          <Excalidraw excalidrawAPI={(api) => setExcalidrawAPI(api)} />
         </div>
 
-        <aside className="okrCatalogArea w-full md:w-72">
-          <div className="catalogSearchWrapper">
-            <input
-              type="search"
-              placeholder="Search OKRs..."
-              className="searchInput"
-            />
-          </div>
-          <div className="okrCatalog">
-            <h3 className="catalogTitle">OKRs</h3>
-            {MOCK_OKRS_DATA.filter((item) => item.type === "Objective").map(
-              (okr) => (
-                <div
-                  key={okr.id}
-                  draggable="true"
-                  onDragStart={(e) => handleDragStart(e, okr)}
-                  className="okrItem"
-                  title={okr.description || ""}
-                >
-                  {okr.title}
-                </div>
-              )
-            )}
-          </div>
-        </aside>
+        <OkrSidebar okrs={okrs} onOkrClick={handleInsertOkr} />
       </main>
     </AppLayout>
   );

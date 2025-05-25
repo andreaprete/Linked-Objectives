@@ -1,0 +1,26 @@
+.okrItemWrapper {
+  margin-bottom: 12px;
+  cursor: grab;
+}
+
+.okrItemWrapper:active {
+  cursor: grabbing;
+}
+
+.okrSVGContainer {
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 6px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.2s;
+}
+
+.okrSVGContainer:hover {
+  background-color: #f0f8ff;
+}
