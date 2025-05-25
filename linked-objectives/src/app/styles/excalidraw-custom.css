@@ -1,0 +1,139 @@
+/* Custom Excalidraw Styling Overrides */
+
+/* Root Excalidraw Container */
+.excalidraw {
+  --color-primary-contrast-offset: #625ee0;
+}
+
+/* Dark Theme Overrides */
+.excalidraw.theme--dark {
+  --color-primary-contrast-offset: #726dff;
+}
+
+/* Custom Primary Colors */
+.custom-styles .excalidraw {
+  --color-primary: #fcc6d9;
+  --color-primary-darker: #f783ac;
+  --color-primary-darkest: #e64980;
+  --color-primary-light: #f2a9c4;
+}
+.custom-styles .excalidraw.theme--dark {
+  --color-primary: #d494aa;
+  --color-primary-darker: #d64c7e;
+  --color-primary-darkest: #e86e99;
+  --color-primary-light: #dcbec9;
+}
+
+/* Top right UI */
+.excalidraw .top-right-ui {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Footer */
+.excalidraw .footer-center {
+  justify-content: flex-end;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-inline-start: auto;
+}
+
+/* Encryption Icon */
+.excalidraw .encrypted-icon {
+  border-radius: var(--space-factor);
+  color: var(--color-primary);
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-inline-start: auto;
+  margin-inline-end: 0.6em;
+  z-index: var(--zIndex-layerUI);
+}
+.excalidraw .encrypted-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/* Dropdown active & highlight */
+.excalidraw .dropdown-menu-container .dropdown-menu-item.active-collab {
+  background-color: #ecfdf5;
+  color: #064e3c;
+}
+.excalidraw .dropdown-menu-container .dropdown-menu-item.highlighted {
+  color: var(--color-promo);
+  font-weight: 700;
+}
+.excalidraw .dropdown-menu-container .dropdown-menu-item.highlighted .dropdown-menu-item__icon g {
+  stroke-width: 2;
+}
+.excalidraw.theme--dark .dropdown-menu-item.active-collab {
+  background-color: #064e3c;
+  color: #ecfdf5;
+}
+
+/* Offline warning */
+.excalidraw .collab-offline-warning {
+  pointer-events: none;
+  position: absolute;
+  top: 6.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  text-align: center;
+  line-height: 1.5;
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-warning);
+  color: var(--color-text-warning);
+  z-index: 6;
+  white-space: pre;
+}
+
+/* Hide clear button while collaborating */
+.excalidraw-app.is-collaborating [data-testid="clear-canvas-button"] {
+  display: none;
+}
+
+/* Plus Button */
+.plus-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border: 1px solid var(--color-primary);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-lg);
+  background-color: var(--island-bg-color);
+  color: var(--color-primary) !important;
+  font-size: 0.75rem;
+  text-decoration: none !important;
+  box-sizing: border-box;
+  height: var(--lg-button-size);
+}
+.plus-button:hover {
+  background-color: var(--color-primary);
+  color: white !important;
+}
+.plus-button:active {
+  background-color: var(--color-primary-darker);
+}
+.theme--dark .plus-button:hover {
+  color: black !important;
+}
+
+/* Fix conflicts with global styles */
+.excalidraw .context-menu-item__shortcut,
+.excalidraw .Stats .close {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+.excalidraw .Stats table,
+.excalidraw .Stats table td,
+.excalidraw .Stats table th,
+.excalidraw .Stats table tr {
+  border: none;
+  background: none;
+  padding: 0;
+}
