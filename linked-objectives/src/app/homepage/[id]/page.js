@@ -1,16 +1,16 @@
 "use client";
 
-import AppLayout from "@/app/components/AppLayout"; // unified layout!
+import AppLayout from "@/app/components/AppLayout";
 import { WelcomeBanner } from "../../components/WelcomeBanner";
 import { WeeklyOverview } from "../../components/WeeklyOverview";
-import { GoalsTabs } from "../../components/GoalsTabs";
+import GoalTab from "@/app/components/GoalTab";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
   const { id } = useParams();
   const [userData, setUserData] = useState(null);
-  const [okrs, setOkrs] = useState([]);
+  const [okrs, setOkrs] = useState([]); // Already detailed!
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function HomePage() {
         const res = await fetch(`/api/people/${id}`);
         const json = await res.json();
         setUserData(json.data);
-        setOkrs(json.okrs);
+        setOkrs(json.okrs); // Already in [{id, title, state, progress}]
       } catch (err) {
         console.error("Failed to load OKR data:", err);
       } finally {
@@ -32,11 +32,12 @@ export default function HomePage() {
     fetchData();
   }, [id]);
 
-  if (loading) return (
-    <AppLayout>
-      <div className="p-6">Loading...</div>
-    </AppLayout>
-  );
+  if (loading)
+    return (
+      <AppLayout>
+        <div className="p-6">Loading...</div>
+      </AppLayout>
+    );
 
   return (
     <AppLayout>
@@ -46,9 +47,8 @@ export default function HomePage() {
           id={id}
           teamId={userData?.team}
         />
-
         <WeeklyOverview okrs={okrs} />
-        <GoalsTabs okrs={okrs} />
+        <GoalTab okrs={okrs} loading={false} onAddGoal={() => {}} />
       </main>
     </AppLayout>
   );
