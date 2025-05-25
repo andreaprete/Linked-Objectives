@@ -5,7 +5,7 @@ import SemiCircleProgress from './SemiCircleProgressProps.js';
 import '@/app/styles/LinkedOkrCard.css';
 
 export default function LinkedOkrCard({
-  progress,
+  averageProgress,
   id,
   title = "N/A",
   description = "No description available.",
@@ -13,7 +13,6 @@ export default function LinkedOkrCard({
   category = "N/A",
 }) {
   const objectiveUrl = id ? `/objectives/${id}` : '#';
-
   return (
     <div className="linked-okr-card">
       <div className="linked-okr-header">
@@ -35,7 +34,7 @@ export default function LinkedOkrCard({
         <div className="linked-okr-stats">
           <SemiCircleProgress
             strokeWidth={10}
-            percentage={progress}
+            averageProgress={averageProgress}
             size={{ width: 200, height: 100 }}
             strokeColor="#2563eb"
             bgStrokeColor="#e5e7eb"

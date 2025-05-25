@@ -2,7 +2,7 @@ import '@/app/styles/SemiCircleProgress.css';
 
 const SemiCircleProgress = ({
   strokeWidth,
-  percentage = 60, // TO UPDATE WITH VALUE OF GENERAL OBJECTIVE PROGRESSS
+  averageProgress, 
   strokeColor,
   size,
   strokeLinecap = "round",
@@ -11,13 +11,14 @@ const SemiCircleProgress = ({
   hasBackground = false,
   bgStrokeColor = "#d3d3d3",
 }) => {
-  if (percentage < 0 || percentage > 100) {
+
+  if (averageProgress < 0 || averageProgress > 100) {
     throw new Error("Percentage must be between 0 and 100");
   }
 
   const radius = 50 - strokeWidth / 2;
   const circumference = Math.PI * radius;
-  const dashOffset = circumference * (1 - percentage / 100);
+  const dashOffset = circumference * (1 - averageProgress / 100);
 
   const pathD = `M ${strokeWidth / 2},50 A ${radius},${radius} 0 0 1 ${100 - strokeWidth / 2},50`;
 
@@ -53,7 +54,7 @@ const SemiCircleProgress = ({
         y="40"
         style={fontStyle}
       >
-        {percentage}
+        {averageProgress}
         {percentageSeperator}
       </text>
       <text className="semi-circle-axis-text" x="0" y="65">
