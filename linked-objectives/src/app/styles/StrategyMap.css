@@ -4,126 +4,159 @@
 
 /* Overall Page Layout Wrapper (If needed, or use a common layout style) */
 .pageWrapper {
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    overflow: hidden; /* Important to prevent double scrollbars */
-  }
-  
-  /* Right Content Wrapper */
-  .rightContentWrapper {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      overflow: hidden;
-  }
-  
-  /* Main Content Area (Below Top Bar) */
-  .contentArea {
-    flex: 1; /* Takes remaining vertical space */
-    display: flex;
-    overflow: hidden; /* Contains canvas/catalog */
-    padding: 20px;
-    gap: 20px;
-    background-color: #f4f7f9; /* Background for the content area */
-    min-height: 0; /* Important for flex children */
-  }
-  
-  /* Excalidraw Wrapper */
-  .excalidrawWrapper {
-    flex: 1;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    min-height: 300px;
-    min-width: 400px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    background-color: #ffffff;
-    display: flex; /* Ensure content fills */
-    flex-direction: column;
-  }
-  .excalidrawWrapper > * {
-    flex: 1;
-    min-height: 0;
-  }
-  
-  /* OKR Catalog Area */
-  .okrCatalogArea {
-    width: 300px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
-    overflow: hidden;
-  }
-  
-  .catalogSearchWrapper {
-      position: relative;
-      flex-shrink: 0;
-  }
-  
-  .searchInput { /* Catalog search input style */
-    padding: 10px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    font-size: 0.9em;
-    width: 100%;
-    color: #333;
-  }
-  .searchInput::placeholder {
-    color: #888;
-    opacity: 1;
-  }
-  .searchInput:focus {
-      outline: none;
-      border-color: #80bdff;
-      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  }
-  
-  .okrCatalog {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-  }
-  
-  .catalogTitle {
-    font-size: 1.3em;
-    font-weight: 500;
-    margin-bottom: 15px;
-    color: #2c3e50;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .okrItem {
-    padding: 12px 15px;
-    background-color: white;
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    cursor: grab;
-    text-align: left;
-    font-size: 0.95em;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-    color: #2c3e50;
-  }
-  .okrItem:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
-  }
-  
-  /* Placeholder Style */
-  .placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #888;
-      background-color: #f0f0f0;
-  }
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  overflow: hidden; /* Important to prevent double scrollbars */
+}
+
+/* Right Content Wrapper */
+.rightContentWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Main Content Area (Below Top Bar) */
+.contentArea {
+  flex: 1; /* Takes remaining vertical space */
+  display: flex;
+  overflow: hidden; /* Contains canvas/catalog */
+  padding: 20px;
+  gap: 20px;
+  background-color: #f4f7f9; /* Background for the content area */
+  min-height: 0; /* Important for flex children */
+}
+
+/* Excalidraw Wrapper */
+.excalidrawWrapper {
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  min-height: 300px;
+  min-width: 400px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  display: flex; /* Ensure content fills */
+  flex-direction: column;
+}
+.excalidrawWrapper > * {
+  flex: 1;
+  min-height: 0;
+}
+
+/* OKR Catalog Area */
+.okrCatalogArea {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  overflow: hidden;
+}
+
+.catalogSearchWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  /* Catalog search input style */
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 0.9em;
+  width: 100%;
+  color: #333;
+}
+.searchInput::placeholder {
+  color: #888;
+  opacity: 1;
+}
+.searchInput:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.okrCatalog {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.catalogTitle {
+  font-size: 1.3em;
+  font-weight: 500;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.okrItem {
+  padding: 12px 15px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: grab;
+  text-align: left;
+  font-size: 0.95em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  color: #2c3e50;
+}
+.okrItem:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Placeholder Style */
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #888;
+  background-color: #f0f0f0;
+}
+
+.canvasHeaderBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.canvasTitle {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.newCanvasBtn {
+  background-color: #3b82f6;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.newCanvasBtn:hover {
+  background-color: #2563eb;
+}
