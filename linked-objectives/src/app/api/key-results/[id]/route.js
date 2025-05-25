@@ -3,12 +3,10 @@ export async function GET(req, context) {
 
   const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
 
-
   const sparqlQuery = `
     SELECT ?predicate ?object
     WHERE {
       <${krUri}> ?predicate ?object .
-
     }
   `;
 
@@ -62,18 +60,18 @@ export async function GET(req, context) {
         case "http://purl.org/dc/terms/modified":
           dataMap.modified = object;
           break;
-        
+
         case "https://data.sick.com/voc/sam/objectives-model/progress":
           dataMap.progress = object;
           break;
 
         case "https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state":
-          dataMap.state = object.split('/').pop(); 
+          dataMap.state = object.split('/').pop();
           break;
 
         case "http://purl.org/dc/terms/isPartOf":
           dataMap.isPartOf = dataMap.isPartOf || [];
-          dataMap.isPartOf.push(object.split('/').pop()); 
+          dataMap.isPartOf.push(object.split('/').pop());
           break;
 
         case "https://data.sick.com/voc/sam/objectives-model/isKeyResultOf":
@@ -85,12 +83,12 @@ export async function GET(req, context) {
       }
     });
 
+    console.log('ALL progress values:', dataMap.progressList);
 
     // Fetch all lifecycle states dynamically
     const lifecycleStatesQuery = `
       PREFIX lifecycle: <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/>
       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-
       SELECT ?object
       WHERE {
         ?state skos:prefLabel ?object .
@@ -122,9 +120,10 @@ export async function GET(req, context) {
       value: binding.object.value.split('/').pop(),
     }));
 
-    // Fetch linked objective if available
+    // Fetch linked objective info, and average progress of its KRs
     if (dataMap.isKeyResultOf) {
-      const linkedObjectiveUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${dataMap.isKeyResultOf}`;
+      const objectiveId = dataMap.isKeyResultOf;
+      const linkedObjectiveUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${objectiveId}`;
       const linkedObjectiveQuery = `
         SELECT ?predicate ?object
         WHERE {
@@ -132,6 +131,7 @@ export async function GET(req, context) {
         }
       `;
 
+      // 1. Fetch Objective info
       const linkedRes = await fetch(`http://localhost:7200/repositories/linked-objectives`, {
         method: "POST",
         headers: {
@@ -168,22 +168,57 @@ export async function GET(req, context) {
             linkedOkrData.category = obj.split("/").pop();
             break;
           case "https://data.sick.com/voc/sam/objectives-model/progress":
-            linkedOkrData.progress = parseFloat(obj); 
+            linkedOkrData.progress = parseFloat(obj);
             break;
           default:
             break;
         }
       });
 
+      // 2. Fetch all KRs for this Objective and calculate average progress
+      const allKRsQuery = `
+        SELECT ?kr ?progress
+        WHERE {
+          ?kr <https://data.sick.com/voc/sam/objectives-model/isKeyResultOf> <${linkedObjectiveUri}> .
+          ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
+        }
+      `;
+
+      const allKRsRes = await fetch(`http://localhost:7200/repositories/linked-objectives`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/sparql-query",
+          Accept: "application/sparql-results+json",
+        },
+        body: allKRsQuery,
+      });
+
+      if (!allKRsRes.ok) {
+        const errorText = await allKRsRes.text();
+        console.error("Failed to fetch all KRs:", errorText);
+        throw new Error(`Key Result progress query failed: ${errorText}`);
+      }
+
+      const allKRsJson = await allKRsRes.json();
+      const krProgressValues = allKRsJson.results.bindings.map(binding => parseFloat(binding.progress.value)).filter(v => !isNaN(v));
+
+      // Calculate average progress
+      let averageProgress = null;
+      if (krProgressValues.length > 0) {
+        averageProgress = krProgressValues.reduce((a, b) => a + b, 0) / krProgressValues.length;
+      }
+      linkedOkrData.averageProgress = averageProgress;
+
       dataMap.linkedObjective = linkedOkrData;
     }
+
+    dataMap.progressList = dataMap.progressList || [];
 
     return new Response(
       JSON.stringify({
         id,
         data: dataMap,
-        lifecycleStates, // Include lifecycle states for dropdown
-
+        lifecycleStates,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
@@ -195,36 +230,54 @@ export async function GET(req, context) {
   }
 }
 
-
 export async function PUT(req, context) {
   const { id } = context.params;
   const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const body = await req.json();
 
-  // Construct a SPARQL DELETE/INSERT query to update fields
+  // Build INSERT for all fields, even if unchanged (for atomic update)
+  const insertStatements = [];
+  if (body.title !== undefined)
+    insertStatements.push(`<${krUri}> <http://www.w3.org/2000/01/rdf-schema#label> """${body.title}""" .`);
+  if (body.comment !== undefined)
+    insertStatements.push(`<${krUri}> <http://www.w3.org/2000/01/rdf-schema#comment> """${body.comment}""" .`);
+  if (body.description !== undefined)
+    insertStatements.push(`<${krUri}> <http://purl.org/dc/terms/description> """${body.description}""" .`);
+  if (body.progress !== undefined)
+    insertStatements.push(`<${krUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .`);
+  if (body.state !== undefined)
+    insertStatements.push(`<${krUri}> <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> """${body.state}""" .`);
+  if (body.created !== undefined)
+    insertStatements.push(`<${krUri}> <http://purl.org/dc/terms/created> "${body.created}" .`);
+  // Always update 'modified' to now
+  insertStatements.push(`<${krUri}> <http://purl.org/dc/terms/modified> "${new Date().toISOString()}" .`);
+
+  // Use per-field DELETE-INSERT-WHERE pattern
   const sparqlUpdate = `
     DELETE {
-      <${krUri}> ?p ?o .
+      <${krUri}> <http://www.w3.org/2000/01/rdf-schema#label> ?oldLabel .
+      <${krUri}> <http://www.w3.org/2000/01/rdf-schema#comment> ?oldComment .
+      <${krUri}> <http://purl.org/dc/terms/description> ?oldDescription .
+      <${krUri}> <https://data.sick.com/voc/sam/objectives-model/progress> ?oldProgress .
+      <${krUri}> <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?oldState .
+      <${krUri}> <http://purl.org/dc/terms/created> ?oldCreated .
+      <${krUri}> <http://purl.org/dc/terms/modified> ?oldModified .
     }
     INSERT {
-      <${krUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
-      <${krUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${body.comment}" .
-      <${krUri}> <http://purl.org/dc/terms/description> "${body.description}" .
-      <${krUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .
-      <${krUri}> <http://purl.org/dc/terms/modified> "${new Date().toISOString()}" .
+      ${insertStatements.join('\n')}
     }
     WHERE {
-      <${krUri}> ?p ?o .
-      FILTER(?p IN (
-        <http://www.w3.org/2000/01/rdf-schema#label>,
-        <http://www.w3.org/2000/01/rdf-schema#comment>,
-        <http://purl.org/dc/terms/description>,
-        <https://data.sick.com/voc/sam/objectives-model/progress>,
-        <http://purl.org/dc/terms/modified>
-      ))
+      OPTIONAL { <${krUri}> <http://www.w3.org/2000/01/rdf-schema#label> ?oldLabel . }
+      OPTIONAL { <${krUri}> <http://www.w3.org/2000/01/rdf-schema#comment> ?oldComment . }
+      OPTIONAL { <${krUri}> <http://purl.org/dc/terms/description> ?oldDescription . }
+      OPTIONAL { <${krUri}> <https://data.sick.com/voc/sam/objectives-model/progress> ?oldProgress . }
+      OPTIONAL { <${krUri}> <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?oldState . }
+      OPTIONAL { <${krUri}> <http://purl.org/dc/terms/created> ?oldCreated . }
+      OPTIONAL { <${krUri}> <http://purl.org/dc/terms/modified> ?oldModified . }
     }
   `;
 
+  console.log("SPARQL UPDATE QUERY 2:", sparqlUpdate);
   try {
     const response = await fetch(
       'http://localhost:7200/repositories/linked-objectives/statements',

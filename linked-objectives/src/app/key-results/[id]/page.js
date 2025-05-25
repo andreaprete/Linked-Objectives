@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-import AppLayout from '@/app/components/AppLayout'; // Unified layout
+import AppLayout from '@/app/components/AppLayout'; 
 import KeyResultHeader from '@/app/components/KeyResultHeader.js';
 import ProgressBar from '@/app/components/ProgressBar.js';
 import MetaInfo from '@/app/components/MetaInfo.js';
@@ -69,7 +69,6 @@ export default function ObjectivePage() {
       console.error('Failed to save updates:', err);
     }
   };
-
   return (
     <AppLayout>
       <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen">
@@ -89,7 +88,7 @@ export default function ObjectivePage() {
           </div>
           <DescriptionBox description={data.description} />
           <LinkedOkrCard
-            progress={data.linkedObjective?.progress}
+            averageProgress={data.linkedObjective?.averageProgress}
             id={data.isKeyResultOf}
             title={data.linkedObjective?.title}
             description={data.linkedObjective?.description}

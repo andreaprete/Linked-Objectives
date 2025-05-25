@@ -1,55 +1,56 @@
-/* app/styles/Topbar.css */
-
 .topbar {
   width: 100%;
   height: 64px;
-  background: #232c3d;            /* matches sidebar dark shade */
+  background: #0d84c6; /* blue from palette */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  border-bottom: 1px solid #23304e;
-  box-shadow: 0 1px 4px rgba(44, 62, 80, 0.04);
+  border-bottom: 1.5px solid #5b6a77; /* slate */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   z-index: 100;
 }
 
 .topbar-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #8affd1;                /* key accent color, matches sidebar logo */
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  font-size: 1.28rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  text-transform: uppercase;
 }
 
 .topbar-user {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  font-size: 1rem;
+  gap: 0.7rem;
+  font-size: 1.08rem;
   color: #fff;
-  background: #28324a;
-  padding: 0.5rem 1rem;
+  background: #0d84c6;
+  padding: 0.6rem 1.25rem;
   border-radius: 22px;
-  box-shadow: 0 1px 4px rgba(44, 62, 80, 0.06);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  border: 2px solid #fff;
+  transition: background 0.16s, color 0.16s, border 0.16s;
 }
 .topbar-user:hover {
-  background: #34415e;
+  background: #fff;
+  color: #0d84c6;
+  border: 2px solid #0d84c6;
 }
 
-/* Optional: Add responsive tweak if you want a mobile collapse */
 @media (max-width: 600px) {
   .topbar {
     padding: 0 1rem;
     font-size: 1rem;
+    height: 56px;
   }
   .topbar-title {
     font-size: 1rem;
   }
   .topbar-user {
-    font-size: 0.95rem;
-    padding: 0.4rem 0.7rem;
+    font-size: 0.97rem;
+    padding: 0.42rem 0.8rem;
   }
 }
