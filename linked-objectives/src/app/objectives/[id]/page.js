@@ -46,6 +46,7 @@ export default function ObjectivePage() {
   if (loading) return <p className="p-6 text-lg">Loading...</p>;
   if (!data) return <p className="p-6 text-red-500">Failed to load data.</p>;
 
+
   return (
     <div className="objective-container">
       {showEdit && (
