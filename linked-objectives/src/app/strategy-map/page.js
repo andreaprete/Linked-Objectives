@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import "@excalidraw/excalidraw/index.css";
 import "@/app/styles/StrategyMap.css";
 import AppLayout from "@/app/components/AppLayout";
-import OkrSidebar from "@/app/components/OkrSideBar";
+import OkrSidebar from "@/app/components/OkrSidebar";
 
 const Excalidraw = dynamic(
   () => import("@excalidraw/excalidraw").then((mod) => mod.Excalidraw),

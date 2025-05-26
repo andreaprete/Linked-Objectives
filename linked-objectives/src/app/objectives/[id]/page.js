@@ -18,7 +18,13 @@ export default function ObjectivePage() {
 
   useEffect(() => {
     async function fetchObjective() {
-      const res = await fetch(`/api/objectives/${id}`);
+      const res = await fetch(`/api/objectives/${id}`, {
+          cache: "no-store", // 🔥 prevent any cache
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
       const json = await res.json();
       setData(json.data);
       setLoading(false);
