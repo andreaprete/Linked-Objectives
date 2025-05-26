@@ -83,8 +83,6 @@ export async function GET(req, context) {
       }
     });
 
-    console.log('ALL progress values:', dataMap.progressList);
-
     // Fetch all lifecycle states dynamically
     const lifecycleStatesQuery = `
       PREFIX lifecycle: <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/>
@@ -211,8 +209,6 @@ export async function GET(req, context) {
 
       dataMap.linkedObjective = linkedOkrData;
     }
-
-    dataMap.progressList = dataMap.progressList || [];
 
     return new Response(
       JSON.stringify({
