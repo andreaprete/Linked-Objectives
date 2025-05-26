@@ -18,17 +18,42 @@ export default function ObjectivePage() {
 
   useEffect(() => {
     async function fetchObjective() {
-      const res = await fetch(`/api/objectives/${id}`, {
-          cache: "no-store", // 🔥 prevent any cache
+      try {
+        const res = await fetch(`/api/objectives/${id}`, {
+          cache: "no-store",
           headers: {
             "Cache-Control": "no-cache",
             Pragma: "no-cache",
           },
         });
-      const json = await res.json();
-      setData(json.data);
-      setLoading(false);
+        const json = await res.json();
+        const obj = json.data;
+
+        // 🔍 Fetch key result progress values
+        const keyResultIds = obj.keyResult || [];
+        const keyResults = await Promise.all(
+          keyResultIds.map(async (krId) => {
+            const res = await fetch(`/api/key-results/${krId}`);
+            const json = await res.json();
+            return parseFloat(json.data?.progress || 0);
+          })
+        );
+
+        // 🧮 Calculate average
+        const total = keyResults.reduce((acc, val) => acc + val, 0);
+        const averageProgress =
+          keyResults.length > 0 ? total / keyResults.length : 0;
+
+        obj.averageProgress = averageProgress;
+
+        setData(obj);
+      } catch (err) {
+        console.error("Error loading objective or key results:", err);
+      } finally {
+        setLoading(false);
+      }
     }
+
     fetchObjective();
   }, [id]);
 
@@ -88,15 +113,30 @@ export default function ObjectivePage() {
               <p className="objective-comment">{data.comment}</p>
               <div className="objective-meta">
                 <span>
-                  <strong>Created:</strong> {data.created}
+                  <strong>Created:</strong>{" "}
+                  {data.created && data.created !== "undefined"
+                    ? new Intl.DateTimeFormat("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }).format(new Date(data.created))
+                    : "undefined"}
                 </span>
                 <span>
                   <strong>Version:</strong> {data.version}
                 </span>
                 <span>
-                  <strong>Modified:</strong> {data.modified}
+                  <strong>Modified:</strong>{" "}
+                  {data.modified
+                    ? new Intl.DateTimeFormat("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }).format(new Date(data.modified))
+                    : "undefined"}
                 </span>
               </div>
+
               <div className="objective-category-row">
                 <span>
                   <span className="label">Category:</span>
@@ -126,13 +166,16 @@ export default function ObjectivePage() {
 
             <div className="objective-progress-visual">
               <div className="edit-button-container">
-                <button onClick={() => setShowEdit(true)} className="edit-button">
+                <button
+                  onClick={() => setShowEdit(true)}
+                  className="edit-button"
+                >
                   EDIT
                 </button>
               </div>
               <SemiCircleProgress
                 strokeWidth={8}
-                percentage={data.progress || 0}
+                averageProgress={data.averageProgress || 0}
                 strokeColor="#3b82f6"
                 size={{ width: 200, height: 130 }}
                 hasBackground={true}
@@ -167,11 +210,16 @@ export default function ObjectivePage() {
           </button>
         </div>
 
-        {activeTab === "keyResults" && <KeyResults ids={data.keyResult || []} />}
+        {activeTab === "keyResults" && (
+          <KeyResults ids={data.keyResult || []} />
+        )}
         {activeTab === "related" && data && <RelatedGraph data={data} />}
         {activeTab === "people" && (
           <>
-            <PeopleInvolved label="Accountable for" people={data.accountableFor} />
+            <PeopleInvolved
+              label="Accountable for"
+              people={data.accountableFor}
+            />
             <PeopleInvolved label="Cares for" people={data.caresFor} />
             <PeopleInvolved label="Operates" people={data.operates} />
           </>

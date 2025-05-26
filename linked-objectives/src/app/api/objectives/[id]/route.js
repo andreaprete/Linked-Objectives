@@ -129,22 +129,23 @@ export async function GET(req, context) {
 
         case "https://data.sick.com/voc/sam/objectives-model/needs":
           dataMap.needs = dataMap.needs || [];
-          dataMap.needs.push(object.split('/').pop());
+          dataMap.needs.push(object.split("/").pop());
           break;
 
         case "https://data.sick.com/voc/sam/responsibility-model/hasResponsibilityFor":
           dataMap.hasResponsibilityFor = dataMap.hasResponsibilityFor || [];
-          dataMap.hasResponsibilityFor.push(object.split('/').pop());
+          dataMap.hasResponsibilityFor.push(object.split("/").pop());
           break;
 
         case "https://data.sick.com/voc/sam/responsibility-model/hasFormalResponsibilityFor":
-          dataMap.hasFormalResponsibilityFor = dataMap.hasFormalResponsibilityFor || [];
-          dataMap.hasFormalResponsibilityFor.push(object.split('/').pop());
+          dataMap.hasFormalResponsibilityFor =
+            dataMap.hasFormalResponsibilityFor || [];
+          dataMap.hasFormalResponsibilityFor.push(object.split("/").pop());
           break;
 
         case "https://data.sick.com/voc/sam/objectives-model/contributesTo":
           dataMap.contributesTo = dataMap.contributesTo || [];
-          dataMap.contributesTo.push(object.split('/').pop()); 
+          dataMap.contributesTo.push(object.split("/").pop());
 
           break;
         case "https://data.sick.com/voc/sam/objectives-model/hasKeyResult":
@@ -301,10 +302,17 @@ export async function GET(req, context) {
     });
   }
 }
+
 export async function PUT(req, context) {
   const { id } = context.params;
   const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const body = await req.json();
+
+  const now = new Date().toISOString();
+
+  // Safely handle "created"
+  const includeCreated =
+    body.created && body.created !== "undefined" && body.created.trim() !== "";
 
   const updateQuery = `
     DELETE {
@@ -312,11 +320,19 @@ export async function PUT(req, context) {
     }
     INSERT {
       <${objUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
-      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${body.comment}" .
+      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${
+    body.comment
+  }" .
       <${objUri}> <http://purl.org/dc/terms/description> "${body.description}" .
-      <${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${body.progress}" .
-      <${objUri}> <http://purl.org/dc/terms/created> "${body.created}" .
-      <${objUri}> <http://purl.org/dc/terms/modified> "${body.modified}" .
+      <${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${
+    body.progress
+  }" .      
+      ${
+        includeCreated
+          ? `<${objUri}> <http://purl.org/dc/terms/created> "${body.created}" .`
+          : ""
+      }
+      <${objUri}> <http://purl.org/dc/terms/modified> "${now}"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
     }
     WHERE {
       <${objUri}> ?p ?o .
