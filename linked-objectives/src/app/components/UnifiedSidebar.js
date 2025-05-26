@@ -12,7 +12,7 @@ const navItems = [
   { label: 'Goals', icon: FaBullseye, path: '/objectiveslist' },
   { label: 'Teams', icon: FaUsers, path: '/peoplelist' },
   { label: 'Users', icon: FaUserCog, path: '/users' },
-  { label: 'Editor', icon: FaThLarge, path: '/strategy-map' }
+  { label: 'Strategy-Map', icon: FaThLarge, path: '/strategy-map' }
 ];
 
 function SidebarItem({ icon, label, active, onClick }) {
