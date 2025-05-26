@@ -10,7 +10,7 @@ const routeTitleMap = {
   "/objectiveslist": "Goals",
   "/peoplelist": "Teams",
   "/users": "Users",
-  "/strategy-map": "Editor",
+  "/strategy-map": "Strategy-Map",
 };
 
 function getTitle(pathname) {

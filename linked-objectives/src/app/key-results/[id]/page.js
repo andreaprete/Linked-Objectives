@@ -77,8 +77,9 @@ export default function ObjectivePage() {
   };
   return (
     <AppLayout>
-      <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen">
-        <div className="bg-white rounded-xl shadow p-8 space-y-6 max-w-5xl w-full">
+      <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen relative">
+        {/* Main content (gets blurred if modal is open) */}
+        <div className={`bg-white rounded-xl shadow p-8 space-y-6 max-w-5xl w-full transition-all duration-300 ${isModalOpen ? "blur-sm pointer-events-none select-none" : ""}`}>
           <KeyResultHeader
             title={data.title}
             comment={data.comment}
@@ -102,12 +103,11 @@ export default function ObjectivePage() {
             category={data.linkedObjective?.category}
           />
         </div>
-      </div>
 
-      {isModalOpen && (
-        <div className="modal-portal">
-          <div className="modal-wrapper">
-            <div className="modal-inside-layout">
+        {/* Modal overlay - only inside main content area */}
+        {isModalOpen && (
+          <div className="absolute inset-0 flex items-center justify-center z-50">
+            <div className="w-full max-w-3xl bg-white rounded-xl shadow-xl p-8 mt-10">
               <EditModal
                 initialData={data}
                 lifecycleStates={lifecycleStates}
@@ -117,8 +117,8 @@ export default function ObjectivePage() {
               />
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </AppLayout>
   );
 }
