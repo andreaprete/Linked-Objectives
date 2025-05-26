@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-import AppLayout from '@/app/components/AppLayout'; 
-import KeyResultHeader from '@/app/components/KeyResultHeader.js';
-import ProgressBar from '@/app/components/ProgressBar.js';
-import MetaInfo from '@/app/components/MetaInfo.js';
-import DescriptionBox from '@/app/components/DescriptionBox.js';
-import LinkedOkrCard from '@/app/components/LinkedOkrCard.js';
-import EditModal from '@/app/components/EditModal.js';
+import AppLayout from "@/app/components/AppLayout";
+import KeyResultHeader from "@/app/components/KeyResultHeader.js";
+import ProgressBar from "@/app/components/ProgressBar.js";
+import MetaInfo from "@/app/components/MetaInfo.js";
+import DescriptionBox from "@/app/components/DescriptionBox.js";
+import LinkedOkrCard from "@/app/components/LinkedOkrCard.js";
+import EditModal from "@/app/components/EditModal.js";
 
-import styles from '@/app/styles/KeyResult.css';
+import styles from "@/app/styles/KeyResult.css";
 
 export default function ObjectivePage() {
   const { id } = useParams();
@@ -25,14 +25,20 @@ export default function ObjectivePage() {
 
     async function fetchOkr() {
       try {
-        const res = await fetch(`http://localhost:3000/api/key-results/${id}`);
+        const res = await fetch(`http://localhost:3000/api/key-results/${id}`, {
+          cache: "no-store", // 🔥 prevent any cache
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
         const json = await res.json();
         if (json.lifecycleStates && Array.isArray(json.lifecycleStates)) {
           setLifecycleStates(json.lifecycleStates);
         }
         setData(json.data);
       } catch (err) {
-        console.error('Failed to load OKR data:', err);
+        console.error("Failed to load OKR data:", err);
       } finally {
         setLoading(false);
       }
@@ -57,16 +63,16 @@ export default function ObjectivePage() {
   const handleSave = async (updatedData) => {
     try {
       const res = await fetch(`/api/key-results/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
       });
 
-      if (!res.ok) throw new Error('Update failed');
+      if (!res.ok) throw new Error("Update failed");
       setData((prev) => ({ ...prev, ...updatedData }));
       setModalOpen(false);
     } catch (err) {
-      console.error('Failed to save updates:', err);
+      console.error("Failed to save updates:", err);
     }
   };
   return (
