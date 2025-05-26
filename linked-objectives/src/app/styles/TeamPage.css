@@ -1,0 +1,47 @@
+.team-header {
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2rem;
+}
+
+.collapse-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.collapse-label {
+  margin-left: 0.5rem;
+  font-size: 1.125rem;
+  color: #4b5563;
+}
+
+.collapse-icon {
+  color: #6b7280;
+  font-size: 1.25rem;
+  transition: transform 0.2s;
+  display: inline-block;
+  transform: rotate(0deg);
+}
+
+.collapse-icon.open {
+  transform: rotate(180deg);
+}
+
+.collapse-empty {
+  padding: 1rem 0;
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+}

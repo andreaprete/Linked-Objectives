@@ -1,15 +1,12 @@
 .modal-overlay {
-  position: fixed;
+  position: absolute; /* ⬅️ changed from fixed */
   inset: 0;
   z-index: 50;
-  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  overflow: auto;
+  background: none; /* removes gray bg if present */
 }
-
 .modal-container {
   background-color: white;
   border-radius: 0.75rem;
@@ -19,6 +16,9 @@
   max-width: 48rem;
   max-height: 90vh;
   overflow-y: auto;
+
+  /* optional: vertically align to top if modal gets too tall */
+  margin-top: 2rem;
 }
 
 .modal-title {

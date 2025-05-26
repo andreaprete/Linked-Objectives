@@ -1,7 +1,8 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import AppLayout from "@/app/components/AppLayout"; // unified layout
+import AppLayout from "@/app/components/AppLayout";
 import KeyResults from "../../components/KeyResults";
 import RelatedGraph from "../../components/RelatedGraph";
 import PeopleInvolved from "../../components/PeopleInvolved";
@@ -39,7 +40,6 @@ export default function ObjectivePage() {
           })
         );
 
-        // 🧮 Calculate average
         const total = keyResults.reduce((acc, val) => acc + val, 0);
         const averageProgress =
           keyResults.length > 0 ? total / keyResults.length : 0;
@@ -67,8 +67,7 @@ export default function ObjectivePage() {
 
       if (!res.ok) throw new Error("Update failed");
 
-      setData((prev) => ({ ...prev, ...updatedData }));
-      setShowEdit(false);
+      window.location.reload();
     } catch (err) {
       console.error("Failed to update objective:", err);
       alert("Failed to update objective.");
@@ -87,6 +86,19 @@ export default function ObjectivePage() {
         <div className="p-6 text-red-500">Failed to load data.</div>
       </AppLayout>
     );
+
+  const formatDate = (value) => {
+    if (!value || value === "undefined") return "undefined";
+    try {
+      return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(value));
+    } catch {
+      return "undefined";
+    }
+  };
 
   return (
     <AppLayout>
@@ -113,27 +125,13 @@ export default function ObjectivePage() {
               <p className="objective-comment">{data.comment}</p>
               <div className="objective-meta">
                 <span>
-                  <strong>Created:</strong>{" "}
-                  {data.created && data.created !== "undefined"
-                    ? new Intl.DateTimeFormat("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      }).format(new Date(data.created))
-                    : "undefined"}
+                  <strong>Created:</strong> {formatDate(data.created)}
                 </span>
                 <span>
                   <strong>Version:</strong> {data.version}
                 </span>
                 <span>
-                  <strong>Modified:</strong>{" "}
-                  {data.modified
-                    ? new Intl.DateTimeFormat("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      }).format(new Date(data.modified))
-                    : "undefined"}
+                  <strong>Modified:</strong> {formatDate(data.modified)}
                 </span>
               </div>
 
@@ -210,16 +208,11 @@ export default function ObjectivePage() {
           </button>
         </div>
 
-        {activeTab === "keyResults" && (
-          <KeyResults ids={data.keyResult || []} />
-        )}
-        {activeTab === "related" && data && <RelatedGraph data={data} />}
+        {activeTab === "keyResults" && <KeyResults ids={data.keyResult || []} />}
+        {activeTab === "related" && <RelatedGraph data={data} />}
         {activeTab === "people" && (
           <>
-            <PeopleInvolved
-              label="Accountable for"
-              people={data.accountableFor}
-            />
+            <PeopleInvolved label="Accountable for" people={data.accountableFor} />
             <PeopleInvolved label="Cares for" people={data.caresFor} />
             <PeopleInvolved label="Operates" people={data.operates} />
           </>
