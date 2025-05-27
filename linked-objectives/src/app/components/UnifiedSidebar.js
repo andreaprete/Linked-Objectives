@@ -9,8 +9,8 @@ import "@/app/styles/UnifiedSidebar.css";
 const navItems = [
   { label: 'Home', icon: FaHome, path: '/homepage' },
   { label: 'Dashboard', icon: FaThLarge, path: '/dashboard' },
-  { label: 'Goals', icon: FaBullseye, path: '/objectiveslist' },
-  { label: 'Teams', icon: FaUsers, path: '/peoplelist' },
+  { label: 'Goals', icon: FaBullseye, path: '/objectives' },
+  { label: 'Teams', icon: FaUsers, path: '/teams' },
   { label: 'Users', icon: FaUserCog, path: '/users' },
   { label: 'Strategy-Map', icon: FaThLarge, path: '/strategy-map' }
 ];

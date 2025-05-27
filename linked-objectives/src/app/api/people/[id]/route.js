@@ -7,37 +7,40 @@ export async function GET(req, context) {
     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
     PREFIX org: <http://www.w3.org/ns/org#>
     PREFIX vcard: <http://www.w3.org/2006/vcard/ns#>
+    PREFIX terms: <http://purl.org/dc/terms/>
 
-    SELECT ?name ?email ?username ?location ?post ?roleTitle ?team ?teamName ?department ?departmentName ?company 
-    WHERE {
-      BIND(<${personUri}> AS ?person)
+    SELECT ?name ?email ?username ?location ?post ?roleTitle ?roleDescription ?team ?teamName ?department ?departmentName ?company 
+WHERE {
+  BIND(<${personUri}> AS ?person)
 
-      ?person a foaf:Person .
+  ?person a foaf:Person .
 
-      OPTIONAL { ?person foaf:name ?name. }
-      OPTIONAL { ?person foaf:email ?email. }
-      OPTIONAL { ?person foaf:accountName ?username. }
-      OPTIONAL { ?person vcard:hasAddress/vcard:locality ?location. }
+  OPTIONAL { ?person foaf:name ?name. }
+  OPTIONAL { ?person foaf:email ?email. }
+  OPTIONAL { ?person foaf:accountName ?username. }
+  OPTIONAL { ?person vcard:hasAddress/vcard:locality ?location. }
 
-      OPTIONAL {
-        ?post org:heldBy ?person .
-        OPTIONAL { ?post org:role ?roleTitle. }
-      }
+  OPTIONAL {
+    ?post org:heldBy ?person .
+    OPTIONAL { ?post org:role ?roleTitle. }
+    OPTIONAL { ?post terms:description ?roleDescription. }  # ✅ New line to get description of role/post
+  }
 
-      OPTIONAL {
-        ?team org:hasPost ?post .
-        OPTIONAL { ?team foaf:name ?teamName. }
-      }
+  OPTIONAL {
+    ?team org:hasPost ?post .
+    OPTIONAL { ?team foaf:name ?teamName. }
+  }
 
-      OPTIONAL {
-        ?department org:hasUnit ?team .
-        OPTIONAL { ?department foaf:name ?departmentName. }
-      }
+  OPTIONAL {
+    ?department org:hasUnit ?team .
+    OPTIONAL { ?department foaf:name ?departmentName. }
+  }
 
-      OPTIONAL {
-        ?company org:hasUnit ?department .
-      }
-    }
+  OPTIONAL {
+    ?company org:hasUnit ?department .
+  }
+}
+
   `;
 
   try {
@@ -86,6 +89,9 @@ export async function GET(req, context) {
         case "company":
           dataMap[key] = trimUri(value);
           if (key === "post") fullPostUri = value;
+          break;
+        case "roleDescription": // ✅ Add this
+          dataMap.roleDescription = value;
           break;
         default:
           dataMap[key] = value;
@@ -169,19 +175,20 @@ export async function GET(req, context) {
               if (objRes.ok) {
                 const objJson = await objRes.json();
                 // Get first found state
-                state = (
-                  objJson.results.bindings.find((b) => b.state) || {}
-                ).state?.value?.split("/").pop() || "Planned";
+                state =
+                  (
+                    objJson.results.bindings.find((b) => b.state) || {}
+                  ).state?.value
+                    ?.split("/")
+                    .pop() || "Planned";
 
                 // Filter to only "in progress" KRs and get their progress values
                 const inProgressKRs = objJson.results.bindings.filter(
                   (b) =>
                     b.krProgress &&
                     b.krState &&
-                    (
-                      b.krState.value.toLowerCase().includes("inprogress") ||
-                      b.krState.value.toLowerCase().includes("active")
-                    )
+                    (b.krState.value.toLowerCase().includes("inprogress") ||
+                      b.krState.value.toLowerCase().includes("active"))
                 );
 
                 if (inProgressKRs.length > 0) {
