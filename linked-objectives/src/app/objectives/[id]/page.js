@@ -142,7 +142,7 @@ export default function ObjectivePage() {
                   </div>
                   <SemiCircleProgress
                     strokeWidth={8}
-                    percentage={data.progress || 0}
+                    averageProgress={data.progress || 0}
                     strokeColor="#3b82f6"
                     size={{ width: 200, height: 130 }}
                     hasBackground={true}
