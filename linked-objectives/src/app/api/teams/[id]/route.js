@@ -1,5 +1,5 @@
 export async function GET(req, context) {
-  const { id } = await context.params;
+  const { id } = context.params;
   const endpoint = `http://localhost:7200/repositories/linked-objectives`;
   const teamUri = `https://data.sick.com/res/dev/examples/common-semantics/${id}`;
 
@@ -13,10 +13,9 @@ export async function GET(req, context) {
     PREFIX responsibility: <https://data.sick.com/voc/sam/responsibility-model/>
     PREFIX lifecycle: <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/>
 
-    SELECT ?person ?name ?email ?username ?location ?post ?roleTitle ?teamName ?department ?departmentName ?company ?okr ?okrLabel ?description ?progress ?state ?category
+    SELECT ?person ?name ?email ?username ?location ?post ?roleTitle ?teamName ?department ?departmentName ?company ?okr ?okrLabel ?description ?state ?category
     WHERE {
       BIND(<${teamUri}> AS ?team)
-
       ?team foaf:name ?teamName .
       OPTIONAL {
         ?department org:hasUnit ?team ;
@@ -25,11 +24,9 @@ export async function GET(req, context) {
       OPTIONAL {
         ?company org:hasUnit ?department .
       }
-
       ?team org:hasPost ?post .
       ?post org:role ?roleTitle ;
             org:heldBy ?person .
-
       ?person a foaf:Person ;
               foaf:name ?name ;
               foaf:email ?email ;
@@ -40,7 +37,6 @@ export async function GET(req, context) {
         ?okr a objectives:Objective ;
              rdfs:label ?okrLabel .
         OPTIONAL { ?okr dct:description ?description . }
-        OPTIONAL { ?okr objectives:progress ?progress . }
         OPTIONAL { ?okr lifecycle:state ?state . }
         OPTIONAL { ?okr objectives:category ?category . }
 
@@ -120,15 +116,49 @@ export async function GET(req, context) {
             id: okrId,
             title: row.okrLabel?.value,
             description: row.description?.value || "No description available.",
-            progress: row.progress?.value ? parseFloat(row.progress.value) : 0,
             state: row.state?.value?.split("/").pop() || "N/A",
             category: row.category?.value?.split("/").pop() || "N/A",
+            progress: null, // Placeholder, will fill after
           });
         }
       }
     }
 
+    // --- For each OKR, fetch average progress of its key results ---
     const okrs = Array.from(okrsMap.values());
+
+    // Helper to fetch average progress for each OKR
+    async function fetchOkrAverageProgress(okrId) {
+      const krQuery = `
+        SELECT ?kr ?progress WHERE {
+          <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+            <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+          ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
+        }
+      `;
+      const krRes = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/sparql-query",
+          Accept: "application/sparql-results+json",
+        },
+        body: krQuery,
+      });
+      if (!krRes.ok) return null;
+      const krJson = await krRes.json();
+      const vals = krJson.results.bindings.map(b => parseFloat(b.progress.value)).filter(v => !isNaN(v));
+      if (vals.length > 0) {
+        return vals.reduce((a, b) => a + b, 0) / vals.length;
+      }
+      return null;
+    }
+
+    // Fetch progress for all okrs in parallel
+    await Promise.all(
+      okrs.map(async (okr) => {
+        okr.progress = await fetchOkrAverageProgress(okr.id);
+      })
+    );
 
     return new Response(
       JSON.stringify({

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { LinkedOkrCard } from "./GoalCard";
+import LinkedOkrCard  from "./LinkedOkrCard";
 import '@/app/styles/WeeklyOverview.css';
 
 

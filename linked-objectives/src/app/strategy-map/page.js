@@ -70,6 +70,7 @@ export default function StrategyMapPage() {
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
   const wrapperRef = useRef(null);
   const [okrs, setOkrs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchOKRs() {
@@ -79,6 +80,8 @@ export default function StrategyMapPage() {
         setOkrs(data);
       } catch (err) {
         console.error("❌ Failed to fetch OKRs:", err);
+      } finally {
+        setLoading(false); 
       }
     }
     fetchOKRs();
@@ -104,6 +107,17 @@ export default function StrategyMapPage() {
     const label = createOkrLabelElement(okr, box);
     excalidrawAPI.addElements([box, label]);
   };
+
+  if (loading) return (
+      <AppLayout>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading The best Strategy Map...</p>
+          </div>
+        </main>
+      </AppLayout>
+    );
 
   return (
     <AppLayout>

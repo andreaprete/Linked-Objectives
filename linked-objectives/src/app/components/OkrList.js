@@ -1,19 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import OkrCard from './OkrCard';
+import LinkedOkrCard from './LinkedOkrCard';
 
 export default function OkrList({ username, okrs }) {
   const [caresForOpen, setCaresForOpen] = useState(true);
   const [operatesOpen, setOperatesOpen] = useState(false);
   const [accountableForOpen, setAccountableForOpen] = useState(false);
 
+  // You can replace these filters when data supports it
+  const caresForOkrs = okrs;      // currently showing all
+  const operatesOkrs = [];        // placeholder
+  const accountableOkrs = [];     // placeholder
+
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">{username}'s OKRs:</h2>
-      
+
       <div className="space-y-6">
+        {/* Cares For */}
         <div>
           <button 
             className="flex items-center mb-2 w-full text-left"
@@ -32,16 +37,31 @@ export default function OkrList({ username, okrs }) {
             </div>
             <div className="ml-2 text-lg text-gray-600">Cares for</div>
           </button>
-          
+
           {caresForOpen && (
             <div className="space-y-4">
-              {okrs.map(okr => (
-                <OkrCard key={okr.id} okr={okr} />
-              ))}
+              {caresForOkrs.length > 0 ? (
+                caresForOkrs.map((okr) => (
+                  <LinkedOkrCard
+                    key={okr.id}
+                    id={okr.id}
+                    title={okr.title}
+                    description={okr.description}
+                    averageProgress={okr.progress}
+                    state={okr.state}
+                    category={okr.category}
+                  />
+                ))
+              ) : (
+                <div className="py-4 text-center text-gray-500 italic">
+                  No OKRs available
+                </div>
+              )}
             </div>
           )}
         </div>
-        
+
+        {/* Operates */}
         <div>
           <button 
             className="flex items-center mb-2 w-full text-left"
@@ -60,14 +80,15 @@ export default function OkrList({ username, okrs }) {
             </div>
             <div className="ml-2 text-lg text-gray-600">Operates</div>
           </button>
-          
+
           {operatesOpen && (
             <div className="py-4 text-center text-gray-500 italic">
               No OKRs available
             </div>
           )}
         </div>
-        
+
+        {/* Accountable For */}
         <div>
           <button 
             className="flex items-center mb-2 w-full text-left"
@@ -86,7 +107,7 @@ export default function OkrList({ username, okrs }) {
             </div>
             <div className="ml-2 text-lg text-gray-600">Accountable for</div>
           </button>
-          
+
           {accountableForOpen && (
             <div className="py-4 text-center text-gray-500 italic">
               No OKRs available

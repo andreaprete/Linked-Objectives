@@ -30,13 +30,16 @@ export default function TeamPage() {
     fetchTeam();
   }, [id]);
 
-  if (loading)
-    return (
+  if (loading) return (
       <AppLayout>
-        <p className="p-6 text-lg">Loading Team...</p>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading Team data...</p>
+          </div>
+        </main>
       </AppLayout>
     );
-
   if (!data)
     return (
       <AppLayout>

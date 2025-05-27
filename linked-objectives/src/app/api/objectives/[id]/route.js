@@ -15,7 +15,6 @@ export async function GET(req, context) {
     const query = `
       PREFIX foaf: <http://xmlns.com/foaf/0.1/>
       PREFIX org: <http://www.w3.org/ns/org#>
-
       SELECT ?person ?name ?roleTitle WHERE {
         <${postUri}> org:heldBy ?person ;
                      org:role ?roleTitle .
@@ -110,13 +109,11 @@ export async function GET(req, context) {
           dataMap.needs = dataMap.needs || [];
           dataMap.needs.push(object.split("/").pop());
           break;
-
         case "http://purl.org/dc/terms/temporal":
           dataMap.temporal = object.split("/").pop();
           break;
         case "https://data.sick.com/voc/sam/responsibility-model/hasFormalResponsibilityFor":
-          dataMap.hasFormalResponsibilityFor =
-            dataMap.hasFormalResponsibilityFor || [];
+          dataMap.hasFormalResponsibilityFor = dataMap.hasFormalResponsibilityFor || [];
           dataMap.hasFormalResponsibilityFor.push(object.split("/").pop());
           break;
         case "https://data.sick.com/voc/sam/objectives-model/category":
@@ -157,6 +154,7 @@ export async function GET(req, context) {
       }
     });
 
+    // ---- Add this block for resolving persons ----
     const keysToResolve = ["accountableFor", "caresFor", "operates"];
     for (const key of keysToResolve) {
       const postId = dataMap[key];
@@ -167,12 +165,13 @@ export async function GET(req, context) {
         }
       }
     }
+    // ---------------------------------------------
 
+    // ---- Temporal interval fetching (unchanged) ----
     if (dataMap.temporal) {
       const intervalUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${dataMap.temporal}`;
       const temporalQuery = `
         PREFIX time: <http://www.w3.org/2006/time#>
-    
         SELECT ?predicate ?object WHERE {
           <${intervalUri}> ?predicate ?object .
         }
@@ -219,16 +218,18 @@ export async function GET(req, context) {
         console.error("Error fetching temporal interval:", err);
       }
     }
+    // ------------------------------------------------
 
+    // ---- Reverse relationship fetching (unchanged) ----
     const reverseQuery = `
-  SELECT ?subject ?predicate WHERE {
-    ?subject ?predicate <${objUri}> .
-    FILTER (?predicate IN (
-      <https://data.sick.com/voc/sam/objectives-model/contributesTo>,
-      <https://data.sick.com/voc/sam/objectives-model/needs>
-    ))
-  }
-`;
+      SELECT ?subject ?predicate WHERE {
+        ?subject ?predicate <${objUri}> .
+        FILTER (?predicate IN (
+          <https://data.sick.com/voc/sam/objectives-model/contributesTo>,
+          <https://data.sick.com/voc/sam/objectives-model/needs>
+        ))
+      }
+    `;
 
     try {
       const reverseRes = await fetch(endpoint, {
@@ -260,7 +261,6 @@ export async function GET(req, context) {
           const alreadyNeeds = dataMap.needs?.includes(subject);
 
           if (isNeeds && !alreadyContributesTo && !directNeeds.has(subject)) {
-            // Only add neededBy if subject does not already need current
             dataMap.neededBy = dataMap.neededBy || [];
             if (!dataMap.neededBy.includes(subject)) {
               dataMap.neededBy.push(subject);
@@ -272,7 +272,6 @@ export async function GET(req, context) {
             !alreadyNeeds &&
             !directContributesTo.has(subject)
           ) {
-            // Only add contributedToBy if subject does not already contributeTo current
             dataMap.contributedToBy = dataMap.contributedToBy || [];
             if (!dataMap.contributedToBy.includes(subject)) {
               dataMap.contributedToBy.push(subject);
@@ -283,6 +282,48 @@ export async function GET(req, context) {
     } catch (err) {
       console.error("Error fetching reverse relationships:", err);
     }
+    // ------------------------------------------------------
+
+    // ----- NEW: Fetch average progress of all key results -----
+    const krIds = dataMap.keyResult || [];
+    let averageProgress = null;
+
+    if (krIds.length > 0) {
+      const krProgressQuery = `
+        SELECT ?kr ?progress
+        WHERE {
+          VALUES ?kr { ${krIds.map(id => `<https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}>`).join(' ')} }
+          ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
+        }
+      `;
+      try {
+        const krRes = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/sparql-query",
+            Accept: "application/sparql-results+json",
+          },
+          body: krProgressQuery,
+        });
+
+        if (krRes.ok) {
+          const krJson = await krRes.json();
+          const progressVals = krJson.results.bindings
+            .map(b => parseFloat(b.progress.value))
+            .filter(v => !isNaN(v));
+          if (progressVals.length > 0) {
+            averageProgress = progressVals.reduce((a, b) => a + b, 0) / progressVals.length;
+          }
+        } else {
+          console.error("KR progress query failed:", await krRes.text());
+        }
+      } catch (err) {
+        console.error("Error fetching KR progress:", err);
+      }
+    }
+    // Attach the computed average progress to the dataMap as 'progress'
+    dataMap.progress = averageProgress;
+    // -----------------------------------------------------------
 
     return new Response(
       JSON.stringify({
