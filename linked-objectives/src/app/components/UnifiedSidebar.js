@@ -10,7 +10,8 @@ const navItems = [
     label: 'Home',
     icon: FaHome,
     path: '/homepage',
-    match: (pathname) => pathname === '/homepage' || pathname === '/',
+    match: (pathname) =>
+      pathname === '/homepage' || pathname.startsWith('/homepage/'),
   },
   {
     label: 'Dashboard',

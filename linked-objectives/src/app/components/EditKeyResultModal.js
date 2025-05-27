@@ -1,11 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CalendarIcon } from '@heroicons/react/20/solid';
 import '@/app/styles/EditModal.css';
 
 export default function EditModal({ initialData, onClose, onSave, isOpen, lifecycleStates }) {
   const [formData, setFormData] = useState(initialData);
+
+  // Handle Esc to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,11 +30,11 @@ export default function EditModal({ initialData, onClose, onSave, isOpen, lifecy
   };
 
   const formatDate = (date) => {
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0'); // months are 0-based
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   if (!isOpen) return null;
@@ -94,7 +106,6 @@ export default function EditModal({ initialData, onClose, onSave, isOpen, lifecy
             onChange={handleChange}
             className="select-field"
           >
-            {/* Dynamically rendering lifecycle states */}
             {lifecycleStates.map((state) => (
               <option key={state.value} value={state.value}>
                 {state.label}
