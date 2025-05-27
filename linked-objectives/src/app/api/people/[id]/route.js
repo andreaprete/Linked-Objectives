@@ -130,77 +130,76 @@ export async function GET(req, context) {
       if (okrResponse.ok) {
         const okrJson = await okrResponse.json();
 
-        // For each OKR, fetch state and progress (average progress of KRs with "InProgress"/"Active" state)
+        // For each OKR, fetch state and average progress of ALL its key results (regardless of KR state)
         okrs = await Promise.all(
           okrJson.results.bindings.map(async (row) => {
             const okrId = trimUri(row.okr.value);
             const label = row.label.value;
 
-            // --- Fetch state and key results for this objective
-            const objDetailsQuery = `
-              SELECT ?state ?kr ?krProgress ?krState
-              WHERE {
+            // --- Fetch state
+            let state = "Planned";
+            const stateQuery = `
+              SELECT ?state WHERE {
                 OPTIONAL { 
                   <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
                     <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
                 }
-                OPTIONAL {
-                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
-                    <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
-                  OPTIONAL { ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?krProgress . }
-                  OPTIONAL { ?kr <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?krState . }
-                }
               }
             `;
-
-            let state = "Planned";
-            let progress = 0;
-
             try {
-              const objRes = await fetch(endpoint, {
+              const stateRes = await fetch(endpoint, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/sparql-query",
                   Accept: "application/sparql-results+json",
                 },
-                body: objDetailsQuery,
+                body: stateQuery,
               });
+              if (stateRes.ok) {
+                const stateJson = await stateRes.json();
+                state =
+                  (
+                    stateJson.results.bindings.find((b) => b.state) || {}
+                  ).state?.value?.split("/").pop() || "Planned";
+              }
+            } catch {}
 
-              if (objRes.ok) {
-                const objJson = await objRes.json();
-                // Get first found state
-                state = (
-                  objJson.results.bindings.find((b) => b.state) || {}
-                ).state?.value?.split("/").pop() || "Planned";
-
-                // Filter to only "in progress" KRs and get their progress values
-                const inProgressKRs = objJson.results.bindings.filter(
-                  (b) =>
-                    b.krProgress &&
-                    b.krState &&
-                    (
-                      b.krState.value.toLowerCase().includes("inprogress") ||
-                      b.krState.value.toLowerCase().includes("active")
-                    )
-                );
-
-                if (inProgressKRs.length > 0) {
-                  const total = inProgressKRs.reduce(
-                    (sum, b) => sum + parseFloat(b.krProgress.value || 0),
-                    0
-                  );
-                  progress = total / inProgressKRs.length;
+            // --- Fetch all key results and average their progress
+            let progress = null;
+            const krProgressQuery = `
+              SELECT ?kr ?progress
+              WHERE {
+                <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+                ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
+              }
+            `;
+            try {
+              const krRes = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/sparql-query",
+                  Accept: "application/sparql-results+json",
+                },
+                body: krProgressQuery,
+              });
+              if (krRes.ok) {
+                const krJson = await krRes.json();
+                const progressVals = krJson.results.bindings
+                  .map((b) => parseFloat(b.progress.value))
+                  .filter((v) => !isNaN(v));
+                if (progressVals.length > 0) {
+                  progress =
+                    progressVals.reduce((a, b) => a + b, 0) /
+                    progressVals.length;
                 }
               }
-            } catch (err) {
-              progress = 0;
-            }
+            } catch {}
 
             return {
               id: okrId,
               title: label,
               state,
-              progress: Math.round(progress),
+              progress: progress !== null ? Math.round(progress) : null,
             };
           })
         );
@@ -216,7 +215,6 @@ export async function GET(req, context) {
       dataMap.teamName = null;
     }
 
-    // ✅ Always return a Response at the end!
     return new Response(
       JSON.stringify({
         id,
