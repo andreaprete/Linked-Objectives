@@ -3,6 +3,8 @@ import GoalCard from './GoalCard';
 import styles from '@/app/styles/GoalTab.module.css';
 
 export default function GoalTab({ okrs = [], onAddGoal }) {
+  const uniqueOkrs = Array.from(new Map(okrs.map(okr => [okr.id, okr])).values());
+
   return (
     <section className={styles['goal-tab-section']}>
       <div className={styles['goal-tab-header']}>
@@ -15,8 +17,9 @@ export default function GoalTab({ okrs = [], onAddGoal }) {
         </div>
       </div>
       <div>
-        {okrs.map((okr) => (
+        {uniqueOkrs.map((okr) => (
           <GoalCard
+            key={okr.id}
             id={okr.id}
             title={okr.title}
             state={okr.state}
