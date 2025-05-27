@@ -68,6 +68,18 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
     fetchInitialData();
   }, [initialData]);
 
+
+  useEffect(() => {
+    if (!onClose) return; // Defensive in case onClose isn't passed
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const personOptions = people.map((p) => ({ label: p.name, value: p.id }));
 
   const formatDate = (date) => {

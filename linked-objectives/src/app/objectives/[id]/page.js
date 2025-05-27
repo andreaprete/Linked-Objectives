@@ -252,7 +252,8 @@ export default function ObjectivePage() {
                   border: "none",
                   borderRadius: "0.4rem",
                   fontWeight: "500",
-                  padding: "0.45rem 1.2rem"
+                  padding: "0.45rem 1.2rem",
+                  cursor: "pointer"
                 }}
               >
                 Create
@@ -265,7 +266,8 @@ export default function ObjectivePage() {
                   border: "none",
                   borderRadius: "0.4rem",
                   fontWeight: "500",
-                  padding: "0.45rem 1.2rem"
+                  padding: "0.45rem 1.2rem",
+                  cursor: "pointer"
                 }}
                 disabled={selectedKeyResults.length === 0}
                 title={selectedKeyResults.length === 0 ? "Select at least one key result" : ""}

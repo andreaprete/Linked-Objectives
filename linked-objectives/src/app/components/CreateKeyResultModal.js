@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "@/app/styles/EditModal.css"; // reuse your modal styles
 
 export default function CreateKeyResultModal({ isOpen, onClose, onCreate }) {
@@ -9,6 +9,20 @@ export default function CreateKeyResultModal({ isOpen, onClose, onCreate }) {
     comment: "",
     description: "",
   });
+
+  // Add Escape key close logic
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
