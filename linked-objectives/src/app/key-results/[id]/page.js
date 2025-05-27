@@ -9,7 +9,7 @@ import ProgressBar from "@/app/components/ProgressBar.js";
 import MetaInfo from "@/app/components/MetaInfo.js";
 import DescriptionBox from "@/app/components/DescriptionBox.js";
 import LinkedOkrCard from "@/app/components/LinkedOkrCard.js";
-import EditModal from "@/app/components/EditModal.js";
+import EditKeyResultModal from "@/app/components/EditKeyResultModal.js";
 
 import styles from "@/app/styles/KeyResult.css";
 
@@ -112,7 +112,7 @@ export default function ObjectivePage() {
         {isModalOpen && (
           <div className="absolute inset-0 flex items-center justify-center z-50">
             <div className="w-full max-w-3xl bg-white rounded-xl shadow-xl p-8 mt-10">
-              <EditModal
+              <EditKeyResultModal
                 initialData={data}
                 lifecycleStates={lifecycleStates}
                 isOpen={isModalOpen}

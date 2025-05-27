@@ -9,7 +9,6 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
   const [availableOKRs, setAvailableOKRs] = useState([]);
   const [newOkrId, setNewOkrId] = useState("");
   const [newOkrRelation, setNewOkrRelation] = useState("needs");
-  const [newKeyResult, setNewKeyResult] = useState("");
 
   const [formData, setFormData] = useState({
     title: initialData.title || "",
@@ -23,7 +22,6 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
     caresFor: initialData.caresFor?.id || "",
     operates: initialData.operates?.id || "",
     relatedOKRs: [],
-    keyResults: [],
   });
 
   useEffect(() => {
@@ -37,7 +35,6 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
         const okrsData = await okrsRes.json();
 
         const related = [];
-
         for (const relType of [
           "contributesTo",
           "neededBy",
@@ -56,28 +53,12 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
           }
         }
 
-        const keyResults = [];
-        for (const id of initialData.keyResult || []) {
-          try {
-            const res = await fetch(`/api/key-results/${id}`);
-            const data = await res.json();
-            keyResults.push({
-              id,
-              title: data?.data?.title || id,
-            });
-          } catch (err) {
-            console.error(`Failed to fetch key result ${id}`, err);
-            keyResults.push({ id, title: id });
-          }
-        }
-
         setPeople(peopleData);
         setAvailableOKRs(okrsData);
 
         setFormData((prev) => ({
           ...prev,
           relatedOKRs: related,
-          keyResults,
         }));
       } catch (err) {
         console.error("Error loading dropdown data:", err);
@@ -135,22 +116,6 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
     }));
     setNewOkrId("");
     setNewOkrRelation("needs");
-  };
-
-  const removeKeyResult = (index) => {
-    const updated = [...formData.keyResults];
-    updated.splice(index, 1);
-    setFormData({ ...formData, keyResults: updated });
-  };
-
-  const addNewKeyResult = () => {
-    if (!newKeyResult.trim()) return;
-    const id = `kr-${Math.random().toString(36).substr(2, 6)}`;
-    setFormData((prev) => ({
-      ...prev,
-      keyResults: [...prev.keyResults, { id, title: newKeyResult }],
-    }));
-    setNewKeyResult("");
   };
 
   const handleSubmit = async () => {
@@ -331,37 +296,6 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
               <option value="contributedToBy">Contributed To By</option>
             </select>
             <button onClick={addNewOkr} className="add-btn">
-              ＋
-            </button>
-          </div>
-        </div>
-
-        <div className="modal-section">
-          <h3 className="input-label">Key Results</h3>
-
-          {formData.keyResults.map((kr, index) => (
-            <div key={kr.id || index} className="okr-row">
-              <a href={`/key-results/${kr.id}`} className="kr-link">
-                {kr.title}
-              </a>
-              <button
-                onClick={() => removeKeyResult(index)}
-                className="delete-btn"
-              >
-                ✖
-              </button>
-            </div>
-          ))}
-
-          <div className="add-okr-row">
-            <input
-              type="text"
-              placeholder="New Key Result title"
-              value={newKeyResult}
-              onChange={(e) => setNewKeyResult(e.target.value)}
-              className="input-field"
-            />
-            <button onClick={addNewKeyResult} className="add-btn">
               ＋
             </button>
           </div>
