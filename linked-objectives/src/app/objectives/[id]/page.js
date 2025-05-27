@@ -19,17 +19,41 @@ export default function ObjectivePage() {
 
   useEffect(() => {
     async function fetchObjective() {
-      const res = await fetch(`/api/objectives/${id}`, {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
-      });
-      const json = await res.json();
-      setData(json.data);
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/objectives/${id}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
+        const json = await res.json();
+        const obj = json.data;
+
+        // 🔍 Fetch key result progress values
+        const keyResultIds = obj.keyResult || [];
+        const keyResults = await Promise.all(
+          keyResultIds.map(async (krId) => {
+            const res = await fetch(`/api/key-results/${krId}`);
+            const json = await res.json();
+            return parseFloat(json.data?.progress || 0);
+          })
+        );
+
+        const total = keyResults.reduce((acc, val) => acc + val, 0);
+        const averageProgress =
+          keyResults.length > 0 ? total / keyResults.length : 0;
+
+        obj.averageProgress = averageProgress;
+
+        setData(obj);
+      } catch (err) {
+        console.error("Error loading objective or key results:", err);
+      } finally {
+        setLoading(false);
+      }
     }
+
     fetchObjective();
   }, [id]);
 
@@ -43,8 +67,7 @@ export default function ObjectivePage() {
 
       if (!res.ok) throw new Error("Update failed");
 
-      setData((prev) => ({ ...prev, ...updatedData }));
-      setShowEdit(false);
+      window.location.reload();
     } catch (err) {
       console.error("Failed to update objective:", err);
       alert("Failed to update objective.");
@@ -64,130 +87,136 @@ export default function ObjectivePage() {
       </AppLayout>
     );
 
+  const formatDate = (value) => {
+    if (!value || value === "undefined") return "undefined";
+    try {
+      return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(value));
+    } catch {
+      return "undefined";
+    }
+  };
+
   return (
     <AppLayout>
-      <div className="relative">
-        {/* Modal */}
+      <div className="objective-container">
         {showEdit && (
-          <div className="modal-overlay">
-            <div className="modal-container">
-              <EditObjectiveModal
-                initialData={data}
-                isOpen={showEdit}
-                onClose={() => setShowEdit(false)}
-                onSave={handleSave}
-              />
+          <div className="modal-portal">
+            <div className="modal-wrapper">
+              <div className="modal-inside-layout">
+                <EditObjectiveModal
+                  initialData={data}
+                  isOpen={showEdit}
+                  onClose={() => setShowEdit(false)}
+                  onSave={handleSave}
+                />
+              </div>
             </div>
           </div>
         )}
 
-        {/* Blurred content */}
-        <div
-          className={`transition-all duration-300 ${
-            showEdit ? "blur-sm pointer-events-none select-none" : ""
-          }`}
-        >
-          <div className="objective-container">
-            <div className="objective-card">
-              <div className="objective-header-section row-layout">
-                <div className="objective-left-meta">
-                  <h1 className="objective-title">{data.title}</h1>
-                  <p className="objective-comment">{data.comment}</p>
-                  <div className="objective-meta">
-                    <span>
-                      <strong>Created:</strong> {data.created}
-                    </span>
-                    <span>
-                      <strong>Version:</strong> {data.version}
-                    </span>
-                    <span>
-                      <strong>Modified:</strong> {data.modified}
-                    </span>
-                  </div>
-                  <div className="objective-category-row">
-                    <span>
-                      <span className="label">Category:</span>
-                      <span className="temporal-text"> {data.category}</span>
-                    </span>
-                    <span>
-                      <span className="label status-label">State:</span>
-                      <span className="state"> {data.state}</span>
-                    </span>
-                  </div>
-                  <div className="temporal-timeline">
-                    <div className="temporal-labels">
-                      <span className="temporal-date">{data.temporal?.start}</span>
-                      <span className="temporal-date">{data.temporal?.end}</span>
-                    </div>
-                    <div className="temporal-line">
-                      <span className="dot"></span>
-                      <span className="connector"></span>
-                      <span className="dot"></span>
-                    </div>
-                    <div className="temporal-labels">
-                      <span className="temporal-text">Beginning Date</span>
-                      <span className="temporal-text">End Date</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="objective-progress-visual">
-                  <div className="edit-button-container">
-                    <button
-                      onClick={() => setShowEdit(true)}
-                      className="edit-button"
-                    >
-                      EDIT
-                    </button>
-                  </div>
-                  <SemiCircleProgress
-                    strokeWidth={8}
-                    averageProgress={data.progress || 0}
-                    strokeColor="#3b82f6"
-                    size={{ width: 200, height: 130 }}
-                    hasBackground={true}
-                  />
-                </div>
+        <div className="objective-card">
+          <div className="objective-header-section row-layout">
+            <div className="objective-left-meta">
+              <h1 className="objective-title">{data.title}</h1>
+              <p className="objective-comment">{data.comment}</p>
+              <div className="objective-meta">
+                <span>
+                  <strong>Created:</strong> {formatDate(data.created)}
+                </span>
+                <span>
+                  <strong>Version:</strong> {data.version}
+                </span>
+                <span>
+                  <strong>Modified:</strong> {formatDate(data.modified)}
+                </span>
               </div>
 
-              <div className="objective-description-box">
-                <p className="label">Description:</p>
-                <p className="objective-description">{data.description}</p>
+              <div className="objective-category-row">
+                <span>
+                  <span className="label">Category:</span>
+                  <span className="temporal-text"> {data.category}</span>
+                </span>
+                <span>
+                  <span className="label status-label">State:</span>
+                  <span className="state"> {data.state}</span>
+                </span>
+              </div>
+              <div className="temporal-timeline">
+                <div className="temporal-labels">
+                  <span className="temporal-date">{data.temporal?.start}</span>
+                  <span className="temporal-date">{data.temporal?.end}</span>
+                </div>
+                <div className="temporal-line">
+                  <span className="dot"></span>
+                  <span className="connector"></span>
+                  <span className="dot"></span>
+                </div>
+                <div className="temporal-labels">
+                  <span className="temporal-text">Beginning Date</span>
+                  <span className="temporal-text">End Date</span>
+                </div>
               </div>
             </div>
 
-            <div className="objective-tabs">
-              <button
-                onClick={() => setActiveTab("keyResults")}
-                className={`tab-btn ${activeTab === "keyResults" ? "active" : ""}`}
-              >
-                Key results
-              </button>
-              <button
-                onClick={() => setActiveTab("related")}
-                className={`tab-btn ${activeTab === "related" ? "active" : ""}`}
-              >
-                Related OKRs
-              </button>
-              <button
-                onClick={() => setActiveTab("people")}
-                className={`tab-btn ${activeTab === "people" ? "active" : ""}`}
-              >
-                People Involved
-              </button>
+            <div className="objective-progress-visual">
+              <div className="edit-button-container">
+                <button
+                  onClick={() => setShowEdit(true)}
+                  className="edit-button"
+                >
+                  EDIT
+                </button>
+              </div>
+              <SemiCircleProgress
+                strokeWidth={8}
+                averageProgress={data.averageProgress || 0}
+                strokeColor="#3b82f6"
+                size={{ width: 200, height: 130 }}
+                hasBackground={true}
+              />
             </div>
+          </div>
 
-            {activeTab === "keyResults" && <KeyResults ids={data.keyResult || []} />}
-            {activeTab === "related" && data && <RelatedGraph data={data} />}
-            {activeTab === "people" && (
-              <>
-                <PeopleInvolved label="Accountable for" people={data.accountableFor} />
-                <PeopleInvolved label="Cares for" people={data.caresFor} />
-                <PeopleInvolved label="Operates" people={data.operates} />
-              </>
-            )}
+          <div className="objective-description-box">
+            <p className="label">Description:</p>
+            <p className="objective-description">{data.description}</p>
           </div>
         </div>
+
+        <div className="objective-tabs">
+          <button
+            onClick={() => setActiveTab("keyResults")}
+            className={`tab-btn ${activeTab === "keyResults" ? "active" : ""}`}
+          >
+            Key results
+          </button>
+          <button
+            onClick={() => setActiveTab("related")}
+            className={`tab-btn ${activeTab === "related" ? "active" : ""}`}
+          >
+            Related OKRs
+          </button>
+          <button
+            onClick={() => setActiveTab("people")}
+            className={`tab-btn ${activeTab === "people" ? "active" : ""}`}
+          >
+            People Involved
+          </button>
+        </div>
+
+        {activeTab === "keyResults" && <KeyResults ids={data.keyResult || []} />}
+        {activeTab === "related" && <RelatedGraph data={data} />}
+        {activeTab === "people" && (
+          <>
+            <PeopleInvolved label="Accountable for" people={data.accountableFor} />
+            <PeopleInvolved label="Cares for" people={data.caresFor} />
+            <PeopleInvolved label="Operates" people={data.operates} />
+          </>
+        )}
       </div>
     </AppLayout>
   );

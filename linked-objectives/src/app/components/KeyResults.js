@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import "@/app/styles/KeyResultsComponent.css"; 
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import "@/app/styles/KeyResultsComponent.css";
 
 export default function KeyResults({ ids = [] }) {
   const [keyResults, setKeyResults] = useState([]);
@@ -39,11 +39,11 @@ export default function KeyResults({ ids = [] }) {
               {kr.title}
             </Link>
             <p className="keyresult-comment">
-              {kr.comment || 'No comment available.'}
+              {kr.comment || "No comment available."}
             </p>
           </div>
           <div className="keyresult-progress">
-            {kr.progress ? `${kr.progress}%` : '0%'}
+            {kr.progress ? `${Math.round(kr.progress)}%` : "0%"}
           </div>
         </div>
       ))}
