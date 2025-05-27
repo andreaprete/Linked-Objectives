@@ -30,7 +30,7 @@ export default function ObjectivePage() {
         const json = await res.json();
         const obj = json.data;
 
-        // 🔍 Fetch key result progress values
+        // Fetch key result progress values
         const keyResultIds = obj.keyResult || [];
         const keyResults = await Promise.all(
           keyResultIds.map(async (krId) => {
@@ -45,7 +45,6 @@ export default function ObjectivePage() {
           keyResults.length > 0 ? total / keyResults.length : 0;
 
         obj.averageProgress = averageProgress;
-
         setData(obj);
       } catch (err) {
         console.error("Error loading objective or key results:", err);
@@ -66,8 +65,14 @@ export default function ObjectivePage() {
       });
 
       if (!res.ok) throw new Error("Update failed");
-
-      window.location.reload();
+      // Just reload data and close modal
+      setShowEdit(false);
+      setLoading(true);
+      const res2 = await fetch(`/api/objectives/${id}`);
+      const json = await res2.json();
+      const obj = json.data;
+      setData(obj);
+      setLoading(false);
     } catch (err) {
       console.error("Failed to update objective:", err);
       alert("Failed to update objective.");
@@ -102,120 +107,127 @@ export default function ObjectivePage() {
 
   return (
     <AppLayout>
-      <div className="objective-container">
-        {showEdit && (
-          <div className="modal-portal">
-            <div className="modal-wrapper">
-              <div className="modal-inside-layout">
-                <EditObjectiveModal
-                  initialData={data}
-                  isOpen={showEdit}
-                  onClose={() => setShowEdit(false)}
-                  onSave={handleSave}
+      <div className="flex justify-center items-start bg-neutral-100 pt-4 min-h-screen relative">
+        {/* Main content (gets blurred if modal is open) */}
+        <div
+          className={`objective-container transition-all duration-300 ${
+            showEdit ? "blur-sm pointer-events-none select-none" : ""
+          }`}
+        >
+          <div className="objective-card">
+            <div className="objective-header-section row-layout">
+              <div className="objective-left-meta">
+                <h1 className="objective-title">{data.title}</h1>
+                <p className="objective-comment">{data.comment}</p>
+                <div className="objective-meta">
+                  <span>
+                    <strong>Created:</strong> {formatDate(data.created)}
+                  </span>
+                  <span>
+                    <strong>Version:</strong> {data.version}
+                  </span>
+                  <span>
+                    <strong>Modified:</strong> {formatDate(data.modified)}
+                  </span>
+                </div>
+                <div className="objective-category-row">
+                  <span>
+                    <span className="label">Category:</span>
+                    <span className="temporal-text"> {data.category}</span>
+                  </span>
+                  <span>
+                    <span className="label status-label">State:</span>
+                    <span className="state"> {data.state}</span>
+                  </span>
+                </div>
+                <div className="temporal-timeline">
+                  <div className="temporal-labels">
+                    <span className="temporal-date">{data.temporal?.start}</span>
+                    <span className="temporal-date">{data.temporal?.end}</span>
+                  </div>
+                  <div className="temporal-line">
+                    <span className="dot"></span>
+                    <span className="connector"></span>
+                    <span className="dot"></span>
+                  </div>
+                  <div className="temporal-labels">
+                    <span className="temporal-text">Beginning Date</span>
+                    <span className="temporal-text">End Date</span>
+                  </div>
+                </div>
+              </div>
+              <div className="objective-progress-visual">
+                <div className="edit-button-container">
+                  <button
+                    onClick={() => setShowEdit(true)}
+                    className="edit-button"
+                  >
+                    EDIT
+                  </button>
+                </div>
+                <SemiCircleProgress
+                  strokeWidth={8}
+                  averageProgress={data.averageProgress || 0}
+                  strokeColor="#3b82f6"
+                  size={{ width: 200, height: 130 }}
+                  hasBackground={true}
                 />
               </div>
             </div>
-          </div>
-        )}
-
-        <div className="objective-card">
-          <div className="objective-header-section row-layout">
-            <div className="objective-left-meta">
-              <h1 className="objective-title">{data.title}</h1>
-              <p className="objective-comment">{data.comment}</p>
-              <div className="objective-meta">
-                <span>
-                  <strong>Created:</strong> {formatDate(data.created)}
-                </span>
-                <span>
-                  <strong>Version:</strong> {data.version}
-                </span>
-                <span>
-                  <strong>Modified:</strong> {formatDate(data.modified)}
-                </span>
-              </div>
-
-              <div className="objective-category-row">
-                <span>
-                  <span className="label">Category:</span>
-                  <span className="temporal-text"> {data.category}</span>
-                </span>
-                <span>
-                  <span className="label status-label">State:</span>
-                  <span className="state"> {data.state}</span>
-                </span>
-              </div>
-              <div className="temporal-timeline">
-                <div className="temporal-labels">
-                  <span className="temporal-date">{data.temporal?.start}</span>
-                  <span className="temporal-date">{data.temporal?.end}</span>
-                </div>
-                <div className="temporal-line">
-                  <span className="dot"></span>
-                  <span className="connector"></span>
-                  <span className="dot"></span>
-                </div>
-                <div className="temporal-labels">
-                  <span className="temporal-text">Beginning Date</span>
-                  <span className="temporal-text">End Date</span>
-                </div>
-              </div>
+            <div className="objective-description-box">
+              <p className="label">Description:</p>
+              <p className="objective-description">{data.description}</p>
             </div>
+          </div>
 
-            <div className="objective-progress-visual">
-              <div className="edit-button-container">
-                <button
-                  onClick={() => setShowEdit(true)}
-                  className="edit-button"
-                >
-                  EDIT
-                </button>
-              </div>
-              <SemiCircleProgress
-                strokeWidth={8}
-                averageProgress={data.averageProgress || 0}
-                strokeColor="#3b82f6"
-                size={{ width: 200, height: 130 }}
-                hasBackground={true}
+          <div className="objective-tabs">
+            <button
+              onClick={() => setActiveTab("keyResults")}
+              className={`tab-btn ${activeTab === "keyResults" ? "active" : ""}`}
+            >
+              Key results
+            </button>
+            <button
+              onClick={() => setActiveTab("related")}
+              className={`tab-btn ${activeTab === "related" ? "active" : ""}`}
+            >
+              Related OKRs
+            </button>
+            <button
+              onClick={() => setActiveTab("people")}
+              className={`tab-btn ${activeTab === "people" ? "active" : ""}`}
+            >
+              People Involved
+            </button>
+          </div>
+
+          {activeTab === "keyResults" && <KeyResults ids={data.keyResult || []} />}
+          {activeTab === "related" && <RelatedGraph data={data} />}
+          {activeTab === "people" && (
+            <>
+              <PeopleInvolved label="Accountable for" people={data.accountableFor} />
+              <PeopleInvolved label="Cares for" people={data.caresFor} />
+              <PeopleInvolved label="Operates" people={data.operates} />
+            </>
+          )}
+        </div>
+
+        {/* Modal overlay - only inside main content area */}
+        {showEdit && (
+          <div className="modal-overlay" style={{
+            position: "absolute",
+            top: 0, left: 0, width: "100%", minHeight: "100%", zIndex: 50,
+            display: "flex", justifyContent: "center", alignItems: "center"
+          }}>
+            <div className="modal-container">
+              <EditObjectiveModal
+                initialData={data}
+                isOpen={showEdit}
+                onClose={() => setShowEdit(false)}
+                onSave={handleSave}
               />
             </div>
           </div>
-
-          <div className="objective-description-box">
-            <p className="label">Description:</p>
-            <p className="objective-description">{data.description}</p>
-          </div>
-        </div>
-
-        <div className="objective-tabs">
-          <button
-            onClick={() => setActiveTab("keyResults")}
-            className={`tab-btn ${activeTab === "keyResults" ? "active" : ""}`}
-          >
-            Key results
-          </button>
-          <button
-            onClick={() => setActiveTab("related")}
-            className={`tab-btn ${activeTab === "related" ? "active" : ""}`}
-          >
-            Related OKRs
-          </button>
-          <button
-            onClick={() => setActiveTab("people")}
-            className={`tab-btn ${activeTab === "people" ? "active" : ""}`}
-          >
-            People Involved
-          </button>
-        </div>
-
-        {activeTab === "keyResults" && <KeyResults ids={data.keyResult || []} />}
-        {activeTab === "related" && <RelatedGraph data={data} />}
-        {activeTab === "people" && (
-          <>
-            <PeopleInvolved label="Accountable for" people={data.accountableFor} />
-            <PeopleInvolved label="Cares for" people={data.caresFor} />
-            <PeopleInvolved label="Operates" people={data.operates} />
-          </>
         )}
       </div>
     </AppLayout>

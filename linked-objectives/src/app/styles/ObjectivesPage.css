@@ -11,13 +11,11 @@
   flex-direction: column;
   gap: 0.75rem;
 }
-
 .objective-title {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
 }
-
 .objective-card {
   background: #fff;
   border-radius: 0.75rem;
@@ -25,7 +23,6 @@
   padding: 2rem;
   margin-bottom: 2rem;
 }
-
 .row-layout {
   display: flex;
   justify-content: space-between;
@@ -34,12 +31,10 @@
   flex-wrap: wrap;
   margin: 20px;
 }
-
 .objective-title-block {
   flex: 1;
   min-width: 200px;
 }
-
 .objective-progress-visual {
   display: flex;
   flex-direction: column;
@@ -48,18 +43,15 @@
   height: 100%;
   min-height: 250px;
 }
-
 .objective-meta-block {
   flex: 1;
   min-width: 240px;
 }
-
 .objective-comment {
   font-style: italic;
   font-size: 0.875rem;
   color: #4b5563;
 }
-
 .objective-meta {
   display: flex;
   justify-content: flex-start;
@@ -68,29 +60,24 @@
   flex-wrap: wrap;
   gap: 0.9rem;
 }
-
 .objective-category {
   font-weight: 300;
   font-size: 0.9rem;
 }
-
 .objective-category-row {
   display: flex;
   gap: 5rem;
 }
-
 .objective-description-box {
   background: #f3f4f6;
   border-radius: 0.5rem;
   padding: 1rem;
   margin-top: 0.5rem;
 }
-
 .objective-description {
   font-size: 0.875rem;
   color: #1f2937;
 }
-
 .objective-status {
   display: flex;
   justify-content: space-between;
@@ -101,35 +88,29 @@
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-
 .status-block {
   text-align: center;
 }
-
 .label {
   font-weight: 600;
   font-size: 0.875rem;
   color: #4b5563;
   margin-bottom: 0.25rem;
 }
-
 .state {
   color: #059669;
   font-size: 0.8rem;
 }
-
 .progress {
   font-size: 1.5rem;
   font-weight: 700;
   color: #2563eb;
 }
-
 .value {
   font-weight: 700;
   color: #1f2937;
   font-size: 0.875rem;
 }
-
 .temporal-timeline {
   display: flex;
   flex-direction: column;
@@ -137,7 +118,6 @@
   font-size: 0.875rem;
   color: #111827;
 }
-
 .temporal-labels {
   display: flex;
   justify-content: space-between;
@@ -145,11 +125,9 @@
   max-width: 500px;
   margin-bottom: 0.25rem;
 }
-
 .temporal-date {
   font-weight: 600;
 }
-
 .temporal-line {
   display: flex;
   align-items: center;
@@ -158,13 +136,11 @@
   position: relative;
   height: 10px;
 }
-
 .connector {
   flex-grow: 1;
   height: 2px;
   background-color: #000;
 }
-
 .dot {
   width: 10px;
   height: 10px;
@@ -172,19 +148,16 @@
   border-radius: 50%;
   z-index: 1;
 }
-
 .temporal-text {
   font-size: 0.75rem;
   color: #4b5563;
 }
-
 .objective-tabs {
   display: flex;
   gap: 1rem;
   border-bottom: 1px solid #d1d5db;
   margin-bottom: 1rem;
 }
-
 .tab-btn {
   padding: 0.5rem 1rem;
   background: none;
@@ -193,22 +166,29 @@
   cursor: pointer;
   border-bottom: 2px solid transparent;
 }
-
 .tab-btn.active {
   border-bottom: 2px solid #3b82f6;
   color: #1d4ed8;
   font-weight: 600;
 }
-
 @media (max-width: 768px) {
   .row-layout {
     flex-direction: column;
   }
-
   .objective-meta {
     flex-direction: column;
     align-items: flex-start;
   }
 }
 
-
+/* BLUR effect for modal-open state */
+.blur-sm {
+  filter: blur(6px) grayscale(0.2) brightness(0.98);
+  transition: filter 0.2s;
+}
+.pointer-events-none {
+  pointer-events: none;
+}
+.select-none {
+  user-select: none;
+}

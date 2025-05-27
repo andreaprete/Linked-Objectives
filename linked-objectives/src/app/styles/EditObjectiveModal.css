@@ -1,12 +1,17 @@
 .modal-overlay {
-  position: absolute; /* ⬅️ changed from fixed */
-  inset: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
   z-index: 50;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: none; /* removes gray bg if present */
+  background: none; /* No grey background! */
+  pointer-events: all;
 }
+
 .modal-container {
   background-color: white;
   border-radius: 0.75rem;
@@ -16,9 +21,7 @@
   max-width: 48rem;
   max-height: 90vh;
   overflow-y: auto;
-
-  /* optional: vertically align to top if modal gets too tall */
-  margin-top: 2rem;
+  margin-top: 3rem; /* This pushes it down a bit */
 }
 
 .modal-title {
