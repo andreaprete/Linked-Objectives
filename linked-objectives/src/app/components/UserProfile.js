@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import '../styles/UserProfile.css';
 
 export default function UserProfile({ user }) {
@@ -29,9 +30,24 @@ export default function UserProfile({ user }) {
             <p>Location: {user.location}</p>
           </div>
           <div className="details-column">
-            <p>Team: {user.team}</p>
-            <p>Department: {user.department}</p>
-            <p>Company: {user.company}</p>
+            <p>
+              Team:{' '}
+              <Link href={`/teams/${user.teamId}`} className="text-blue-600 hover:underline">
+                {user.team}
+              </Link>
+            </p>
+            <p>
+              Department:{' '}
+              <Link href={`/departments/${user.departmentId}`} className="text-blue-600 hover:underline">
+                {user.department}
+              </Link>
+            </p>
+            <p>
+              Company:{' '}
+              <Link href={`/companies/${user.companyId}`} className="text-blue-600 hover:underline">
+                {user.company}
+              </Link>
+            </p>
           </div>
         </div>
       </div>
