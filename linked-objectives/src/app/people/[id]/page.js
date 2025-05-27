@@ -56,15 +56,15 @@ export default function PersonPage() {
     email: data.email,
     username: data.username,
     location: data.location,
-    team: data.team,
-    department: data.department,
+    team: data.teamName,
+    department: data.departmentName,
     company: data.company,
     profileImage: "/profileImage.jpg" // Path to profile image
   };
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
         <UserProfile user={userData} />
         <OkrList username={data.name} okrs={okrs} />
       </div>

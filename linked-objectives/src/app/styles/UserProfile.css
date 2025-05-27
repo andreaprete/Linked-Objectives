@@ -1,0 +1,59 @@
+.user-profile-card {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.user-profile-avatar .avatar-circle {
+  width: 8rem;
+  height: 8rem;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-profile-avatar .avatar-icon {
+  width: 4rem;
+  height: 4rem;
+  color: #9ca3af;
+}
+
+.user-profile-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.user-role {
+  font-style: italic;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.user-description {
+  font-size: 0.95rem;
+  color: #374151;
+  margin-bottom: 1.25rem;
+}
+
+.user-profile-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem 3rem;
+  font-size: 0.7rem;
+}
+
+.details-column p {
+  margin-bottom: 0.25rem;
+}
