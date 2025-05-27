@@ -1,0 +1,125 @@
+{
+  "objectives": [
+    {
+      "id": "okr-001",
+      "title": "Launch Global Marketing Campaign",
+      "categoryName": "Marketing",
+      "statusName": "In Progress",
+      "createdDate": "2024-11-01",
+      "modifiedDate": "2025-04-15",
+      "dueDate": "2025-06-01",
+      "keyResultsCount": 4,
+      "progress": 45
+    },
+    {
+      "id": "okr-002",
+      "title": "Migrate Infrastructure to AWS",
+      "categoryName": "IT",
+      "statusName": "Planned",
+      "createdDate": "2025-02-15",
+      "modifiedDate": "2025-02-16",
+      "dueDate": "2025-09-01",
+      "keyResultsCount": 2,
+      "progress": 0
+    },
+    {
+      "id": "okr-003",
+      "title": "Achieve 90% Customer Satisfaction",
+      "categoryName": "Customer Success",
+      "statusName": "Completed",
+      "createdDate": "2024-12-01",
+      "modifiedDate": "2025-03-01",
+      "dueDate": "2025-04-01",
+      "keyResultsCount": 3,
+      "progress": 100
+    },
+    {
+      "id": "okr-004",
+      "title": "Improve Employee Retention Rate",
+      "categoryName": "HR",
+      "statusName": "In Progress",
+      "createdDate": "2025-01-10",
+      "modifiedDate": "2025-04-18",
+      "dueDate": "2025-06-15",
+      "keyResultsCount": 5,
+      "progress": 60
+    },
+    {
+      "id": "okr-005",
+      "title": "Refactor Legacy Codebase",
+      "categoryName": "Engineering",
+      "statusName": "On Hold",
+      "createdDate": "2025-01-05",
+      "modifiedDate": "2025-02-28",
+      "dueDate": "2025-07-01",
+      "keyResultsCount": 4,
+      "progress": 25
+    },
+    {
+      "id": "okr-006",
+      "title": "Establish DEI Task Force",
+      "categoryName": "HR",
+      "statusName": "Done",
+      "createdDate": "2025-01-12",
+      "modifiedDate": "2025-03-10",
+      "dueDate": "2025-03-01",
+      "keyResultsCount": 1,
+      "progress": 100
+    },
+    {
+      "id": "okr-007",
+      "title": "Increase Organic Traffic by 40%",
+      "categoryName": "SEO",
+      "statusName": "In Progress",
+      "createdDate": "2025-03-01",
+      "modifiedDate": "2025-05-01",
+      "dueDate": "2025-08-01",
+      "keyResultsCount": 3,
+      "progress": 35
+    },
+    {
+      "id": "okr-008",
+      "title": "Expand to APAC Region",
+      "categoryName": "Business Development",
+      "statusName": "Planned",
+      "createdDate": "2025-04-01",
+      "modifiedDate": "2025-04-02",
+      "dueDate": "2025-12-31",
+      "keyResultsCount": 2,
+      "progress": 0
+    },
+    {
+      "id": "okr-009",
+      "title": "Launch Employee Feedback Loop",
+      "categoryName": "HR",
+      "statusName": "Aborted",
+      "createdDate": "2024-11-01",
+      "modifiedDate": "2025-02-01",
+      "dueDate": "2025-05-01",
+      "keyResultsCount": 2,
+      "progress": 10
+    },
+    {
+      "id": "okr-010",
+      "title": "Reduce Server Costs by 25%",
+      "categoryName": "DevOps",
+      "statusName": "Evaluating",
+      "createdDate": "2025-02-01",
+      "modifiedDate": "2025-05-20",
+      "dueDate": "2025-08-01",
+      "keyResultsCount": 3,
+      "progress": 50
+    }
+  ],
+  "krTrend": [
+    { "kr": "kr001", "date": "2025-01-01", "score": 0.2 },
+    { "kr": "kr001", "date": "2025-02-01", "score": 0.4 },
+    { "kr": "kr001", "date": "2025-04-01", "score": 0.6 },
+    { "kr": "kr002", "date": "2025-03-01", "score": 0.5 },
+    { "kr": "kr002", "date": "2025-05-01", "score": 0.75 },
+    { "kr": "kr003", "date": "2025-01-15", "score": 0.9 },
+    { "kr": "kr004", "date": "2025-02-15", "score": 1.0 },
+    { "kr": "kr005", "date": "2025-03-20", "score": 0.3 },
+    { "kr": "kr005", "date": "2025-04-20", "score": 0.55 }
+  ]
+}
