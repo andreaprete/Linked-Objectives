@@ -106,17 +106,20 @@ export async function GET(req, context) {
         PREFIX responsibility: <https://data.sick.com/voc/sam/responsibility-model/>
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-        SELECT DISTINCT ?okr ?label
+        SELECT DISTINCT ?okr ?label ?type
         WHERE {
           ?okr a objectives:Objective ;
-               rdfs:label ?label .
+              rdfs:label ?label .
 
           {
-            ?okr responsibility:isAccountableFor <${fullPostUri}>
+            ?okr responsibility:isAccountableFor <${fullPostUri}> .
+            BIND("isAccountableFor" AS ?type)
           } UNION {
-            ?okr responsibility:caresFor <${fullPostUri}>
+            ?okr responsibility:caresFor <${fullPostUri}> .
+            BIND("caresFor" AS ?type)
           } UNION {
-            ?okr responsibility:operates <${fullPostUri}>
+            ?okr responsibility:operates <${fullPostUri}> .
+            BIND("operates" AS ?type)
           }
         }
         ORDER BY ?label
@@ -139,6 +142,7 @@ export async function GET(req, context) {
           okrJson.results.bindings.map(async (row) => {
             const okrId = trimUri(row.okr.value);
             const label = row.label.value;
+            const responsibility = row.type?.value || "unknown";
 
             let state = "Planned";
             let progress = null;
@@ -166,7 +170,9 @@ export async function GET(req, context) {
                 state =
                   (
                     stateJson.results.bindings.find((b) => b.state) || {}
-                  ).state?.value?.split("/").pop() || "Planned";
+                  ).state?.value
+                    ?.split("/")
+                    .pop() || "Planned";
               }
             } catch {}
 
@@ -206,19 +212,38 @@ export async function GET(req, context) {
               title: label,
               state,
               progress: progress !== null ? Math.round(progress) : null,
+              responsibility,
             };
           })
         );
       }
     }
 
-    // Fallback org logic
-    if (!dataMap.company) {
-      dataMap.company = dataMap.department;
+    // ✅ Fix fallback when department is wrongly set to CommonSemantics
+    if (
+      dataMap.team &&
+      dataMap.department === "CommonSemantics" &&
+      dataMap.team !== "CommonSemantics"
+    ) {
       dataMap.department = dataMap.team;
       dataMap.departmentName = dataMap.teamName;
-      dataMap.team = null;
-      dataMap.teamName = null;
+    }
+
+    // ✅ If still no department but has team, copy team into department
+    if (dataMap.team && !dataMap.department) {
+      dataMap.department = dataMap.team;
+      dataMap.departmentName = dataMap.teamName;
+    }
+
+    // ✅ If no team but has department, copy department into team
+    if (!dataMap.team && dataMap.department) {
+      dataMap.team = dataMap.department;
+      dataMap.teamName = dataMap.departmentName;
+    }
+
+    // ✅ Always ensure company exists
+    if (!dataMap.company) {
+      dataMap.company = "Common Semantics";
     }
 
     return new Response(
