@@ -21,14 +21,14 @@ const navItems = [
   {
     label: 'Goals',
     icon: FaBullseye,
-    path: '/objectiveslist',
+    path: '/objectives',
     match: (pathname) =>
       pathname === '/objectives' || pathname.startsWith('/objectives/'),
   },
   {
     label: 'Teams',
     icon: FaUsers,
-    path: '/teamslist',
+    path: '/teams',
     match: (pathname) =>
       pathname === '/teams' || pathname.startsWith('/teams/'),
   },
