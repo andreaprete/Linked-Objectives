@@ -1,4 +1,3 @@
-// src/components/UnifiedSidebar.js
 "use client";
 
 import React from 'react';
@@ -7,12 +6,45 @@ import { FaHome, FaBullseye, FaUsers, FaUserCog, FaThLarge } from 'react-icons/f
 import "@/app/styles/UnifiedSidebar.css"; 
 
 const navItems = [
-  { label: 'Home', icon: FaHome, path: '/homepage' },
-  { label: 'Dashboard', icon: FaThLarge, path: '/dashboard' },
-  { label: 'Goals', icon: FaBullseye, path: '/objectiveslist' },
-  { label: 'Teams', icon: FaUsers, path: '/peoplelist' },
-  { label: 'Users', icon: FaUserCog, path: '/users' },
-  { label: 'Strategy-Map', icon: FaThLarge, path: '/strategy-map' }
+  {
+    label: 'Home',
+    icon: FaHome,
+    path: '/homepage',
+    match: (pathname) => pathname === '/homepage' || pathname === '/',
+  },
+  {
+    label: 'Dashboard',
+    icon: FaThLarge,
+    path: '/dashboard',
+    match: (pathname) => pathname === '/dashboard',
+  },
+  {
+    label: 'Goals',
+    icon: FaBullseye,
+    path: '/objectiveslist',
+    match: (pathname) =>
+      pathname === '/objectiveslist' || pathname.startsWith('/objectives/'),
+  },
+  {
+    label: 'Teams',
+    icon: FaUsers,
+    path: '/teamslist',
+    match: (pathname) =>
+      pathname === '/teamslist' || pathname.startsWith('/teams/'),
+  },
+  {
+    label: 'People',
+    icon: FaUserCog,
+    path: '/peoplelist',
+    match: (pathname) =>
+      pathname === '/peoplelist' || pathname.startsWith('/people/'),
+  },
+  {
+    label: 'Strategy-Map',
+    icon: FaThLarge,
+    path: '/strategy-map',
+    match: (pathname) => pathname === '/strategy-map',
+  }
 ];
 
 function SidebarItem({ icon, label, active, onClick }) {
@@ -31,9 +63,8 @@ export default function UnifiedSidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  // Figure out which item is active by path matching
   function getActiveItem() {
-    const found = navItems.find(item => pathname.startsWith(item.path));
+    const found = navItems.find(item => item.match(pathname));
     return found ? found.label : '';
   }
   const activeItem = getActiveItem();
