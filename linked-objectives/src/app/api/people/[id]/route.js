@@ -10,37 +10,36 @@ export async function GET(req, context) {
     PREFIX terms: <http://purl.org/dc/terms/>
 
     SELECT ?name ?email ?username ?location ?post ?roleTitle ?roleDescription ?team ?teamName ?department ?departmentName ?company 
-WHERE {
-  BIND(<${personUri}> AS ?person)
+    WHERE {
+      BIND(<${personUri}> AS ?person)
 
-  ?person a foaf:Person .
+      ?person a foaf:Person .
 
-  OPTIONAL { ?person foaf:name ?name. }
-  OPTIONAL { ?person foaf:email ?email. }
-  OPTIONAL { ?person foaf:accountName ?username. }
-  OPTIONAL { ?person vcard:hasAddress/vcard:locality ?location. }
+      OPTIONAL { ?person foaf:name ?name. }
+      OPTIONAL { ?person foaf:email ?email. }
+      OPTIONAL { ?person foaf:accountName ?username. }
+      OPTIONAL { ?person vcard:hasAddress/vcard:locality ?location. }
 
-  OPTIONAL {
-    ?post org:heldBy ?person .
-    OPTIONAL { ?post org:role ?roleTitle. }
-    OPTIONAL { ?post terms:description ?roleDescription. }  # ✅ New line to get description of role/post
-  }
+      OPTIONAL {
+        ?post org:heldBy ?person .
+        OPTIONAL { ?post org:role ?roleTitle. }
+        OPTIONAL { ?post terms:description ?roleDescription. }
+      }
 
-  OPTIONAL {
-    ?team org:hasPost ?post .
-    OPTIONAL { ?team foaf:name ?teamName. }
-  }
+      OPTIONAL {
+        ?team org:hasPost ?post .
+        OPTIONAL { ?team foaf:name ?teamName. }
+      }
 
-  OPTIONAL {
-    ?department org:hasUnit ?team .
-    OPTIONAL { ?department foaf:name ?departmentName. }
-  }
+      OPTIONAL {
+        ?department org:hasUnit ?team .
+        OPTIONAL { ?department foaf:name ?departmentName. }
+      }
 
-  OPTIONAL {
-    ?company org:hasUnit ?department .
-  }
-}
-
+      OPTIONAL {
+        ?company org:hasUnit ?department .
+      }
+    }
   `;
 
   try {
@@ -55,7 +54,6 @@ WHERE {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("SPARQL query error:", errorText);
       return new Response(JSON.stringify({ error: errorText }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -90,7 +88,7 @@ WHERE {
           dataMap[key] = trimUri(value);
           if (key === "post") fullPostUri = value;
           break;
-        case "roleDescription": // ✅ Add this
+        case "roleDescription":
           dataMap.roleDescription = value;
           break;
         default:
@@ -136,23 +134,25 @@ WHERE {
       if (okrResponse.ok) {
         const okrJson = await okrResponse.json();
 
-        // For each OKR, fetch state and average progress of ALL its key results (regardless of KR state)
+        // For each OKR, fetch state and average progress
         okrs = await Promise.all(
           okrJson.results.bindings.map(async (row) => {
             const okrId = trimUri(row.okr.value);
             const label = row.label.value;
 
-            // --- Fetch state
             let state = "Planned";
-            const stateQuery = `
-              SELECT ?state WHERE {
-                OPTIONAL { 
-                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
-                    <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
-                }
-              }
-            `;
+            let progress = null;
+
+            // State
             try {
+              const stateQuery = `
+                SELECT ?state WHERE {
+                  OPTIONAL {
+                    <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                      <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
+                  }
+                }
+              `;
               const stateRes = await fetch(endpoint, {
                 method: "POST",
                 headers: {
@@ -170,43 +170,16 @@ WHERE {
               }
             } catch {}
 
-<<<<<<< HEAD
-              if (objRes.ok) {
-                const objJson = await objRes.json();
-                // Get first found state
-                state =
-                  (
-                    objJson.results.bindings.find((b) => b.state) || {}
-                  ).state?.value
-                    ?.split("/")
-                    .pop() || "Planned";
-
-                // Filter to only "in progress" KRs and get their progress values
-                const inProgressKRs = objJson.results.bindings.filter(
-                  (b) =>
-                    b.krProgress &&
-                    b.krState &&
-                    (b.krState.value.toLowerCase().includes("inprogress") ||
-                      b.krState.value.toLowerCase().includes("active"))
-                );
-
-                if (inProgressKRs.length > 0) {
-                  const total = inProgressKRs.reduce(
-                    (sum, b) => sum + parseFloat(b.krProgress.value || 0),
-                    0
-                  );
-                  progress = total / inProgressKRs.length;
-=======
-            // --- Fetch all key results and average their progress
-            let progress = null;
-            const krProgressQuery = `
-              SELECT ?kr ?progress
-              WHERE {
-                <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
-                ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
-              }
-            `;
+            // Progress (avg of all KRs)
             try {
+              const krProgressQuery = `
+                SELECT ?kr ?progress
+                WHERE {
+                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                    <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+                  ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
+                }
+              `;
               const krRes = await fetch(endpoint, {
                 method: "POST",
                 headers: {
@@ -224,7 +197,6 @@ WHERE {
                   progress =
                     progressVals.reduce((a, b) => a + b, 0) /
                     progressVals.length;
->>>>>>> 282da480aa8fe69d569c6cb3160ec9f1daea2040
                 }
               }
             } catch {}
@@ -240,7 +212,7 @@ WHERE {
       }
     }
 
-    // Fix up company/department/team info if missing
+    // Fallback org logic
     if (!dataMap.company) {
       dataMap.company = dataMap.department;
       dataMap.department = dataMap.team;
