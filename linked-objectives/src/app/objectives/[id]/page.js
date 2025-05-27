@@ -9,6 +9,7 @@ import PeopleInvolved from "../../components/PeopleInvolved";
 import "@/app/styles/ObjectivesPage.css";
 import SemiCircleProgress from "../../components/SemiCircleProgressProps";
 import EditObjectiveModal from "../../components/EditObjectiveModal";
+import CreateKeyResultModal from "@/app/components/CreateKeyResultModal";
 
 export default function ObjectivePage() {
   const { id } = useParams();
@@ -16,6 +17,8 @@ export default function ObjectivePage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("keyResults");
   const [showEdit, setShowEdit] = useState(false);
+  const [selectedKeyResults, setSelectedKeyResults] = useState([]);
+  const [showCreateKR, setShowCreateKR] = useState(false);
 
   useEffect(() => {
     async function fetchObjective() {
@@ -30,7 +33,7 @@ export default function ObjectivePage() {
         const json = await res.json();
         const obj = json.data;
 
-        // Fetch key result progress values
+        // 🔍 Fetch key result progress values
         const keyResultIds = obj.keyResult || [];
         const keyResults = await Promise.all(
           keyResultIds.map(async (krId) => {
@@ -45,6 +48,7 @@ export default function ObjectivePage() {
           keyResults.length > 0 ? total / keyResults.length : 0;
 
         obj.averageProgress = averageProgress;
+
         setData(obj);
       } catch (err) {
         console.error("Error loading objective or key results:", err);
@@ -65,30 +69,65 @@ export default function ObjectivePage() {
       });
 
       if (!res.ok) throw new Error("Update failed");
-      // Just reload data and close modal
-      setShowEdit(false);
-      setLoading(true);
-      const res2 = await fetch(`/api/objectives/${id}`);
-      const json = await res2.json();
-      const obj = json.data;
-      setData(obj);
-      setLoading(false);
+
+      window.location.reload();
     } catch (err) {
       console.error("Failed to update objective:", err);
       alert("Failed to update objective.");
     }
   };
 
-  if (loading) return (
-     <AppLayout>
-       <main className="flex items-center justify-center min-h-[60vh]">
-         <div className="text-center">
-           <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-           <p className="text-md text-gray-600">Loading Objective data...</p>
-         </div>
-       </main>
-     </AppLayout>
-   );
+  const handleCreateKeyResult = async (formData) => {
+    try {
+      const res = await fetch(`/api/objectives/${id}/key-results`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const errMsg = await res.text();
+        alert("Failed to create key result: " + errMsg); // <--- Show the backend error!
+        throw new Error(errMsg);
+      }
+      setShowCreateKR(false);
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to create key result: " + (errorText || "(no error details)"));
+      console.error("Failed to create key result:", err);
+    }
+  };
+
+  // DELETE handler
+  async function handleDeleteKeyResults() {
+    if (!selectedKeyResults.length) return;
+    if (!window.confirm(`Delete ${selectedKeyResults.length} key result(s)?`)) return;
+
+    try {
+      const res = await fetch(`/api/objectives/${id}/key-results`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ krIds: selectedKeyResults }),
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to delete key result(s).");
+    }
+  }
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading Objective data...</p>
+          </div>
+        </main>
+      </AppLayout>
+    );
+  }
+  
   if (!data)
     return (
       <AppLayout>
@@ -109,15 +148,14 @@ export default function ObjectivePage() {
     }
   };
 
+  // If either modal is open, apply blur classes to page content.
+  const isAnyModalOpen = showEdit || showCreateKR;
+
   return (
     <AppLayout>
-      <div className="flex justify-center items-start bg-neutral-100 pt-4 min-h-screen relative">
-        {/* Main content (gets blurred if modal is open) */}
-        <div
-          className={`objective-container transition-all duration-300 ${
-            showEdit ? "blur-sm pointer-events-none select-none" : ""
-          }`}
-        >
+      <div className="relative min-h-screen">
+        {/* Main content (blurred when a modal is open) */}
+        <div className={`objective-container transition-all duration-300 ${isAnyModalOpen ? "blur-sm" : ""}`}>
           <div className="objective-card">
             <div className="objective-header-section row-layout">
               <div className="objective-left-meta">
@@ -183,29 +221,67 @@ export default function ObjectivePage() {
               <p className="objective-description">{data.description}</p>
             </div>
           </div>
-
-          <div className="objective-tabs">
-            <button
-              onClick={() => setActiveTab("keyResults")}
-              className={`tab-btn ${activeTab === "keyResults" ? "active" : ""}`}
-            >
-              Key results
-            </button>
-            <button
-              onClick={() => setActiveTab("related")}
-              className={`tab-btn ${activeTab === "related" ? "active" : ""}`}
-            >
-              Related OKRs
-            </button>
-            <button
-              onClick={() => setActiveTab("people")}
-              className={`tab-btn ${activeTab === "people" ? "active" : ""}`}
-            >
-              People Involved
-            </button>
+          {/* Tabs with Create/Delete buttons on the right */}
+          <div className="objective-tabs" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <button
+                onClick={() => setActiveTab("keyResults")}
+                className={`tab-btn ${activeTab === "keyResults" ? "active" : ""}`}
+              >
+                Key results
+              </button>
+              <button
+                onClick={() => setActiveTab("related")}
+                className={`tab-btn ${activeTab === "related" ? "active" : ""}`}
+              >
+                Related OKRs
+              </button>
+              <button
+                onClick={() => setActiveTab("people")}
+                className={`tab-btn ${activeTab === "people" ? "active" : ""}`}
+              >
+                People Involved
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button
+                onClick={() => setShowCreateKR(true)}
+                style={{
+                  background: "#2563eb",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "0.4rem",
+                  fontWeight: "500",
+                  padding: "0.45rem 1.2rem",
+                  cursor: "pointer"
+                }}
+              >
+                Create
+              </button>
+              <button
+                onClick={handleDeleteKeyResults}
+                style={{
+                  background: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "0.4rem",
+                  fontWeight: "500",
+                  padding: "0.45rem 1.2rem",
+                  cursor: "pointer"
+                }}
+                disabled={selectedKeyResults.length === 0}
+                title={selectedKeyResults.length === 0 ? "Select at least one key result" : ""}
+              >
+                Delete
+              </button>
+            </div>
           </div>
-
-          {activeTab === "keyResults" && <KeyResults ids={data.keyResult || []} />}
+          {activeTab === "keyResults" && (
+            <KeyResults
+              ids={data.keyResult || []}
+              onSelectionChange={setSelectedKeyResults}
+            />
+          )}
           {activeTab === "related" && <RelatedGraph data={data} />}
           {activeTab === "people" && (
             <>
@@ -216,19 +292,26 @@ export default function ObjectivePage() {
           )}
         </div>
 
-        {/* Modal overlay - only inside main content area */}
+        {/* === Modal overlays – for Edit and Create Key Result === */}
         {showEdit && (
-          <div className="modal-overlay" style={{
-            position: "absolute",
-            top: 0, left: 0, width: "100%", minHeight: "100%", zIndex: 50,
-            display: "flex", justifyContent: "center", alignItems: "center"
-          }}>
+          <div className="modal-overlay">
             <div className="modal-container">
               <EditObjectiveModal
                 initialData={data}
                 isOpen={showEdit}
                 onClose={() => setShowEdit(false)}
                 onSave={handleSave}
+              />
+            </div>
+          </div>
+        )}
+        {showCreateKR && (
+          <div className="modal-overlay">
+            <div className="modal-container">
+              <CreateKeyResultModal
+                isOpen={showCreateKR}
+                onClose={() => setShowCreateKR(false)}
+                onCreate={handleCreateKeyResult}
               />
             </div>
           </div>
