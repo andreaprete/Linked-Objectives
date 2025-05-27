@@ -5,88 +5,53 @@ import LinkedOkrCard from './LinkedOkrCard';
 
 export default function TeamOkrsTab({ okrs }) {
   const [caresForOpen, setCaresForOpen] = useState(true);
-  const [operatesOpen, setOperatesOpen] = useState(false);
-  const [accountableForOpen, setAccountableForOpen] = useState(false);
-
-  // 🔧 For now, show all OKRs under "Cares For"
-  const caresForOkrs = okrs; // Replace with filtered logic when data supports it
-  const operatesOkrs = [];   // Placeholder
-  const accountableOkrs = []; // Placeholder
 
   return (
-    <div className="mt-4">
-      {/* Cares For */}
-      <div>
-        <button
-          className="collapse-toggle"
-          onClick={() => setCaresForOpen(!caresForOpen)}
-        >
-          <span className={`collapse-icon ${caresForOpen ? 'open' : ''}`}>▼</span>
-          <span className="collapse-label">Cares for</span>
-        </button>
-        {caresForOpen && (
-          <div className="space-y-4 mt-2">
-            {caresForOkrs.length > 0 ? (
-              caresForOkrs.map((okr) => (
-                <LinkedOkrCard
-                  key={okr.id}
-                  id={okr.id}
-                  title={okr.title}
-                  description={okr.description}
-                  averageProgress={okr.progress}
-                  state={okr.state}
-                  category={okr.category}
-                />
-              ))
-            ) : (
-              <div className="collapse-empty">No OKRs available</div>
-            )}
-          </div>
-        )}
-      </div>
+    <div className="mt-8">
+      <h2 className="text-2xl font-bold mb-4">Team OKRs</h2>
 
-      {/* Operates */}
-      <div className="mt-6">
-        <button
-          className="collapse-toggle"
-          onClick={() => setOperatesOpen(!operatesOpen)}
-        >
-          <span className={`collapse-icon ${operatesOpen ? 'open' : ''}`}>▼</span>
-          <span className="collapse-label">Operates</span>
-        </button>
-        {operatesOpen && (
-          <div className="space-y-4 mt-2">
-            {operatesOkrs.length > 0 ? (
-              operatesOkrs.map((okr) => (
-                <LinkedOkrCard key={okr.id} {...okr} />
-              ))
-            ) : (
-              <div className="collapse-empty">No OKRs available</div>
-            )}
-          </div>
-        )}
-      </div>
+      <div className="space-y-6">
+        <div>
+          <button
+            className="flex items-center mb-2 w-full text-left"
+            onClick={() => setCaresForOpen(!caresForOpen)}
+          >
+            <div className="text-gray-500">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-6 w-6 transform transition-transform ${caresForOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <div className="ml-2 text-lg text-gray-600">Cares for</div>
+          </button>
 
-      {/* Accountable For */}
-      <div className="mt-6">
-        <button
-          className="collapse-toggle"
-          onClick={() => setAccountableForOpen(!accountableForOpen)}
-        >
-          <span className={`collapse-icon ${accountableForOpen ? 'open' : ''}`}>▼</span>
-          <span className="collapse-label">Accountable for</span>
-        </button>
-        {accountableForOpen && (
-          <div className="space-y-4 mt-2">
-            {accountableOkrs.length > 0 ? (
-              accountableOkrs.map((okr) => (
-                <LinkedOkrCard key={okr.id} {...okr} />
-              ))
-            ) : (
-              <div className="collapse-empty">No OKRs available</div>
-            )}
-          </div>
-        )}
+          {caresForOpen && (
+            <div className="space-y-4">
+              {okrs.length > 0 ? (
+                okrs.map((okr) => (
+                  <LinkedOkrCard
+                    key={okr.id}
+                    id={okr.id}
+                    title={okr.title}
+                    description={okr.description}
+                    averageProgress={okr.progress}
+                    state={okr.state}
+                    category={okr.category}
+                  />
+                ))
+              ) : (
+                <div className="py-4 text-center text-gray-500 italic">
+                  No OKRs available
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
