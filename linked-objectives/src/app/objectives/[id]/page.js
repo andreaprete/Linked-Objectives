@@ -79,7 +79,7 @@ export default function ObjectivePage() {
     }
   };
 
-   if (loading) return (
+  if (loading) return (
      <AppLayout>
        <main className="flex items-center justify-center min-h-[60vh]">
          <div className="text-center">
