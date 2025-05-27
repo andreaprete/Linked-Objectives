@@ -32,12 +32,18 @@ export default function HomePage() {
     fetchData();
   }, [id]);
 
-  if (loading)
+  if (loading) {
     return (
       <AppLayout>
-        <div className="p-6">Loading...</div>
+        <main className="dashboardContent flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading Homepage Data...</p>
+          </div>
+        </main>
       </AppLayout>
     );
+  }
 
   return (
     <AppLayout>
