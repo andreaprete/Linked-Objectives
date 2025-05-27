@@ -52,7 +52,7 @@ export default function PersonPage() {
   const userData = {
     name: data.name,
     role: data.roleTitle,
-    description: "Description",
+    description: data.roleDescription,
     email: data.email,
     username: data.username,
     location: data.location,

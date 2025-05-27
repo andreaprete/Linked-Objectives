@@ -7,8 +7,9 @@ export async function GET(req, context) {
     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
     PREFIX org: <http://www.w3.org/ns/org#>
     PREFIX vcard: <http://www.w3.org/2006/vcard/ns#>
+    PREFIX terms: <http://purl.org/dc/terms/>
 
-    SELECT ?name ?email ?username ?location ?post ?roleTitle ?team ?teamName ?department ?departmentName ?company 
+    SELECT ?name ?email ?username ?location ?post ?roleTitle ?roleDescription ?team ?teamName ?department ?departmentName ?company 
     WHERE {
       BIND(<${personUri}> AS ?person)
 
@@ -22,6 +23,7 @@ export async function GET(req, context) {
       OPTIONAL {
         ?post org:heldBy ?person .
         OPTIONAL { ?post org:role ?roleTitle. }
+        OPTIONAL { ?post terms:description ?roleDescription. }
       }
 
       OPTIONAL {
@@ -52,7 +54,6 @@ export async function GET(req, context) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("SPARQL query error:", errorText);
       return new Response(JSON.stringify({ error: errorText }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -86,6 +87,9 @@ export async function GET(req, context) {
         case "company":
           dataMap[key] = trimUri(value);
           if (key === "post") fullPostUri = value;
+          break;
+        case "roleDescription":
+          dataMap.roleDescription = value;
           break;
         default:
           dataMap[key] = value;
@@ -130,23 +134,25 @@ export async function GET(req, context) {
       if (okrResponse.ok) {
         const okrJson = await okrResponse.json();
 
-        // For each OKR, fetch state and average progress of ALL its key results (regardless of KR state)
+        // For each OKR, fetch state and average progress
         okrs = await Promise.all(
           okrJson.results.bindings.map(async (row) => {
             const okrId = trimUri(row.okr.value);
             const label = row.label.value;
 
-            // --- Fetch state
             let state = "Planned";
-            const stateQuery = `
-              SELECT ?state WHERE {
-                OPTIONAL { 
-                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
-                    <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
-                }
-              }
-            `;
+            let progress = null;
+
+            // State
             try {
+              const stateQuery = `
+                SELECT ?state WHERE {
+                  OPTIONAL {
+                    <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                      <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
+                  }
+                }
+              `;
               const stateRes = await fetch(endpoint, {
                 method: "POST",
                 headers: {
@@ -164,16 +170,16 @@ export async function GET(req, context) {
               }
             } catch {}
 
-            // --- Fetch all key results and average their progress
-            let progress = null;
-            const krProgressQuery = `
-              SELECT ?kr ?progress
-              WHERE {
-                <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
-                ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
-              }
-            `;
+            // Progress (avg of all KRs)
             try {
+              const krProgressQuery = `
+                SELECT ?kr ?progress
+                WHERE {
+                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                    <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+                  ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
+                }
+              `;
               const krRes = await fetch(endpoint, {
                 method: "POST",
                 headers: {
@@ -206,7 +212,7 @@ export async function GET(req, context) {
       }
     }
 
-    // Fix up company/department/team info if missing
+    // Fallback org logic
     if (!dataMap.company) {
       dataMap.company = dataMap.department;
       dataMap.department = dataMap.team;
