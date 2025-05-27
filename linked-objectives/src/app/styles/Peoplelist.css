@@ -1,0 +1,135 @@
+.people-list-bg {
+  background: linear-gradient(135deg, #f7fafc 0%, #f3f4f6 100%);
+}
+
+.people-header-title {
+  color: #1d4ed8;
+}
+
+.people-header-count {
+  margin-left: 0.5rem;
+}
+
+.people-header-search {
+  border: 1px solid #c7d2fe;
+  background: #f1f5ff;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  transition: border 0.2s;
+}
+.people-header-search:focus {
+  border: 1.5px solid #2563eb;
+  outline: none;
+}
+
+.people-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+  gap: 2rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.people-list-more {
+  text-align: center;
+  color: #2563eb;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: background 0.2s;
+}
+.people-list-more:hover {
+  background: #e0e7ff;
+}
+
+.people-list-loading,
+.people-list-empty {
+  text-align: center;
+  color: #6b7280;
+  font-size: 1.25rem;
+  padding: 2rem 0;
+}
+
+/* Person Card Styling */
+.person-card {
+  background: white;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 24px rgba(59, 130, 246, 0.07), 0 1.5px 3px 0 rgba(59, 130, 246, 0.07);
+  padding: 1.5rem 1rem 1.25rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: box-shadow 0.2s, transform 0.12s;
+  border: 1px solid #e0e7ff;
+}
+.person-card:hover {
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px) scale(1.017);
+  border-color: #93c5fd;
+}
+
+.person-card-avatar {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60a5fa 30%, #818cf8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.65rem;
+  color: white;
+  font-weight: bold;
+  border: 3px solid #eff6ff;
+  box-shadow: 0 2px 8px 0 #e0e7ff80;
+  margin-top: 3px;
+}
+
+.person-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.person-card-name {
+  font-size: 1.16rem;
+  letter-spacing: 0.01em;
+}
+.person-card-role {
+  font-size: 0.98rem;
+  color: #000000;
+  font-weight: 500;
+  margin-top: 2px;
+}
+.person-card-meta {
+  margin-top: 0.3rem;
+  font-size: 0.97rem;
+  color: #6b7280;
+  display: flex;
+  gap: 0.7rem;
+}
+.person-card-okr-badge {
+  margin-top: 0.7rem;
+  display: inline-block;
+  background: #f3f5fb;
+  color: #2563eb;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 2px 12px 3px 10px;
+  font-size: 0.96rem;
+  letter-spacing: 0.01em;
+}
+
+.person-card-link {
+  color: #2563eb;
+  text-decoration: none;
+  transition: text-decoration 0.18s;
+  font-weight: 500;
+  margin-right: 0.7rem;
+}
+.person-card-link:hover {
+  text-decoration: underline;
+  color: #1d4ed8;
+}
