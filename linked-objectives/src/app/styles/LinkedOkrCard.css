@@ -19,7 +19,7 @@
 .linked-okr-content {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .linked-okr-text {

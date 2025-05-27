@@ -7,8 +7,9 @@ export async function GET(req, context) {
     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
     PREFIX org: <http://www.w3.org/ns/org#>
     PREFIX vcard: <http://www.w3.org/2006/vcard/ns#>
+    PREFIX terms: <http://purl.org/dc/terms/>
 
-    SELECT ?name ?email ?username ?location ?post ?roleTitle ?team ?teamName ?department ?departmentName ?company 
+    SELECT ?name ?email ?username ?location ?post ?roleTitle ?roleDescription ?team ?teamName ?department ?departmentName ?company 
     WHERE {
       BIND(<${personUri}> AS ?person)
 
@@ -22,6 +23,7 @@ export async function GET(req, context) {
       OPTIONAL {
         ?post org:heldBy ?person .
         OPTIONAL { ?post org:role ?roleTitle. }
+        OPTIONAL { ?post terms:description ?roleDescription. }
       }
 
       OPTIONAL {
@@ -52,7 +54,6 @@ export async function GET(req, context) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("SPARQL query error:", errorText);
       return new Response(JSON.stringify({ error: errorText }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -87,6 +88,9 @@ export async function GET(req, context) {
           dataMap[key] = trimUri(value);
           if (key === "post") fullPostUri = value;
           break;
+        case "roleDescription":
+          dataMap.roleDescription = value;
+          break;
         default:
           dataMap[key] = value;
           break;
@@ -102,17 +106,20 @@ export async function GET(req, context) {
         PREFIX responsibility: <https://data.sick.com/voc/sam/responsibility-model/>
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-        SELECT DISTINCT ?okr ?label
+        SELECT DISTINCT ?okr ?label ?type
         WHERE {
           ?okr a objectives:Objective ;
-               rdfs:label ?label .
+              rdfs:label ?label .
 
           {
-            ?okr responsibility:isAccountableFor <${fullPostUri}>
+            ?okr responsibility:isAccountableFor <${fullPostUri}> .
+            BIND("isAccountableFor" AS ?type)
           } UNION {
-            ?okr responsibility:caresFor <${fullPostUri}>
+            ?okr responsibility:caresFor <${fullPostUri}> .
+            BIND("caresFor" AS ?type)
           } UNION {
-            ?okr responsibility:operates <${fullPostUri}>
+            ?okr responsibility:operates <${fullPostUri}> .
+            BIND("operates" AS ?type)
           }
         }
         ORDER BY ?label
@@ -130,23 +137,26 @@ export async function GET(req, context) {
       if (okrResponse.ok) {
         const okrJson = await okrResponse.json();
 
-        // For each OKR, fetch state and average progress of ALL its key results (regardless of KR state)
+        // For each OKR, fetch state and average progress
         okrs = await Promise.all(
           okrJson.results.bindings.map(async (row) => {
             const okrId = trimUri(row.okr.value);
             const label = row.label.value;
+            const responsibility = row.type?.value || "unknown";
 
-            // --- Fetch state
             let state = "Planned";
-            const stateQuery = `
-              SELECT ?state WHERE {
-                OPTIONAL { 
-                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
-                    <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
-                }
-              }
-            `;
+            let progress = null;
+
+            // State
             try {
+              const stateQuery = `
+                SELECT ?state WHERE {
+                  OPTIONAL {
+                    <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                      <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
+                  }
+                }
+              `;
               const stateRes = await fetch(endpoint, {
                 method: "POST",
                 headers: {
@@ -160,20 +170,22 @@ export async function GET(req, context) {
                 state =
                   (
                     stateJson.results.bindings.find((b) => b.state) || {}
-                  ).state?.value?.split("/").pop() || "Planned";
+                  ).state?.value
+                    ?.split("/")
+                    .pop() || "Planned";
               }
             } catch {}
 
-            // --- Fetch all key results and average their progress
-            let progress = null;
-            const krProgressQuery = `
-              SELECT ?kr ?progress
-              WHERE {
-                <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
-                ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
-              }
-            `;
+            // Progress (avg of all KRs)
             try {
+              const krProgressQuery = `
+                SELECT ?kr ?progress
+                WHERE {
+                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                    <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+                  ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
+                }
+              `;
               const krRes = await fetch(endpoint, {
                 method: "POST",
                 headers: {
@@ -200,19 +212,38 @@ export async function GET(req, context) {
               title: label,
               state,
               progress: progress !== null ? Math.round(progress) : null,
+              responsibility,
             };
           })
         );
       }
     }
 
-    // Fix up company/department/team info if missing
-    if (!dataMap.company) {
-      dataMap.company = dataMap.department;
+    // ✅ Fix fallback when department is wrongly set to CommonSemantics
+    if (
+      dataMap.team &&
+      dataMap.department === "CommonSemantics" &&
+      dataMap.team !== "CommonSemantics"
+    ) {
       dataMap.department = dataMap.team;
       dataMap.departmentName = dataMap.teamName;
-      dataMap.team = null;
-      dataMap.teamName = null;
+    }
+
+    // ✅ If still no department but has team, copy team into department
+    if (dataMap.team && !dataMap.department) {
+      dataMap.department = dataMap.team;
+      dataMap.departmentName = dataMap.teamName;
+    }
+
+    // ✅ If no team but has department, copy department into team
+    if (!dataMap.team && dataMap.department) {
+      dataMap.team = dataMap.department;
+      dataMap.teamName = dataMap.departmentName;
+    }
+
+    // ✅ Always ensure company exists
+    if (!dataMap.company) {
+      dataMap.company = "Common Semantics";
     }
 
     return new Response(

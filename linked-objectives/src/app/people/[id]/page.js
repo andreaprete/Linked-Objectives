@@ -32,11 +32,16 @@ export default function PersonPage() {
     fetchPerson();
   }, [id]);
 
-  if (loading) return (
-    <AppLayout>
-      <div className="p-6 text-lg">Loading profile...</div>
-    </AppLayout>
-  );
+    if (loading) return (
+      <AppLayout>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading People data...</p>
+          </div>
+        </main>
+      </AppLayout>
+    );
   if (!data) return (
     <AppLayout>
       <div className="p-6 text-red-500">Person not found.</div>
@@ -47,19 +52,19 @@ export default function PersonPage() {
   const userData = {
     name: data.name,
     role: data.roleTitle,
-    description: "Description",
+    description: data.roleDescription,
     email: data.email,
     username: data.username,
     location: data.location,
-    team: data.team,
-    department: data.department,
+    team: data.teamName,
+    department: data.departmentName,
     company: data.company,
     profileImage: "/profileImage.jpg" // Path to profile image
   };
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
         <UserProfile user={userData} />
         <OkrList username={data.name} okrs={okrs} />
       </div>
