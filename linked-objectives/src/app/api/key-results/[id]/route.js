@@ -2,7 +2,6 @@ export async function GET(req, context) {
   const { id } = context.params;
 
   const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
-  console.log("GET handler running", Date.now());
   const sparqlQuery = `
     SELECT ?predicate ?object
     WHERE {
@@ -11,7 +10,6 @@ export async function GET(req, context) {
   `;
 
   try {
-    console.log("About to fetch from GraphDB...");
     const response = await fetch(
       `http://localhost:7200/repositories/linked-objectives`,
       {
@@ -23,7 +21,6 @@ export async function GET(req, context) {
         body: sparqlQuery,
       }
     );
-    console.log("Fetched, status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -34,11 +31,9 @@ export async function GET(req, context) {
     // Log the raw response body as text (just to make sure the connection is live)
     const cloned = response.clone();
     const rawText = await cloned.text();
-    console.log("Raw DB result as text:", rawText);
 
     // Parse the original response as JSON
     const json = await response.json();
-    console.log("Parsed JSON from DB:", JSON.stringify(json, null, 2));
     const dataMap = {};
 
     json.results.bindings.forEach((binding) => {
@@ -277,7 +272,6 @@ export async function PUT(req, context) {
     }
   `;
 
-  console.log("SPARQL UPDATE QUERY 2:", sparqlUpdate);
   try {
     const response = await fetch(
       'http://localhost:7200/repositories/linked-objectives/statements',

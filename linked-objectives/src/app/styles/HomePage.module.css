@@ -1,0 +1,73 @@
+.flexCenterRelative {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 80vh;
+  position: relative;
+}
+
+.sectionsWrapper {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin: 0 auto;
+}
+
+/* Use these for blur/non-interactive as before */
+.blur-sm {
+  filter: blur(6px) grayscale(0.2) brightness(0.98);
+  transition: filter 0.2s;
+}
+.pointer-events-none { pointer-events: none; }
+.select-none { user-select: none; }
+
+/* Modal overlay, NOT fixed, but absolute inside relative parent */
+.modalOverlayRelative {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  min-height: 100%;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* No background color, so no grey/dark effect */
+}
+
+/* Loading styles (unchanged) */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 4px solid #3b82f6;
+  border-top: 4px solid transparent;
+  border-radius: 9999px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.75rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loadingText {
+  color: #475569;
+  font-size: 1rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none; /* Or a semi-transparent overlay if desired */
+  pointer-events: all;
+}
