@@ -47,6 +47,44 @@ export async function GET(req, context) {
       return null;
     }
   }
+  async function resolvePersonDirectly(personId) {
+    const personUri = `https://data.sick.com/res/dev/examples/common-semantics/${personId}`;
+    const query = `
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    PREFIX org: <http://www.w3.org/ns/org#>
+    SELECT ?name ?roleTitle WHERE {
+      OPTIONAL { <${personUri}> foaf:name ?name . }
+      OPTIONAL {
+        ?post org:heldBy <${personUri}> ;
+              org:role ?roleTitle .
+      }
+    } LIMIT 1
+  `;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/sparql-query",
+          Accept: "application/sparql-results+json",
+        },
+        body: query,
+      });
+
+      if (!res.ok) return null;
+      const json = await res.json();
+      const row = json.results.bindings[0];
+
+      return {
+        id: personId,
+        name: row?.name?.value || personId,
+        role: row?.roleTitle?.value || null,
+      };
+    } catch (err) {
+      console.error("Error resolving person directly with role:", err);
+      return { id: personId, name: personId, role: null };
+    }
+  }
 
   try {
     const response = await fetch(endpoint, {
@@ -113,7 +151,8 @@ export async function GET(req, context) {
           dataMap.temporal = object.split("/").pop();
           break;
         case "https://data.sick.com/voc/sam/responsibility-model/hasFormalResponsibilityFor":
-          dataMap.hasFormalResponsibilityFor = dataMap.hasFormalResponsibilityFor || [];
+          dataMap.hasFormalResponsibilityFor =
+            dataMap.hasFormalResponsibilityFor || [];
           dataMap.hasFormalResponsibilityFor.push(object.split("/").pop());
           break;
         case "https://data.sick.com/voc/sam/objectives-model/category":
@@ -121,29 +160,10 @@ export async function GET(req, context) {
           break;
         case "https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state":
           dataMap.state = object.split("/").pop();
-
           break;
-
-        case "https://data.sick.com/voc/sam/objectives-model/needs":
-          dataMap.needs = dataMap.needs || [];
-          dataMap.needs.push(object.split("/").pop());
-          break;
-
         case "https://data.sick.com/voc/sam/responsibility-model/hasResponsibilityFor":
           dataMap.hasResponsibilityFor = dataMap.hasResponsibilityFor || [];
           dataMap.hasResponsibilityFor.push(object.split("/").pop());
-          break;
-
-        case "https://data.sick.com/voc/sam/responsibility-model/hasFormalResponsibilityFor":
-          dataMap.hasFormalResponsibilityFor =
-            dataMap.hasFormalResponsibilityFor || [];
-          dataMap.hasFormalResponsibilityFor.push(object.split("/").pop());
-          break;
-
-        case "https://data.sick.com/voc/sam/objectives-model/contributesTo":
-          dataMap.contributesTo = dataMap.contributesTo || [];
-          dataMap.contributesTo.push(object.split("/").pop());
-
           break;
         case "https://data.sick.com/voc/sam/objectives-model/hasKeyResult":
           dataMap.keyResult = dataMap.keyResult || [];
@@ -154,20 +174,26 @@ export async function GET(req, context) {
       }
     });
 
-    // ---- Add this block for resolving persons ----
+    // Resolve responsibility values
     const keysToResolve = ["accountableFor", "caresFor", "operates"];
     for (const key of keysToResolve) {
-      const postId = dataMap[key];
-      if (postId) {
-        const person = await resolvePostToPerson(postId);
-        if (person) {
-          dataMap[key] = person;
-        }
+      const id = dataMap[key];
+      if (!id) continue;
+
+      // Try resolving as a post → person first
+      let resolved = await resolvePostToPerson(id);
+
+      // Fallback: maybe it's a direct person URI
+      if (!resolved) {
+        resolved = await resolvePersonDirectly(id);
+      }
+
+      if (resolved) {
+        dataMap[key] = resolved;
       }
     }
-    // ---------------------------------------------
 
-    // ---- Temporal interval fetching (unchanged) ----
+    // Temporal handling
     if (dataMap.temporal) {
       const intervalUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${dataMap.temporal}`;
       const temporalQuery = `
@@ -218,9 +244,8 @@ export async function GET(req, context) {
         console.error("Error fetching temporal interval:", err);
       }
     }
-    // ------------------------------------------------
 
-    // ---- Reverse relationship fetching (unchanged) ----
+    // Reverse relations
     const reverseQuery = `
       SELECT ?subject ?predicate WHERE {
         ?subject ?predicate <${objUri}> .
@@ -243,7 +268,6 @@ export async function GET(req, context) {
 
       if (reverseRes.ok) {
         const reverseJson = await reverseRes.json();
-
         const directNeeds = new Set(dataMap.needs || []);
         const directContributesTo = new Set(dataMap.contributesTo || []);
 
@@ -257,21 +281,14 @@ export async function GET(req, context) {
           const isNeeds =
             pred === "https://data.sick.com/voc/sam/objectives-model/needs";
 
-          const alreadyContributesTo = dataMap.contributesTo?.includes(subject);
-          const alreadyNeeds = dataMap.needs?.includes(subject);
-
-          if (isNeeds && !alreadyContributesTo && !directNeeds.has(subject)) {
+          if (isNeeds && !directNeeds.has(subject)) {
             dataMap.neededBy = dataMap.neededBy || [];
             if (!dataMap.neededBy.includes(subject)) {
               dataMap.neededBy.push(subject);
             }
           }
 
-          if (
-            isContributesTo &&
-            !alreadyNeeds &&
-            !directContributesTo.has(subject)
-          ) {
+          if (isContributesTo && !directContributesTo.has(subject)) {
             dataMap.contributedToBy = dataMap.contributedToBy || [];
             if (!dataMap.contributedToBy.includes(subject)) {
               dataMap.contributedToBy.push(subject);
@@ -282,9 +299,8 @@ export async function GET(req, context) {
     } catch (err) {
       console.error("Error fetching reverse relationships:", err);
     }
-    // ------------------------------------------------------
 
-    // ----- NEW: Fetch average progress of all key results -----
+    // Average progress of key results
     const krIds = dataMap.keyResult || [];
     let averageProgress = null;
 
@@ -292,7 +308,12 @@ export async function GET(req, context) {
       const krProgressQuery = `
         SELECT ?kr ?progress
         WHERE {
-          VALUES ?kr { ${krIds.map(id => `<https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}>`).join(' ')} }
+          VALUES ?kr { ${krIds
+            .map(
+              (id) =>
+                `<https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}>`
+            )
+            .join(" ")} }
           ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
         }
       `;
@@ -309,10 +330,11 @@ export async function GET(req, context) {
         if (krRes.ok) {
           const krJson = await krRes.json();
           const progressVals = krJson.results.bindings
-            .map(b => parseFloat(b.progress.value))
-            .filter(v => !isNaN(v));
+            .map((b) => parseFloat(b.progress.value))
+            .filter((v) => !isNaN(v));
           if (progressVals.length > 0) {
-            averageProgress = progressVals.reduce((a, b) => a + b, 0) / progressVals.length;
+            averageProgress =
+              progressVals.reduce((a, b) => a + b, 0) / progressVals.length;
           }
         } else {
           console.error("KR progress query failed:", await krRes.text());
@@ -321,9 +343,8 @@ export async function GET(req, context) {
         console.error("Error fetching KR progress:", err);
       }
     }
-    // Attach the computed average progress to the dataMap as 'progress'
+
     dataMap.progress = averageProgress;
-    // -----------------------------------------------------------
 
     return new Response(
       JSON.stringify({
@@ -348,45 +369,225 @@ export async function PUT(req, context) {
   const { id } = context.params;
   const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const body = await req.json();
-
   const now = new Date().toISOString();
 
-  // Safely handle "created"
-  const includeCreated =
-    body.created && body.created !== "undefined" && body.created.trim() !== "";
+  const insertLines = [];
+  const deleteLines = [];
+
+  // Safe triple: skip empty strings
+  const triple = (s, p, o) => {
+    if (typeof o === "string" && o.trim() === "") return null;
+    return `${s} ${p} ${o} .`;
+  };
+
+  // TITLE
+  if (body.title !== undefined) {
+    deleteLines.push(
+      `<${objUri}> <http://www.w3.org/2000/01/rdf-schema#label> ?label .`
+    );
+    const t = triple(
+      `<${objUri}>`,
+      `<http://www.w3.org/2000/01/rdf-schema#label>`,
+      `"${body.title}"`
+    );
+    if (t) insertLines.push(t);
+  }
+
+  // COMMENT
+  if (body.comment !== undefined) {
+    deleteLines.push(
+      `<${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> ?comment .`
+    );
+    const t = triple(
+      `<${objUri}>`,
+      `<http://www.w3.org/2000/01/rdf-schema#comment>`,
+      `"${body.comment}"`
+    );
+    if (t) insertLines.push(t);
+  }
+
+  // DESCRIPTION
+  if (body.description !== undefined) {
+    deleteLines.push(
+      `<${objUri}> <http://purl.org/dc/terms/description> ?desc .`
+    );
+    const t = triple(
+      `<${objUri}>`,
+      `<http://purl.org/dc/terms/description>`,
+      `"${body.description}"`
+    );
+    if (t) insertLines.push(t);
+  }
+
+  // PROGRESS
+  if (body.progress !== undefined) {
+    deleteLines.push(
+      `<${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .`
+    );
+    const t = triple(
+      `<${objUri}>`,
+      `<https://data.sick.com/voc/sam/objectives-model/progress>`,
+      `"${body.progress}"`
+    );
+    if (t) insertLines.push(t);
+  }
+
+  // CATEGORY
+  if (body.type !== undefined) {
+    deleteLines.push(
+      `<${objUri}> <https://data.sick.com/voc/sam/objectives-model/category> ?category .`
+    );
+    const t = triple(
+      `<${objUri}>`,
+      `<https://data.sick.com/voc/sam/objectives-model/category>`,
+      `<https://data.sick.com/voc/sam/objectives-model/${body.type}>`
+    );
+    if (t) insertLines.push(t);
+  }
+
+  // CREATED DATE
+  if (body.created) {
+    deleteLines.push(
+      `<${objUri}> <http://purl.org/dc/terms/created> ?created .`
+    );
+    const t = triple(
+      `<${objUri}>`,
+      `<http://purl.org/dc/terms/created>`,
+      `"${body.created}"`
+    );
+    if (t) insertLines.push(t);
+  }
+
+  // MODIFIED DATE (always update)
+  insertLines.push(
+    triple(
+      `<${objUri}>`,
+      `<http://purl.org/dc/terms/modified>`,
+      `"${now}"^^<http://www.w3.org/2001/XMLSchema#dateTime>`
+    )
+  );
+
+  // TEMPORAL
+  if (body.temporal?.start || body.temporal?.end) {
+    const temporalUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}-interval`;
+    deleteLines.push(`<${objUri}> <http://purl.org/dc/terms/temporal> ?temp .`);
+    deleteLines.push(`<${temporalUri}> ?tp ?to .`);
+
+    insertLines.push(
+      triple(
+        `<${objUri}>`,
+        `<http://purl.org/dc/terms/temporal>`,
+        `<${temporalUri}>`
+      )
+    );
+    insertLines.push(
+      triple(`<${temporalUri}>`, `a`, `<http://www.w3.org/2006/time#Interval>`)
+    );
+
+    if (body.temporal.start) {
+      const t = triple(
+        `<${temporalUri}>`,
+        `<http://www.w3.org/2006/time#hasBeginning>`,
+        `"${body.temporal.start}"^^<http://www.w3.org/2001/XMLSchema#dateTime>`
+      );
+      if (t) insertLines.push(t);
+    }
+
+    if (body.temporal.end) {
+      const t = triple(
+        `<${temporalUri}>`,
+        `<http://www.w3.org/2006/time#hasEnd>`,
+        `"${body.temporal.end}"^^<http://www.w3.org/2001/XMLSchema#dateTime>`
+      );
+      if (t) insertLines.push(t);
+    }
+  }
+
+  // RESPONSIBILITY RELATIONSHIPS (using POST URI, not person)
+  const roles = {
+    accountableFor: "isAccountableFor",
+    caresFor: "caresFor",
+    operates: "operates",
+  };
+
+  for (const [field, pred] of Object.entries(roles)) {
+    if (body[field]?.id) {
+      const postUri = `https://data.sick.com/res/dev/examples/common-semantics/${body[field].id}`;
+      deleteLines.push(
+        `<${objUri}> <https://data.sick.com/voc/sam/responsibility-model/${pred}> ?oldPost .`
+      );
+
+      insertLines.push(
+        `<${objUri}> <https://data.sick.com/voc/sam/responsibility-model/${pred}> <${postUri}> .`
+      );
+    }
+  }
+
+  // RELATED OKRs
+  if (Array.isArray(body.relatedOKRs)) {
+    deleteLines.push(
+      `<${objUri}> <https://data.sick.com/voc/sam/objectives-model/needs> ?o .`
+    );
+    deleteLines.push(
+      `<${objUri}> <https://data.sick.com/voc/sam/objectives-model/contributesTo> ?o .`
+    );
+    deleteLines.push(
+      `?x <https://data.sick.com/voc/sam/objectives-model/needs> <${objUri}> .`
+    );
+    deleteLines.push(
+      `?x <https://data.sick.com/voc/sam/objectives-model/contributesTo> <${objUri}> .`
+    );
+
+    for (const rel of body.relatedOKRs) {
+      const targetUri = `<https://data.sick.com/res/dev/examples/linked-objectives-okrs/${rel.id}>`;
+      if (rel.relation === "needs" || rel.relation === "contributesTo") {
+        insertLines.push(
+          `<${objUri}> <https://data.sick.com/voc/sam/objectives-model/${rel.relation}> ${targetUri} .`
+        );
+      } else if (rel.relation === "neededBy") {
+        insertLines.push(
+          `${targetUri} <https://data.sick.com/voc/sam/objectives-model/needs> <${objUri}> .`
+        );
+      } else if (rel.relation === "contributedToBy") {
+        insertLines.push(
+          `${targetUri} <https://data.sick.com/voc/sam/objectives-model/contributesTo> <${objUri}> .`
+        );
+      }
+    }
+  }
+
+  // Safely build query
+  const safeInsert =
+    insertLines.length > 0 ? insertLines.join("\n") : "# nothing to insert";
+  const safeDelete =
+    deleteLines.length > 0 ? deleteLines.join("\n") : "# nothing to delete";
 
   const updateQuery = `
     DELETE {
-      <${objUri}> ?p ?o .
+      ${safeDelete}
     }
     INSERT {
-      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${body.title}" .
-      <${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${
-    body.comment
-  }" .
-      <${objUri}> <http://purl.org/dc/terms/description> "${body.description}" .
-      <${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "${
-    body.progress
-  }" .      
-      ${
-        includeCreated
-          ? `<${objUri}> <http://purl.org/dc/terms/created> "${body.created}" .`
-          : ""
-      }
-      <${objUri}> <http://purl.org/dc/terms/modified> "${now}"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+      ${safeInsert}
     }
     WHERE {
-      <${objUri}> ?p ?o .
-      FILTER(?p IN (
-        <http://www.w3.org/2000/01/rdf-schema#label>,
-        <http://www.w3.org/2000/01/rdf-schema#comment>,
-        <http://purl.org/dc/terms/description>,
-        <https://data.sick.com/voc/sam/objectives-model/progress>,
-        <http://purl.org/dc/terms/created>,
-        <http://purl.org/dc/terms/modified>
-      ))
+      OPTIONAL { <${objUri}> <http://www.w3.org/2000/01/rdf-schema#label> ?label . }
+      OPTIONAL { <${objUri}> <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . }
+      OPTIONAL { <${objUri}> <http://purl.org/dc/terms/description> ?desc . }
+      OPTIONAL { <${objUri}> <https://data.sick.com/voc/sam/objectives-model/progress> ?progress . }
+      OPTIONAL { <${objUri}> <https://data.sick.com/voc/sam/objectives-model/category> ?category . }
+      OPTIONAL { <${objUri}> <http://purl.org/dc/terms/created> ?created . }
+      OPTIONAL { <${objUri}> <http://purl.org/dc/terms/temporal> ?temp . }
+      OPTIONAL { <${objUri}-interval> ?tp ?to . }
+      OPTIONAL { ?oldPost ?rolePred <${objUri}> . }
+      OPTIONAL { <${objUri}> <https://data.sick.com/voc/sam/objectives-model/needs> ?o . }
+      OPTIONAL { <${objUri}> <https://data.sick.com/voc/sam/objectives-model/contributesTo> ?o . }
+      OPTIONAL { ?x <https://data.sick.com/voc/sam/objectives-model/needs> <${objUri}> . }
+      OPTIONAL { ?x <https://data.sick.com/voc/sam/objectives-model/contributesTo> <${objUri}> . }
     }
   `;
+
+  // 🔍 Log query for debugging
+  console.log("SPARQL UPDATE QUERY:\n", updateQuery);
 
   try {
     const res = await fetch(
@@ -408,6 +609,7 @@ export async function PUT(req, context) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    console.error("PUT error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

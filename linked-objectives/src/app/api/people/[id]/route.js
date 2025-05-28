@@ -112,15 +112,19 @@ export async function GET(req, context) {
               rdfs:label ?label .
 
           {
-            ?okr responsibility:isAccountableFor <${fullPostUri}> .
+            ?okr responsibility:isAccountableFor ?who .
+            FILTER (?who IN (<${fullPostUri}>, <${personUri}>))
             BIND("isAccountableFor" AS ?type)
           } UNION {
-            ?okr responsibility:caresFor <${fullPostUri}> .
+            ?okr responsibility:caresFor ?who .
+            FILTER (?who IN (<${fullPostUri}>, <${personUri}>))
             BIND("caresFor" AS ?type)
           } UNION {
-            ?okr responsibility:operates <${fullPostUri}> .
+            ?okr responsibility:operates ?who .
+            FILTER (?who IN (<${fullPostUri}>, <${personUri}>))
             BIND("operates" AS ?type)
           }
+
         }
         ORDER BY ?label
       `;
