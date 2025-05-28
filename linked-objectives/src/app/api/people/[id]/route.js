@@ -185,8 +185,13 @@ export async function GET(req, context) {
               const krProgressQuery = `
                 SELECT ?kr ?progress
                 WHERE {
-                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
-                    <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+                  {
+                    <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                      <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+                  } UNION {
+                    ?kr <https://data.sick.com/voc/sam/objectives-model/isKeyResultOf>
+                      <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> .
+                  }
                   ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
                 }
               `;
