@@ -36,9 +36,9 @@ const navItems = [
   {
     label: 'People',
     icon: FaUserCog,
-    path: '/peoplelist',
+    path: '/people',
     match: (pathname) =>
-      pathname === '/peoplelist' || pathname.startsWith('/people/'),
+      pathname === '/people' || pathname.startsWith('/people/'),
   },
   {
     label: 'Strategy-Map',
