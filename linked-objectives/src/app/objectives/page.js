@@ -120,7 +120,7 @@ export default function ObjectivesListPage() {
                   id={okr.id}
                   title={detail.title || okr.title}
                   description={detail.description}
-                  averageProgress={detail.averageProgress || 0}
+                  averageProgress={detail.progress || 0}
                   state={detail.state}
                   category={detail.category}
                 />

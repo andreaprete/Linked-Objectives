@@ -243,39 +243,44 @@ export default function ObjectivePage() {
                 People Involved
               </button>
             </div>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button
-                onClick={() => setShowCreateKR(true)}
-                style={{
-                  background: "#2563eb",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "0.4rem",
-                  fontWeight: "500",
-                  padding: "0.45rem 1.2rem",
-                  cursor: "pointer"
-                }}
-              >
-                Create
-              </button>
-              <button
-                onClick={handleDeleteKeyResults}
-                style={{
-                  background: "#ef4444",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "0.4rem",
-                  fontWeight: "500",
-                  padding: "0.45rem 1.2rem",
-                  cursor: "pointer"
-                }}
-                disabled={selectedKeyResults.length === 0}
-                title={selectedKeyResults.length === 0 ? "Select at least one key result" : ""}
-              >
-                Delete
-              </button>
-            </div>
+
+            {/* Only show Create KR & Delete KR on the Key Results tab */}
+            {activeTab === "keyResults" && (
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  onClick={() => setShowCreateKR(true)}
+                  style={{
+                    background: "#2563eb",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "0.4rem",
+                    fontWeight: "500",
+                    padding: "0.45rem 1.2rem",
+                    cursor: "pointer"
+                  }}
+                >
+                  Create KR
+                </button>
+                <button
+                  onClick={handleDeleteKeyResults}
+                  style={{
+                    background: "#ef4444",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "0.4rem",
+                    fontWeight: "500",
+                    padding: "0.45rem 1.2rem",
+                    cursor: "pointer"
+                  }}
+                  disabled={selectedKeyResults.length === 0}
+                  title={selectedKeyResults.length === 0 ? "Select at least one key result" : ""}
+                >
+                  Delete KR
+                </button>
+              </div>
+            )}
           </div>
+
           {activeTab === "keyResults" && (
             <KeyResults
               ids={data.keyResult || []}
