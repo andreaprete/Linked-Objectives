@@ -4,14 +4,18 @@ import AppLayout from "@/app/components/AppLayout";
 import { WelcomeBanner } from "../../components/WelcomeBanner";
 import { WeeklyOverview } from "../../components/WeeklyOverview";
 import GoalTab from "@/app/components/GoalTab";
-import { useParams } from "next/navigation";
+import CreateObjectiveModal from "@/app/components/CreateObjectiveModal";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
   const { id } = useParams();
+  const router = useRouter();
   const [userData, setUserData] = useState(null);
-  const [okrs, setOkrs] = useState([]); // Already detailed!
+  const [okrs, setOkrs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -21,7 +25,7 @@ export default function HomePage() {
         const res = await fetch(`/api/people/${id}`);
         const json = await res.json();
         setUserData(json.data);
-        setOkrs(json.okrs); // Already in [{id, title, state, progress}]
+        setOkrs(json.okrs);
       } catch (err) {
         console.error("Failed to load OKR data:", err);
       } finally {
@@ -31,6 +35,25 @@ export default function HomePage() {
 
     fetchData();
   }, [id]);
+
+  async function handleCreateOKR(formData) {
+    try {
+      const res = await fetch("/api/objectives", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        router.push(`/objectives/${json.id}`);
+      } else {
+        alert("Failed to create OKR");
+      }
+    } catch (error) {
+      console.error("Error creating OKR:", error);
+    }
+  }
 
   if (loading) {
     return (
@@ -48,13 +71,18 @@ export default function HomePage() {
   return (
     <AppLayout>
       <main className="p-6 space-y-6">
-        <WelcomeBanner
-          name={userData?.name}
-          id={id}
-          teamId={userData?.team}
-        />
+        <WelcomeBanner name={userData?.name} id={id} teamId={userData?.team} />
         <WeeklyOverview okrs={okrs} />
-        <GoalTab okrs={okrs} loading={false} onAddGoal={() => {}} />
+        <GoalTab
+          okrs={okrs}
+          loading={false}
+          onAddGoal={() => setShowCreateModal(true)}
+        />
+        <CreateObjectiveModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onCreate={handleCreateOKR}
+        />
       </main>
     </AppLayout>
   );

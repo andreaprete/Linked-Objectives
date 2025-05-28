@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import LinkedOkrCard  from "./LinkedOkrCard";
-import '@/app/styles/WeeklyOverview.css';
-
+import GoalCard from "./GoalCard";
+import "@/app/styles/WeeklyOverview.css";
 
 export function WeeklyOverview() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [goals, setGoals] = useState([]);
   const [weekLabel, setWeekLabel] = useState("");
 
@@ -31,22 +30,15 @@ export function WeeklyOverview() {
       }).format(date);
 
     const getWeekNumber = (date) => {
-      const tempDate = new Date(date.getTime());
-      tempDate.setHours(0, 0, 0, 0);
-      tempDate.setDate(tempDate.getDate() + 3 - ((tempDate.getDay() + 6) % 7));
-      const week1 = new Date(tempDate.getFullYear(), 0, 4);
-      return (
-        1 +
-        Math.round(
-          ((tempDate - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7
-        )
-      );
+      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
     };
 
     const weekNum = getWeekNumber(today);
-    setWeekLabel(
-      `Week ${weekNum} | ${formatDate(monday)} - ${formatDate(sunday)}`
-    );
+    setWeekLabel(`Week ${weekNum} | ${formatDate(monday)} - ${formatDate(sunday)}`);
 
     fetch(`/api/people/${id}`)
       .then((res) => res.json())
@@ -61,11 +53,14 @@ export function WeeklyOverview() {
           )
         ).then((detailedOkrs) => {
           const filtered = detailedOkrs.filter((okr) => {
-            const endDate = new Date(okr.temporal?.end);
+            if (!okr.temporal?.end) return false;
+            const endDate = new Date(Date.parse(okr.temporal?.end));
             return endDate >= monday && endDate <= sunday;
           });
 
-          setGoals(filtered);
+          // ✅ Remove duplicates by ID
+          const unique = Array.from(new Map(filtered.map(o => [o.id, o])).values());
+          setGoals(unique);
         });
       });
   }, [id]);
@@ -75,9 +70,19 @@ export function WeeklyOverview() {
       <h3 className="weekly-overview-heading">{weekLabel}</h3>
       <div className="weekly-overview-list">
         {goals.length === 0 ? (
-          <p className="weekly-overview-empty">You're all set — no OKRs due this week!</p>
+          <p className="weekly-overview-empty">
+            You're all set — no OKRs due this week!
+          </p>
         ) : (
-          goals.map((goal) => <LinkedOkrCard key={goal.id} goal={goal} />)
+          goals.map((okr) => (
+            <GoalCard
+              key={okr.id}
+              id={okr.id}
+              title={okr.title}
+              state={okr.state}
+              progress={okr.progress}
+            />
+          ))
         )}
       </div>
     </section>
