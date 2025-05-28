@@ -25,6 +25,21 @@
   color: #9ca3af;
 }
 
+.avatar-circle.avatar-initials {
+  background-color: #2563eb !important;
+  color: white;
+  font-size: 3rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 9999px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
 .user-profile-info {
   flex: 1;
 }

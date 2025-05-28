@@ -7,8 +7,8 @@ const routeTitleMap = {
   "/homepage": "Home",
   "/dashboard": "Dashboard",
   "/objectiveslist": "Goals",
-  "/peoplelist": "Teams",
-  "/users": "Users",
+  "/teams": "Teams",
+  "/people": "Users",
   "/strategy-map": "Strategy Map",
 };
 
