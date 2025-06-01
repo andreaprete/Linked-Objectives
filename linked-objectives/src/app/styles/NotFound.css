@@ -61,3 +61,32 @@ p {
 .home-btn:hover {
   background-color: #00629a;
 }
+.okr404-page {
+  position: relative;
+  overflow: hidden;
+
+  height: 100vh;
+  width: 100vw;
+  background-color: #e5e5e5;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  padding: 40px 20px;
+}
+
+.okr-bg-icons {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.okr-bg-icons svg {
+  filter: blur(0.5px);
+}
+
