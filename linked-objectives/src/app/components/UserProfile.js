@@ -1,19 +1,22 @@
 'use client';
 
+import Link from 'next/link';
 import '../styles/UserProfile.css';
+
+function getInitials(name) {
+  if (!name) return '?';
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return words[0][0].toUpperCase();
+  // Take first letter of first and last word (so “Andrea Prete Rossi” → “AR”)
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
 
 export default function UserProfile({ user }) {
   return (
     <div className="user-profile-card">
       <div className="user-profile-avatar">
-        <div className="avatar-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" className="avatar-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path
-              fillRule="evenodd"
-              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-              clipRule="evenodd"
-            />
-          </svg>
+        <div className="avatar-circle avatar-initials">
+          {getInitials(user.name)}
         </div>
       </div>
 
@@ -29,9 +32,24 @@ export default function UserProfile({ user }) {
             <p>Location: {user.location}</p>
           </div>
           <div className="details-column">
-            <p>Team: {user.team}</p>
-            <p>Department: {user.department}</p>
-            <p>Company: {user.company}</p>
+            <p>
+              Team:{' '}
+              <Link href={`/teams/${user.teamId}`} className="text-blue-600 hover:underline">
+                {user.team}
+              </Link>
+            </p>
+            <p>
+              Department:{' '}
+              <Link href={`/departments/${user.departmentId}`} className="text-blue-600 hover:underline">
+                {user.department}
+              </Link>
+            </p>
+            <p>
+              Company:{' '}
+              <Link href={`/companies/${user.companyId}`} className="text-blue-600 hover:underline">
+                {user.company}
+              </Link>
+            </p>
           </div>
         </div>
       </div>

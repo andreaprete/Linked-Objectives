@@ -131,8 +131,11 @@ export async function GET(req, context) {
     async function fetchOkrAverageProgress(okrId) {
       const krQuery = `
         SELECT ?kr ?progress WHERE {
-          <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
-            <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+          {
+            <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+          } UNION {
+            ?kr <https://data.sick.com/voc/sam/objectives-model/isKeyResultOf> <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> .
+          }
           ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
         }
       `;
@@ -144,13 +147,13 @@ export async function GET(req, context) {
         },
         body: krQuery,
       });
-      if (!krRes.ok) return null;
+      if (!krRes.ok) return 0;
       const krJson = await krRes.json();
       const vals = krJson.results.bindings.map(b => parseFloat(b.progress.value)).filter(v => !isNaN(v));
       if (vals.length > 0) {
         return vals.reduce((a, b) => a + b, 0) / vals.length;
       }
-      return null;
+      return 0;
     }
 
     // Fetch progress for all okrs in parallel

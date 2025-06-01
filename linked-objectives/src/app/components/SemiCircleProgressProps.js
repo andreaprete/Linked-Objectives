@@ -55,7 +55,7 @@ const SemiCircleProgress = ({
         y="40"
         style={fontStyle}
       >
-        {averageProgress.toFixed(0)}
+        {(averageProgress ?? 0).toFixed(0)}
         {percentageSeperator}
       </text>
       <text className="semi-circle-axis-text" x="0" y="65">

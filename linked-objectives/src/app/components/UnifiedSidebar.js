@@ -10,7 +10,8 @@ const navItems = [
     label: 'Home',
     icon: FaHome,
     path: '/homepage',
-    match: (pathname) => pathname === '/homepage' || pathname === '/',
+    match: (pathname) =>
+      pathname === '/homepage' || pathname.startsWith('/homepage/'),
   },
   {
     label: 'Dashboard',
@@ -35,9 +36,9 @@ const navItems = [
   {
     label: 'People',
     icon: FaUserCog,
-    path: '/peoplelist',
+    path: '/people',
     match: (pathname) =>
-      pathname === '/peoplelist' || pathname.startsWith('/people/'),
+      pathname === '/people' || pathname.startsWith('/people/'),
   },
   {
     label: 'Strategy-Map',

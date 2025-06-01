@@ -1,4 +1,3 @@
-// jsconfig.json (Standard for src layout)
 {
   "compilerOptions": {
     "baseUrl": ".",

@@ -42,6 +42,21 @@ export default function TeamsPage() {
       )
     : [];
 
+  // --- Loading UI, BEFORE the main return ---
+  if (loading) {
+    return (
+      <AppLayout>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading teams...</p>
+          </div>
+        </main>
+      </AppLayout>
+    );
+  }
+
+  // --- Main page content ---
   return (
     <AppLayout>
       <div className="p-3 space-y-3">
@@ -78,8 +93,8 @@ export default function TeamsPage() {
           </div>
         </div>
 
-        {loading ? (
-          <p>Loading teams...</p>
+        {filteredTeams.length === 0 ? (
+          <p className="text-gray-500">No teams match your criteria.</p>
         ) : (
           <div className="space-y-4">
             {filteredTeams.map((team) => (

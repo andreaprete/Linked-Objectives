@@ -67,6 +67,21 @@ export default function ObjectivesListPage() {
     ),
   ];
 
+  // Loading UI (should be BEFORE the main return!)
+  if (loading) {
+    return (
+      <AppLayout>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading Objective data...</p>
+          </div>
+        </main>
+      </AppLayout>
+    );
+  }
+
+  // Main return
   return (
     <AppLayout>
       <div className="p-6 space-y-6">
@@ -93,9 +108,7 @@ export default function ObjectivesListPage() {
           </select>
         </div>
 
-        {loading ? (
-          <p className="text-gray-500">Loading OKRs...</p>
-        ) : filteredObjectives.length === 0 ? (
+        {filteredObjectives.length === 0 ? (
           <p className="text-gray-500">No OKRs match your criteria.</p>
         ) : (
           <div className="space-y-4 mt-4">
@@ -107,7 +120,7 @@ export default function ObjectivesListPage() {
                   id={okr.id}
                   title={detail.title || okr.title}
                   description={detail.description}
-                  averageProgress={detail.averageProgress || 0}
+                  averageProgress={detail.progress || 0}
                   state={detail.state}
                   category={detail.category}
                 />

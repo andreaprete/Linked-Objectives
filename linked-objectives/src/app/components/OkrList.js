@@ -57,7 +57,7 @@ export default function OkrList({ username, okrs }) {
                 id={okr.id}
                 title={okr.title}
                 description={okr.description}
-                averageProgress={okr.progress}
+                progress={okr.progress}
                 state={okr.state}
                 category={okr.category}
               />

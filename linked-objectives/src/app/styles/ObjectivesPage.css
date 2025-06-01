@@ -4,6 +4,50 @@
   margin: auto;
   color: #1f2937;
 }
+
+/* === MODAL + BLUR STYLES === */
+.blur-sm {
+  filter: blur(6px);
+  transition: filter 0.2s;
+}
+.pointer-events-none {
+  pointer-events: none;
+}
+.select-none {
+  user-select: none;
+}
+
+/* Center the modal in the middle of the page content (not full viewport, but inside layout) */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%; /* Covers the page content, NOT the sidebar */
+  height: 100%; /* Stretches down the content area */
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none; /* no overlay color */
+  pointer-events: auto; /* allow interaction inside modal */
+}
+
+.modal-container {
+  position: relative;
+  z-index: 100;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 48rem;
+  min-width: 340px;
+  box-sizing: border-box;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Rest of your page styles */
 .objective-left-meta {
   flex: 1;
   min-width: 250px;
@@ -157,6 +201,8 @@
   gap: 1rem;
   border-bottom: 1px solid #d1d5db;
   margin-bottom: 1rem;
+  align-items: center;
+  justify-content: space-between;
 }
 .tab-btn {
   padding: 0.5rem 1rem;
@@ -179,16 +225,4 @@
     flex-direction: column;
     align-items: flex-start;
   }
-}
-
-/* BLUR effect for modal-open state */
-.blur-sm {
-  filter: blur(6px) grayscale(0.2) brightness(0.98);
-  transition: filter 0.2s;
-}
-.pointer-events-none {
-  pointer-events: none;
-}
-.select-none {
-  user-select: none;
 }

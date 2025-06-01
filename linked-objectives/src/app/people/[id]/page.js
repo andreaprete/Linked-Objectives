@@ -59,7 +59,10 @@ export default function PersonPage() {
     team: data.teamName,
     department: data.departmentName,
     company: data.company,
-    profileImage: "/profileImage.jpg" // Path to profile image
+    teamId: data.team,
+    departmentId: data.department,
+    companyId: data.company,
+    profileImage: "/profileImage.jpg"
   };
 
   return (
