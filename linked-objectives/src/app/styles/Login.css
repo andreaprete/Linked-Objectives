@@ -1,0 +1,90 @@
+/* ========== PAGE CENTERING ========== */
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #e5e5e5;
+}
+
+/* ========== FORM BOX ========== */
+.auth-box {
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 6px;
+  width: 320px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.auth-box:hover {
+  box-shadow: 0 0 20px rgba(0, 120, 184, 0.25); /* 🔵 Blue glow */
+}
+
+/* ========== TYPOGRAPHY ========== */
+h2 {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  margin: 0;
+}
+
+h3 {
+  margin: 20px 0 10px;
+  font-weight: 600;
+  font-size: 18px;
+  color: #2c2c2c;
+}
+
+/* ========== FORM FIELDS ========== */
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  background-color: transparent;
+  font-size: 14px;
+  color: #2c2c2c;
+  outline: none;
+}
+
+input::placeholder {
+  color: #888;
+}
+
+/* ========== FORGOT LINK ========== */
+.forgot {
+  display: block;
+  font-size: 12px;
+  color: #0078b8;
+  text-align: left;
+  margin: 5px 0 15px;
+  text-decoration: none;
+}
+
+.forgot:hover {
+  text-decoration: underline;
+}
+
+/* ========== BUTTON ========== */
+.btn {
+  background-color: #0078b8;
+  color: white;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #00629a;
+}

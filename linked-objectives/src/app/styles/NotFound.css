@@ -1,0 +1,63 @@
+.okr404-page {
+  height: 100vh;
+  width: 100vw;
+  background-color: #e5e5e5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.error-title {
+  font-size: 80px;
+  font-weight: 800;
+  color: #0078B8;
+  margin: 0 0 20px 0;
+}
+
+.svg-container {
+  max-width: 100%;
+  margin-bottom: 30px;
+}
+
+.okr-graph {
+  display: block;
+  margin: 0 auto;
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+}
+
+h2 {
+  font-size: 24px;
+  color: #2c2c2c;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 30px;
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+.home-btn {
+  background-color: #0078B8;
+  color: white;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.home-btn:hover {
+  background-color: #00629a;
+}
