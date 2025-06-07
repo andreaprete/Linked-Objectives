@@ -10,7 +10,7 @@ export default function AppLayout({ children }) {
       <div className="main-content">
         <UnifiedTopbar />
         <div className="main-inner">
-          {children}
+          {children} {/* Modal overlay must be inside here */}
         </div>
       </div>
     </div>
