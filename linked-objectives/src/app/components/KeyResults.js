@@ -14,7 +14,13 @@ export default function KeyResults({ ids = [], onSelectionChange }) {
       const results = [];
       for (const id of ids) {
         try {
-          const res = await fetch(`/api/key-results/${id}`);
+          const res = await fetch(`/api/key-results/${id}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+              "Pragma": "no-cache"
+            }
+          });
           const json = await res.json();
           results.push({ id, ...json.data });
         } catch (e) {
@@ -73,8 +79,14 @@ export default function KeyResults({ ids = [], onSelectionChange }) {
               {kr.comment || "No comment available."}
             </p>
           </div>
-          <div className="keyresult-progress" style={{ marginLeft: "1rem" }}>
-            {kr.progress ? `${Math.round(kr.progress)}%` : "0%"}
+          <div className="keyresult-state-progress" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", marginLeft: "1rem" }}>
+            {/* State at the top, progress below */}
+            <span className="keyresult-state" style={{ fontWeight: 600, color: "#555", marginBottom: "0.2rem" }}>
+              {kr.state || "-"}
+            </span>
+            <span className="keyresult-progress">
+              {kr.progress ? `${Math.round(kr.progress)}%` : "0%"}
+            </span>
           </div>
         </div>
       ))}
