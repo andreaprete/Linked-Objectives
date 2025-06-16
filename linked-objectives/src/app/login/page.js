@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import '@/app/styles/Login.css'; // Make sure this path is correct
+import '@/app/styles/LoginRegister.css'; // Make sure this path is correct
 import Logo from '@/app/components/Logo';
 
 const Login = () => {
