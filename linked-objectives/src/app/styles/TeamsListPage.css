@@ -1,0 +1,58 @@
+.teams-content-container {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.teams-content-container input,
+.teams-content-container select {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #1f2937;
+  font-size: 1rem;
+  transition: border 0.2s ease;
+}
+
+.teams-content-container input:focus,
+.teams-content-container select:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.team-card {
+  background: white;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 24px rgba(59, 130, 246, 0.07), 0 1.5px 3px rgba(59, 130, 246, 0.07);
+  padding: 1.5rem 1rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: box-shadow 0.2s, transform 0.12s;
+  border: 1px solid #e0e7ff;
+}
+
+.team-card:hover {
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px) scale(1.017);
+  border-color: #93c5fd;
+}
+
+.teams-page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #2563eb;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.teams-page-header svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #2563eb;
+}

@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Target } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
 import OkrCardsForList from '../components/OkrCardsForList';
+import "@/app/styles/ObjectivesListPage.css";
 
 export default function ObjectivesListPage() {
   const [objectives, setObjectives] = useState([]);
@@ -79,7 +81,6 @@ export default function ObjectivesListPage() {
     ),
   ];
 
-  // Loading UI (should be BEFORE the main return!)
   if (loading) {
     return (
       <AppLayout>
@@ -93,53 +94,57 @@ export default function ObjectivesListPage() {
     );
   }
 
-  // Main return
   return (
     <AppLayout>
-      <div className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <input
-            type="text"
-            placeholder="Search by title or description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md w-full sm:w-1/2"
-          />
-
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md w-full sm:w-1/4"
-          >
-            <option value="all">All Categories</option>
-            {uniqueCategories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {filteredObjectives.length === 0 ? (
-          <p className="text-gray-500">No OKRs match your criteria.</p>
-        ) : (
-          <div className="space-y-4 mt-4">
-            {filteredObjectives.map((okr) => {
-              const detail = details[okr.id] || {};
-              return (
-                <OkrCardsForList
-                  key={okr.id}
-                  id={okr.id}
-                  title={detail.title || okr.title}
-                  description={detail.description}
-                  averageProgress={detail.progress || 0}
-                  state={detail.state}
-                  category={detail.category}
-                />
-              );
-            })}
+      <div className="flex justify-center px-4 py-8">
+        <div className="objectives-content-container w-full max-w-6xl bg-white rounded-xl shadow p-6 space-y-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div className="flex items-center gap-3 mb-3 md:mb-0">
+              <Target className="text-blue-600" size={28} />
+              <h2 className="text-2xl font-semibold text-blue-600">Objectives – OKRs</h2>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="Search by title or description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-md w-full sm:w-72 bg-gray-50 text-sm"
+              />
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-md w-full sm:w-48 bg-gray-50 text-sm"
+              >
+                <option value="all">All Categories</option>
+                {uniqueCategories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
           </div>
-        )}
+
+          {filteredObjectives.length === 0 ? (
+            <p className="text-gray-500 text-center py-6">No OKRs match your criteria.</p>
+          ) : (
+            <div className="space-y-4">
+              {filteredObjectives.map((okr) => {
+                const detail = details[okr.id] || {};
+                return (
+                  <OkrCardsForList
+                    key={okr.id}
+                    id={okr.id}
+                    title={detail.title || okr.title}
+                    description={detail.description}
+                    averageProgress={detail.progress || 0}
+                    state={detail.state}
+                    category={detail.category}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </AppLayout>
   );

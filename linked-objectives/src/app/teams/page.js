@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import { Users2 } from "lucide-react";
 import AppLayout from "@/app/components/AppLayout";
 import TeamsCardForList from "../components/TeamsCardForList";
+import "@/app/styles/TeamsListPage.css";
 
 export default function TeamsPage() {
   const [teams, setTeams] = useState([]);
@@ -59,42 +61,55 @@ export default function TeamsPage() {
 
   return (
     <AppLayout>
-      <div className="p-3 space-y-3">
-        <div className="flex space-x-4 items-end justify-end">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Search by team name
-            </label>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="border rounded px-3 py-1 text-sm"
-              placeholder="e.g. Product Team"
-            />
+      <div className="teams-content-container">
+        {/* Title and Filters Row */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+          {/* Title with icon */}
+          <div className="flex items-center gap-2">
+            <Users2 className="text-blue-600" size={28} />
+            <h1 className="text-2xl font-semibold text-blue-600">Teams</h1>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Filter by department
-            </label>
-            <select
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="border rounded px-3 py-1 text-sm"
-            >
-              <option value="">All</option>
-              {uniqueDepartments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700">
+                Search by team name
+              </label>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="border rounded px-3 py-2 text-sm w-full bg-gray-50"
+                placeholder="e.g. Product Team"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700">
+                Filter by department
+              </label>
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="border rounded px-3 py-2 text-sm w-full bg-gray-50"
+              >
+                <option value="">All</option>
+                {uniqueDepartments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
+        {/* Team Cards */}
         {filteredTeams.length === 0 ? (
-          <p className="text-gray-500">No teams match your criteria.</p>
+          <p className="text-gray-500 text-center py-6">
+            No teams match your criteria.
+          </p>
         ) : (
           <div className="space-y-4">
             {filteredTeams.map((team) => (
@@ -106,3 +121,4 @@ export default function TeamsPage() {
     </AppLayout>
   );
 }
+// Note: Ensure that the API endpoint /api/teamslist is correctly set up to return the teams data in the expected format.
