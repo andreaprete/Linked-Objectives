@@ -303,7 +303,7 @@ export default function DashboardPage() {
           <AnimatedCard title="Key Result Scores Trend" delay={500}>
             <KeyResultScoresTrendChart data={keyResultScoresTrendData} />
           </AnimatedCard>
-          <AnimatedCard title="OKR Creation Velocity" delay={550}>
+          <AnimatedCard title="OKR Creation per day" delay={550}>
             <OkrVelocityChart data={objectiveVelocity} />
           </AnimatedCard>
         </div>
