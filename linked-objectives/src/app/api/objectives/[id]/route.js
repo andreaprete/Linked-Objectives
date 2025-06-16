@@ -25,6 +25,7 @@ export async function GET(req, context) {
     try {
       const res = await fetch(endpoint, {
         method: "POST",
+        cache: "no-store",
         headers: {
           "Content-Type": "application/sparql-query",
           Accept: "application/sparql-results+json",

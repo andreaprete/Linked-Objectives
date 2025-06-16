@@ -15,7 +15,13 @@ export default function ObjectivesListPage() {
   useEffect(() => {
     async function fetchObjectives() {
       try {
-        const res = await fetch('/api/objectiveslist');
+        const res = await fetch('/api/objectiveslist', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+        });
         const list = await res.json();
         setObjectives(list);
 
@@ -23,7 +29,13 @@ export default function ObjectivesListPage() {
         await Promise.all(
           list.map(async (obj) => {
             try {
-              const res = await fetch(`/api/objectives/${obj.id}`);
+              const res = await fetch(`/api/objectives/${obj.id}`, {
+                cache: 'no-store',
+                headers: {
+                  'Cache-Control': 'no-cache',
+                  Pragma: 'no-cache',
+                },
+              });
               const json = await res.json();
               detailsMap[obj.id] = json.data;
             } catch (e) {

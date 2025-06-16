@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-import AppLayout from '@/app/components/AppLayout'; // Unified layout!
+import AppLayout from '@/app/components/AppLayout';
 import UserProfile from '@/app/components/UserProfile';
 import OkrList from '@/app/components/OkrList';
 
@@ -18,7 +18,9 @@ export default function PersonPage() {
 
     async function fetchPerson() {
       try {
-        const res = await fetch(`http://localhost:3000/api/people/${id}`);
+        const res = await fetch(`http://localhost:3000/api/people/${id}`, {
+          cache: "no-store",
+        });
         const json = await res.json();
         setData(json.data);
         setOkrs(json.okrs || []);
@@ -32,23 +34,23 @@ export default function PersonPage() {
     fetchPerson();
   }, [id]);
 
-    if (loading) return (
-      <AppLayout>
-        <main className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-md text-gray-600">Loading People data...</p>
-          </div>
-        </main>
-      </AppLayout>
-    );
+  if (loading) return (
+    <AppLayout>
+      <main className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-md text-gray-600">Loading People data...</p>
+        </div>
+      </main>
+    </AppLayout>
+  );
+
   if (!data) return (
     <AppLayout>
       <div className="p-6 text-red-500">Person not found.</div>
     </AppLayout>
   );
 
-  // Prepare userData for UserProfile
   const userData = {
     name: data.name,
     role: data.roleTitle,

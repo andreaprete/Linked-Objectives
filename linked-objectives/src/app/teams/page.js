@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
 import AppLayout from "@/app/components/AppLayout";
@@ -13,12 +13,14 @@ export default function TeamsPage() {
   useEffect(() => {
     async function fetchTeams() {
       try {
-        const res = await fetch("/api/teamslist");
+        const res = await fetch("/api/teamslist", {
+          cache: "no-store",
+        });
         const json = await res.json();
-        setTeams(Array.isArray(json) ? json : []); // ensure it's an array
+        setTeams(Array.isArray(json) ? json : []);
       } catch (err) {
         console.error("Failed to load teams:", err);
-        setTeams([]); // fallback
+        setTeams([]);
       } finally {
         setLoading(false);
       }
@@ -42,7 +44,6 @@ export default function TeamsPage() {
       )
     : [];
 
-  // --- Loading UI, BEFORE the main return ---
   if (loading) {
     return (
       <AppLayout>
@@ -56,7 +57,6 @@ export default function TeamsPage() {
     );
   }
 
-  // --- Main page content ---
   return (
     <AppLayout>
       <div className="p-3 space-y-3">

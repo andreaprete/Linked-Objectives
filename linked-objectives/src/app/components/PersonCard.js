@@ -7,26 +7,6 @@ function getInitials(name) {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-function slugify(team) {
-  if (!team) return '';
-  return team
-    .replace(/^Team\s*/i, '')       // remove "Team " at start
-    .replace(/[^a-zA-Z0-9]/g, '')  // remove non-alphanumeric
-    .replace(/\s+/g, '')           // remove spaces
-    .trim();
-}
-
-function slugifyTeam(team) {
-  if (!team) return '';
-  // Remove 'Team' and everything until the first dash (– or -), but keep 'Team' for the slug
-  // Match: Team B – Frontend & UX --> Frontend & UX
-  //        Team C - DevOps & QA  --> DevOps & QA
-  const match = team.match(/Team\s*[^–-]*[–-]\s*(.+)$/); // match after first dash
-  const clean = match ? match[1] : team.replace(/^Team\s*/i, '');
-  // Now remove non-alphanumeric characters
-  return 'Team' + clean.replace(/[^a-zA-Z0-9]/g, '');
-}
-
 export default function PersonCard({ person }) {
   return (
     <div className="person-card group">
@@ -39,20 +19,12 @@ export default function PersonCard({ person }) {
         </div>
         <div className="person-card-role">{person.role}</div>
         <div className="person-card-meta">
-          {person.team && (
+          {person.team && person.teamId && (
             <Link
-              href={`/teams/${slugifyTeam(person.team)}`}
+              href={`/teams/${person.teamId}`}
               className="person-card-link"
             >
               {person.team}
-            </Link>
-          )}
-          {person.company && (
-            <Link
-              href={`/companies/${slugify(person.company)}`}
-              className="person-card-link"
-            >
-              {person.company}
             </Link>
           )}
         </div>

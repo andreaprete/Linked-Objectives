@@ -37,7 +37,13 @@ export default function ObjectivePage() {
         const keyResultIds = obj.keyResult || [];
         const keyResults = await Promise.all(
           keyResultIds.map(async (krId) => {
-            const res = await fetch(`/api/key-results/${krId}`);
+            const res = await fetch(`/api/key-results/${krId}`, {
+              cache: "no-store",
+              headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+              },
+            });
             const json = await res.json();
             return parseFloat(json.data?.progress || 0);
           })

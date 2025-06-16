@@ -6,7 +6,7 @@ export async function GET() {
     PREFIX objectives: <https://data.sick.com/voc/sam/objectives-model/>
     PREFIX responsibility: <https://data.sick.com/voc/sam/responsibility-model/>
 
-    SELECT ?personUri ?name ?roleTitle ?teamName ?departmentName (COUNT(DISTINCT ?okr) AS ?objectiveCount) WHERE {
+    SELECT ?personUri ?name ?roleTitle ?team ?teamName ?departmentName ?company (COUNT(DISTINCT ?okr) AS ?objectiveCount) WHERE {
       ?personUri a foaf:Person ;
                  foaf:name ?name .
 
@@ -19,11 +19,15 @@ export async function GET() {
           OPTIONAL {
             ?department org:hasUnit ?team .
             OPTIONAL { ?department foaf:name ?departmentName . }
+            OPTIONAL {
+              ?company org:hasUnit ?department .
+            }
           }
         }
+      }
 
-        # Objectives for which this post is related (accountable, cares, operates)
-        OPTIONAL {
+      OPTIONAL {
+        {
           ?okr a objectives:Objective .
           {
             ?okr responsibility:isAccountableFor ?post
@@ -31,17 +35,24 @@ export async function GET() {
             ?okr responsibility:caresFor ?post
           } UNION {
             ?okr responsibility:operates ?post
+          } UNION {
+            ?okr responsibility:isAccountableFor ?personUri
+          } UNION {
+            ?okr responsibility:caresFor ?personUri
+          } UNION {
+            ?okr responsibility:operates ?personUri
           }
         }
       }
     }
-    GROUP BY ?personUri ?name ?roleTitle ?teamName ?departmentName
+    GROUP BY ?personUri ?name ?roleTitle ?team ?teamName ?departmentName ?company
     ORDER BY ?name
   `;
 
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/sparql-query',
         Accept: 'application/sparql-results+json',
@@ -60,13 +71,20 @@ export async function GET() {
       name: b.name?.value || "",
       role: b.roleTitle?.value || "",
       team: b.teamName?.value || "",
+      teamId: b.team?.value.split('/').pop() || "",  // ✅ used for link
       department: b.departmentName?.value || "",
+      company: b.company?.value.split('/').pop() || "", // ✅ used for link
       objectiveCount: parseInt(b.objectiveCount.value, 10) || 0,
     }));
 
     return new Response(JSON.stringify(people), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {

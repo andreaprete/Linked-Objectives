@@ -61,6 +61,7 @@ export async function GET(req, context) {
   try {
     const res = await fetch(endpoint, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/sparql-query",
         Accept: "application/sparql-results+json",
@@ -72,7 +73,10 @@ export async function GET(req, context) {
       const errText = await res.text();
       return new Response(JSON.stringify({ error: errText }), {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
       });
     }
 
@@ -118,16 +122,14 @@ export async function GET(req, context) {
             description: row.description?.value || "No description available.",
             state: row.state?.value?.split("/").pop() || "N/A",
             category: row.category?.value?.split("/").pop() || "N/A",
-            progress: null, // Placeholder, will fill after
+            progress: null,
           });
         }
       }
     }
 
-    // --- For each OKR, fetch average progress of its key results ---
     const okrs = Array.from(okrsMap.values());
 
-    // Helper to fetch average progress for each OKR
     async function fetchOkrAverageProgress(okrId) {
       const krQuery = `
         SELECT ?kr ?progress WHERE {
@@ -141,6 +143,7 @@ export async function GET(req, context) {
       `;
       const krRes = await fetch(endpoint, {
         method: "POST",
+        cache: "no-store",
         headers: {
           "Content-Type": "application/sparql-query",
           Accept: "application/sparql-results+json",
@@ -156,7 +159,6 @@ export async function GET(req, context) {
       return 0;
     }
 
-    // Fetch progress for all okrs in parallel
     await Promise.all(
       okrs.map(async (okr) => {
         okr.progress = await fetchOkrAverageProgress(okr.id);
@@ -173,12 +175,23 @@ export async function GET(req, context) {
         members,
         okrs,
       }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0",
+        },
+      }
     );
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+      },
     });
   }
 }

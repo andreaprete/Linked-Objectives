@@ -24,7 +24,13 @@ export default function CompanyPage() {
 
     async function fetchCompany() {
       try {
-        const res = await fetch(`/api/companies/${id}`);
+        const res = await fetch(`/api/companies/${id}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
         const json = await res.json();
         setData(json);
       } catch (err) {

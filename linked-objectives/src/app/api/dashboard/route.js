@@ -7,9 +7,13 @@ async function queryGraphDB(query, context = '') {
   const endpoint = `${GRAPHDB_URL}/repositories/${REPOSITORY_ID}`;
   const res = await fetch(endpoint, {
     method: 'POST',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/sparql-query',
       Accept: 'application/sparql-results+json',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0',
     },
     body: query,
   });
@@ -167,21 +171,30 @@ function createDashboardResponse(objectives, krTrend, filters) {
     else progressMap["100%"]++;
   });
 
-  return NextResponse.json({
-    summaryMetrics: {
-      totalOkrCount,
-      overallProgress,
-      totalKrCount,
-      uniqueCategoryCount
-    },
-    objectiveVelocity,
-    keyResultScoresTrend: krTrend,
-    distributions: {
-      objectivesByStatus: Object.entries(statusMap).map(([name, value]) => ({ name, value })),
-      objectivesByCategory: Object.entries(categoryMap).map(([name, value]) => ({ name, value })),
-      objectivesByProgress: Object.entries(progressMap)
-        .map(([name, value]) => ({ name, value }))
-        .filter(entry => entry.value > 0)
+  return new NextResponse(
+    JSON.stringify({
+      summaryMetrics: {
+        totalOkrCount,
+        overallProgress,
+        totalKrCount,
+        uniqueCategoryCount
+      },
+      objectiveVelocity,
+      keyResultScoresTrend: krTrend,
+      distributions: {
+        objectivesByStatus: Object.entries(statusMap).map(([name, value]) => ({ name, value })),
+        objectivesByCategory: Object.entries(categoryMap).map(([name, value]) => ({ name, value })),
+        objectivesByProgress: Object.entries(progressMap).map(([name, value]) => ({ name, value })).filter(entry => entry.value > 0)
+      }
+    }),
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     }
-  });
+  );
 }

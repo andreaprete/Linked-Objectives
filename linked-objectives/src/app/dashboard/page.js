@@ -195,7 +195,13 @@ export default function DashboardPage() {
           ...(endDate && { endDate })
         }).toString();
 
-        const res = await fetch(`/api/dashboard?${query}`);
+        const res = await fetch(`/api/dashboard?${query}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        });
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({ error: `API request failed: Status ${res.status}` }));
           throw new Error(errorData.error || `API request failed: Status ${res.status}`);
