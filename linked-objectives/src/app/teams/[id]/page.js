@@ -84,12 +84,11 @@ export default function TeamPage() {
             </div>
           </div>
 
-          {data.okrs?.length > 0 && (
-            <div>
-              <h2 className="text-lg font-semibold mb-2">Related OKRs</h2>
-              <TeamOkrsTab okrs={data.okrs} />
-            </div>
-          )}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Related OKRs</h2>
+            <TeamOkrsTab okrs={data.okrs || []} />
+          </div>
+
         </div>
       </div>
     </AppLayout>
