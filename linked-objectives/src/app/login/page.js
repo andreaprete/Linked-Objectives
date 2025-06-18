@@ -1,10 +1,15 @@
-"use client";
+    "use client";
 
 import React, { useState } from 'react';
-import '@/app/styles/LoginRegister.css'; // Make sure this path is correct
+import { signIn } from "next-auth/react";
+import { useRouter } from 'next/navigation';
+
+import '@/app/styles/LoginRegister.css';
 import Logo from '@/app/components/Logo';
 
 const Login = () => {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,12 +22,27 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login Attempt:', formData);
 
-    // 🔐 BACKEND INTEGRATION HOOK
-    // fetch("/api/login", {...})
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (res.ok) {
+      const graphRes = await fetch(`/api/getUsername?email=${formData.email}`);
+      const json = await graphRes.json();
+
+      if (json.username) {
+        router.push(`/homepage/${json.username}`);
+      } else {
+        router.push("/unauthorized");
+      }
+    } else {
+      alert("❌ Login failed: Check your credentials");
+    }
   };
 
   return (

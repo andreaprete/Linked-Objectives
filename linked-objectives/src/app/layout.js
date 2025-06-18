@@ -1,4 +1,6 @@
+// layout.js (NO "use client" here)
 import "./globals.css";
+import SessionWrapper from "./SessionWrapper";
 
 export const metadata = {
   title: "Linked Objectives",
@@ -8,10 +10,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head />
       <body>
+        <SessionWrapper>
           {children}
-      </body> 
+        </SessionWrapper>
+      </body>
     </html>
   );
 }

@@ -1,18 +1,23 @@
 // AppLayout.js
+"use client";
+
 import UnifiedSidebar from './UnifiedSidebar';
 import UnifiedTopbar from './UnifiedTopbar';
+import { SessionProvider } from "next-auth/react"; // ✅ import SessionProvider
 import "@/app/styles/AppLayout.css";
 
 export default function AppLayout({ children }) {
   return (
-    <div className="app-layout">
-      <UnifiedSidebar />
-      <div className="main-content">
-        <UnifiedTopbar />
-        <div className="main-inner">
-          {children} {/* Modal overlay must be inside here */}
+    <SessionProvider>
+      <div className="app-layout">
+        <UnifiedSidebar />
+        <div className="main-content">
+          <UnifiedTopbar />
+          <div className="main-inner">
+            {children}
+          </div>
         </div>
       </div>
-    </div>
+    </SessionProvider>
   );
 }
