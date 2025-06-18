@@ -36,15 +36,18 @@ export default function UnauthorizedPage() {
     <AppLayout>
       <main className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <ShieldAlert className="w-16 h-16 text-[#0078C3] mb-4" />
-        <h1 className="text-3xl font-bold text-[#0078C3] mb-2">Access Denied</h1>
-        <p className="text-gray-600 text-md mb-6">
-          You do not have permission to view this page.
+        <h1 className="text-3xl font-bold text-[#0078C3] mb-2">Oops!</h1>
+        <p className="text-gray-600 text-md mb-2">
+          Looks like you've stumbled into forbidden territory.
+        </p>
+        <p className="text-gray-500 text-sm italic mb-6">
+          (Don't worry, we won't call security... this time.)
         </p>
         <button
           onClick={handleGoHome}
           className="px-5 py-2 rounded-md text-white font-medium shadow hover:bg-[#006bb0] transition bg-[#0078C3]"
         >
-          Go to Homepage
+          Take me back where it's safe
         </button>
       </main>
     </AppLayout>

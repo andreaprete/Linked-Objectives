@@ -126,7 +126,7 @@ export default function UnifiedTopbar() {
           </div>
           <hr />
           <div onClick={() => router.push(`/homepage/${username}`)}>My Homepage</div>
-          <div onClick={() => router.push(`/people/${username}`)}>View Profile</div>
+          <div onClick={() => router.push(`/people/${username}`)}>My Profile</div>
           <div onClick={handleLogout}>Log Out</div>
         </div>
       </div>

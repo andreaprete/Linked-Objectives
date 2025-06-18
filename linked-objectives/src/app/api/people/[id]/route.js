@@ -49,30 +49,16 @@ export async function GET(req, context) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      return new Response(JSON.stringify({ error: errorText }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store, no-cache, must-revalidate",
-        },
-      });
+      return new Response(JSON.stringify({ error: errorText }), { status: 500 });
     }
 
     const json = await response.json();
     const binding = json.results.bindings[0];
     if (!binding) {
-      return new Response(JSON.stringify({ error: "No data found" }), {
-        status: 404,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store, no-cache, must-revalidate",
-        },
-      });
+      return new Response(JSON.stringify({ error: "No data found" }), { status: 404 });
     }
 
-    const trimUri = (value) =>
-      value?.includes("/") ? value.split("/").pop() : value;
-
+    const trimUri = (value) => (value?.includes("/") ? value.split("/").pop() : value);
     const dataMap = {};
     let fullPostUri = null;
 
@@ -134,6 +120,7 @@ export async function GET(req, context) {
             const responsibility = row.type.value;
             let state = "Planned";
             let progress = null;
+            let interval = {};
 
             // State
             const stateQuery = `
@@ -153,12 +140,9 @@ export async function GET(req, context) {
               },
               body: stateQuery,
             });
-
             if (stateRes.ok) {
               const stateJson = await stateRes.json();
-              state =
-                stateJson.results.bindings[0]?.state?.value.split("/").pop() ||
-                "Planned";
+              state = stateJson.results.bindings[0]?.state?.value.split("/").pop() || "Planned";
             }
 
             // Progress
@@ -183,17 +167,41 @@ export async function GET(req, context) {
               },
               body: krQuery,
             });
-
             if (krRes.ok) {
               const krJson = await krRes.json();
               const vals = krJson.results.bindings
                 .map((b) => parseFloat(b.progress.value))
                 .filter((v) => !isNaN(v));
               if (vals.length > 0) {
-                progress = Math.round(
-                  vals.reduce((a, b) => a + b, 0) / vals.length
-                );
+                progress = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
               }
+            }
+
+            // Interval
+            const intervalQuery = `
+              PREFIX dct: <http://purl.org/dc/terms/>
+              PREFIX time: <http://www.w3.org/2006/time#>
+
+              SELECT ?hasBeginning ?hasEnd WHERE {
+                <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> dct:temporal ?interval .
+                OPTIONAL { ?interval time:hasBeginning ?hasBeginning . }
+                OPTIONAL { ?interval time:hasEnd ?hasEnd . }
+              }
+            `;
+            const intervalRes = await fetch(endpoint, {
+              method: "POST",
+              cache: "no-store",
+              headers: {
+                "Content-Type": "application/sparql-query",
+                Accept: "application/sparql-results+json",
+              },
+              body: intervalQuery,
+            });
+            if (intervalRes.ok) {
+              const intervalJson = await intervalRes.json();
+              const result = intervalJson.results.bindings[0];
+              if (result?.hasBeginning) interval.hasBeginning = result.hasBeginning.value;
+              if (result?.hasEnd) interval.hasEnd = result.hasEnd.value;
             }
 
             return {
@@ -202,6 +210,7 @@ export async function GET(req, context) {
               state,
               progress,
               responsibility,
+              interval,
             };
           })
         );
@@ -232,11 +241,7 @@ export async function GET(req, context) {
     }
 
     return new Response(
-      JSON.stringify({
-        id,
-        data: dataMap,
-        okrs,
-      }),
+      JSON.stringify({ id, data: dataMap, okrs }),
       {
         status: 200,
         headers: {
@@ -255,4 +260,4 @@ export async function GET(req, context) {
       },
     });
   }
-}
+} 

@@ -13,12 +13,11 @@ export default function HomePage() {
   const { username } = useParams();
   const router = useRouter();
   const { data: session, status } = useSession();
-
   const [userData, setUserData] = useState(null);
   const [okrs, setOkrs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(null);
-
+  const userRole = session?.user?.role;
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Authorization check
@@ -122,6 +121,7 @@ export default function HomePage() {
           okrs={okrs}
           loading={false}
           onAddGoal={() => setShowCreateModal(true)}
+          userRole={userRole}
         />
         <CreateObjectiveModal
           isOpen={showCreateModal}

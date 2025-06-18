@@ -1,11 +1,13 @@
+/* SECTION CONTAINER */
 .goal-tab-section {
   background: #fff;
   border-radius: 16px;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
   margin-bottom: 2rem;
 }
 
+/* HEADER */
 .goal-tab-header {
   display: flex;
   align-items: center;
@@ -28,13 +30,7 @@
   gap: 1rem;
 }
 
-.goal-tab-filter {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-right: 0.2rem;
-}
-
+/* BUTTONS */
 .goal-tab-add {
   background: #2196f3;
   color: #fff;
@@ -49,4 +45,116 @@
 
 .goal-tab-add:hover {
   background: #1565c0;
+}
+
+.goal-tab-filter {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.2rem;
+}
+
+/* FILTER BAR CONTAINER */
+.goal-tab-filters-wrapper {
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+}
+
+/* FILTER LABEL */
+.goal-tab-filters-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+/* FILTER GRID */
+.goal-tab-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+/* FILTER FIELD WRAPPERS */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-size: 0.75rem;
+  color: #444;
+  margin-bottom: 0.25rem;
+}
+
+/* INPUTS AND SELECTS */
+.goal-tab-filters input,
+.goal-tab-filters select,
+.filter-group input,
+.filter-group select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+}
+
+/* ANIMATIONS */
+.fade-in {
+  animation-name: fadeInSlide;
+}
+
+.fade-out {
+  animation-name: fadeOutSlide;
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutSlide {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.filter-clear-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.clear-filters-button {
+  background-color: #e0f2ff;
+  color: #0078c3;
+  border: 1px solid #b3e0ff;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-button:hover {
+  background-color: #cce7ff;
+  color: #005f99;
+  border-color: #99d6ff;
 }

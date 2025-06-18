@@ -1,9 +1,10 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { FaHome, FaBullseye, FaUsers, FaUserCog, FaThLarge } from 'react-icons/fa';
 import "@/app/styles/UnifiedSidebar.css"; 
+import { useSession } from "next-auth/react";
 
 const navItems = [
   {
@@ -63,26 +64,54 @@ function SidebarItem({ icon, label, active, onClick }) {
 export default function UnifiedSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
+
+  const email = session?.user?.email;
+
+  const [username, setUsername] = useState("user");
+
+  useEffect(() => {
+    async function fetchUsername() {
+      if (!email) return;
+      try {
+        const res = await fetch(`/api/getUsername?email=${encodeURIComponent(email)}`);
+        const json = await res.json();
+        setUsername(json.username || "user");
+      } catch {
+        setUsername("user");
+      }
+    }
+
+    fetchUsername();
+  }, [email]);
 
   function getActiveItem() {
     const found = navItems.find(item => item.match(pathname));
     return found ? found.label : '';
   }
+
   const activeItem = getActiveItem();
 
   return (
     <nav className="leftSidebar">
       <h2 className="sidebarTitle">OKR Tool</h2>
       <ul className="navList">
-        {navItems.map(item => (
-          <SidebarItem
-            key={item.label}
-            icon={item.icon}
-            label={item.label}
-            active={activeItem === item.label}
-            onClick={() => router.push(item.path)}
-          />
-        ))}
+        {navItems.map(item => {
+          let path = item.path;
+          if (item.label === "Home") {
+            path = `/homepage/${username}`;
+          }
+
+          return (
+            <SidebarItem
+              key={item.label}
+              icon={item.icon}
+              label={item.label}
+              active={activeItem === item.label}
+              onClick={() => router.push(path)}
+            />
+          );
+        })}
       </ul>
     </nav>
   );

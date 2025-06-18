@@ -17,6 +17,9 @@
   margin: 0 10px 32px 10px;
   color: #fff;
   letter-spacing: 1.5px;
+  text-align: center;
+  width: 85%;
+  display: block;
 }
 
 .navList {
