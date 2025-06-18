@@ -1,3 +1,4 @@
+/* Default (scrollable) layout */
 .app-layout {
   display: flex;
   min-height: 100vh;
@@ -14,4 +15,23 @@
   flex: 1;
   padding: 2rem;
   overflow: auto;
+}
+
+/* Strategy Map (non-scrollable) override */
+.app-layout.no-scroll {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-layout.no-scroll .main-content {
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-layout.no-scroll .main-inner {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
