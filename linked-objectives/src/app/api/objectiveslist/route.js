@@ -22,9 +22,13 @@ export async function GET() {
   try {
     const response = await fetch(endpoint, {
       method: "POST",
+      cache: "no-store", // ✅ Prevents fetch caching
       headers: {
         "Content-Type": "application/sparql-query",
         Accept: "application/sparql-results+json",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
       },
       body: query,
     });
@@ -80,12 +84,20 @@ export async function GET() {
 
     return new Response(JSON.stringify(Object.values(objMap)), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
     });
   }
 }

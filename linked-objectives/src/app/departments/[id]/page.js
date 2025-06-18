@@ -21,7 +21,13 @@ export default function DepartmentPage() {
 
     async function fetchDepartment() {
       try {
-        const res = await fetch(`/api/departments/${id}`);
+        const res = await fetch(`/api/departments/${id}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
         const json = await res.json();
 
         if (!res.ok) throw new Error(json.error || 'Unknown error');

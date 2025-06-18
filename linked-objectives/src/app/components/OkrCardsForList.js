@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import SemiCircleProgress from "./SemiCircleProgressProps.js";
-import "@/app/styles/LinkedOkrCard.css";
+import "@/app/styles/LinkedOkrCardForList.css";
 
 export default function OkrCardsForList({
   averageProgress,

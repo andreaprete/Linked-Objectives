@@ -17,32 +17,44 @@ export async function GET() {
 
       OPTIONAL {
         ?department org:hasUnit ?team ;
-                   foaf:name ?departmentName .
+                  foaf:name ?departmentName .
         OPTIONAL {
           ?company org:hasUnit ?department ;
-                   foaf:name ?companyName .
+                  foaf:name ?companyName .
         }
       }
 
       OPTIONAL {
-        ?team org:hasPost ?post .
-        ?okr a objectives:Objective ;
-             rdfs:label ?okrLabel .
-
         {
-          ?okr responsibility:isAccountableFor ?post
+          ?team org:hasPost ?post .
+          {
+            ?okr responsibility:isAccountableFor ?post
+          } UNION {
+            ?okr responsibility:caresFor ?post
+          } UNION {
+            ?okr responsibility:operates ?post
+          }
         } UNION {
-          ?okr responsibility:caresFor ?post
-        } UNION {
-          ?okr responsibility:operates ?post
+          ?team org:hasPost/org:heldBy ?person .
+          {
+            ?okr responsibility:isAccountableFor ?person
+          } UNION {
+            ?okr responsibility:caresFor ?person
+          } UNION {
+            ?okr responsibility:operates ?person
+          }
         }
+
+        ?okr a objectives:Objective ;
+            rdfs:label ?okrLabel .
       }
     }
-  `;
+    `;
 
   try {
     const res = await fetch(endpoint, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/sparql-query",
         Accept: "application/sparql-results+json",
@@ -72,7 +84,6 @@ export async function GET() {
         let companyId = row.company?.value?.split("/").pop() || null;
         let companyName = row.companyName?.value || null;
 
-        // Fallback logic
         if (!companyId && departmentId === "CommonSemantics") {
           companyId = "CommonSemantics";
           companyName = "Common Semantics";
@@ -129,12 +140,20 @@ export async function GET() {
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+      },
     });
   }
 }

@@ -68,27 +68,34 @@ export default function OkrList({ username, okrs }) {
     );
   };
 
-  if (!hasAnyOkrs) return null;
-
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">{username}'s OKRs:</h2>
 
-      <div className="space-y-6">
-        {renderSection(
-          "Cares for",
-          caresForOpen,
-          setCaresForOpen,
-          caresForOkrs
-        )}
-        {renderSection("Operates", operatesOpen, setOperatesOpen, operatesOkrs)}
-        {renderSection(
-          "Accountable for",
-          accountableForOpen,
-          setAccountableForOpen,
-          accountableOkrs
-        )}
-      </div>
+      {!hasAnyOkrs ? (
+        <p className="text-gray-500">This user currently has no related OKRs.</p>
+      ) : (
+        <div className="space-y-6">
+          {renderSection(
+            "Cares for",
+            caresForOpen,
+            setCaresForOpen,
+            caresForOkrs
+          )}
+          {renderSection(
+            "Operates",
+            operatesOpen,
+            setOperatesOpen,
+            operatesOkrs
+          )}
+          {renderSection(
+            "Accountable for",
+            accountableForOpen,
+            setAccountableForOpen,
+            accountableOkrs
+          )}
+        </div>
+      )}
     </div>
   );
 }

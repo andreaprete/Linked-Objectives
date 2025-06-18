@@ -1,6 +1,36 @@
 import { NextResponse } from 'next/server';
-import path from 'path';
-import { promises as fs } from 'fs';
+
+const GRAPHDB_URL = process.env.GRAPHDB_URL || 'http://localhost:7200';
+const REPOSITORY_ID = process.env.GRAPHDB_REPOSITORY || 'linked-objectives';
+
+async function queryGraphDB(query, context = '') {
+  const endpoint = `${GRAPHDB_URL}/repositories/${REPOSITORY_ID}`;
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'application/sparql-query',
+      Accept: 'application/sparql-results+json',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0',
+    },
+    body: query,
+  });
+  if (!res.ok) throw new Error(`[GraphDB ERROR - ${context}]: ${res.statusText}`);
+  return await res.json();
+}
+
+const PREFIXES = `
+PREFIX : <https://data.sick.com/res/dev/examples/linked-objectives-okrs/>
+PREFIX objectives_voc: <https://data.sick.com/voc/sam/objectives-model/>
+PREFIX lifecycle_voc: <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX time: <http://www.w3.org/2006/time#>
+PREFIX dct: <http://purl.org/dc/terms/>
+`;
 
 export async function GET(req) {
   try {
@@ -10,20 +40,68 @@ export async function GET(req) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
-    const mockFilePath = path.resolve(
-      process.cwd(),
-      'src/mock/data.json'
-    );
-    const raw = await fs.readFile(mockFilePath, 'utf-8');
-    const mockData = JSON.parse(raw);
+    const objectivesQuery = `
+      ${PREFIXES}
+      SELECT ?okr ?title ?dueDate ?createdDate ?modifiedDate
+             (SAMPLE(?categoryEnLabel) AS ?categoryName)
+             (SAMPLE(?statusEnLabel) AS ?statusName)
+             (COUNT(DISTINCT ?kr) AS ?keyResultsCount)
+             (AVG(xsd:decimal(?progressVal)) AS ?objectiveProgress)
+      WHERE {
+        ?okr a objectives_voc:Objective ;
+             rdfs:label ?title .
+        OPTIONAL { ?okr objectives_voc:category/skos:prefLabel ?categoryEnLabel . FILTER(LANG(?categoryEnLabel) = "en") }
+        OPTIONAL { ?okr lifecycle_voc:state/skos:prefLabel ?statusEnLabel . FILTER(LANG(?statusEnLabel) = "en") }
+        OPTIONAL { ?okr dct:temporal/time:hasEnd ?dueDate . }
+        OPTIONAL { ?okr dct:created ?createdDate . }
+        OPTIONAL { ?okr dct:modified ?modifiedDate . }
+        OPTIONAL { ?okr objectives_voc:hasKeyResult ?kr . }
+        OPTIONAL { ?kr objectives_voc:progress ?progressVal . }
+      }
+      GROUP BY ?okr ?title ?dueDate ?createdDate ?modifiedDate
+    `;
 
-    const userOkrs = mockData.objectives;
-    const krTrend = mockData.krTrend;
+    const krTrendQuery = `
+      ${PREFIXES}
+      SELECT ?kr ?date ?score
+      WHERE {
+        ?event a :ProgressUpdate ;
+               :score ?score ;
+               dct:date ?date ;
+               :aboutKeyResult ?kr .
+      }
+      ORDER BY ?kr ?date
+    `;
+
+    const [objectiveResults, krTrendResults] = await Promise.all([
+      queryGraphDB(objectivesQuery, "Objectives"),
+      queryGraphDB(krTrendQuery, "KR Trend")
+    ]);
+
+    let userOkrs = objectiveResults.results.bindings.map(b => ({
+      id: b.okr.value.split("/").pop(),
+      title: b.title?.value,
+      categoryName: b.categoryName?.value || "Uncategorized",
+      statusName: b.statusName?.value || "Unknown",
+      dueDate: b.dueDate?.value,
+      createdDate: b.createdDate?.value,
+      modifiedDate: b.modifiedDate?.value,
+      keyResultsCount: parseInt(b.keyResultsCount?.value || '0'),
+      progress: b.objectiveProgress?.value
+        ? Math.round(parseFloat(b.objectiveProgress.value) * 100)
+        : 0
+    }));
+
+    const krTrend = krTrendResults.results.bindings.map(b => ({
+      kr: b.kr.value.split("/").pop(),
+      date: b.date.value,
+      score: parseFloat(b.score.value)
+    }));
 
     return createDashboardResponse(userOkrs, krTrend, { status, category, startDate, endDate });
 
   } catch (err) {
-    console.error("[MOCK API Error]", err);
+    console.error("[API Error]", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -93,21 +171,30 @@ function createDashboardResponse(objectives, krTrend, filters) {
     else progressMap["100%"]++;
   });
 
-  return NextResponse.json({
-    summaryMetrics: {
-      totalOkrCount,
-      overallProgress,
-      totalKrCount,
-      uniqueCategoryCount
-    },
-    objectiveVelocity,
-    keyResultScoresTrend: krTrend,
-    distributions: {
-      objectivesByStatus: Object.entries(statusMap).map(([name, value]) => ({ name, value })),
-      objectivesByCategory: Object.entries(categoryMap).map(([name, value]) => ({ name, value })),
-      objectivesByProgress: Object.entries(progressMap)
-        .map(([name, value]) => ({ name, value }))
-        .filter(entry => entry.value > 0)
+  return new NextResponse(
+    JSON.stringify({
+      summaryMetrics: {
+        totalOkrCount,
+        overallProgress,
+        totalKrCount,
+        uniqueCategoryCount
+      },
+      objectiveVelocity,
+      keyResultScoresTrend: krTrend,
+      distributions: {
+        objectivesByStatus: Object.entries(statusMap).map(([name, value]) => ({ name, value })),
+        objectivesByCategory: Object.entries(categoryMap).map(([name, value]) => ({ name, value })),
+        objectivesByProgress: Object.entries(progressMap).map(([name, value]) => ({ name, value })).filter(entry => entry.value > 0)
+      }
+    }),
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     }
-  });
+  );
 }

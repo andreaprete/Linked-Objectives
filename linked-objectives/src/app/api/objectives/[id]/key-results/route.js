@@ -50,6 +50,7 @@ export async function POST(req, context) {
       <${krUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${comment || ""}" .
       <${krUri}> <http://purl.org/dc/terms/description> "${description || ""}" .
       <${krUri}> <http://purl.org/dc/terms/created> "${now}" .
+      <${krUri}> <http://purl.org/dc/terms/modified> "${now}" .
       <${krUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "0" .
       <${objUri}> <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> <${krUri}> .
     }

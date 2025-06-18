@@ -14,7 +14,13 @@ export default function PeoplePage() {
 
   useEffect(() => {
     async function fetchPeople() {
-      const res = await fetch('/api/peoplelist');
+      const res = await fetch('/api/peoplelist', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+        },
+      });
       const data = await res.json();
       setPeople(data);
       setLoading(false);

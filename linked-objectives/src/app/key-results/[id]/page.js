@@ -81,9 +81,8 @@ export default function ObjectivePage() {
   };
   return (
     <AppLayout>
-      <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen relative">
-        {/* Main content (gets blurred if modal is open) */}
-        <div className={`bg-white rounded-xl shadow p-8 space-y-6 max-w-5xl w-full transition-all duration-300 ${isModalOpen ? "blur-sm pointer-events-none select-none" : ""}`}>
+      <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen relative">    
+        <div className={`transition-all duration-300 w-full max-w-[1200px] bg-white rounded-xl shadow p-8 space-y-6 mx-auto ${isModalOpen ? "blur-sm pointer-events-none select-none" : ""}`}>
           <KeyResultHeader
             title={data.title}
             comment={data.comment}

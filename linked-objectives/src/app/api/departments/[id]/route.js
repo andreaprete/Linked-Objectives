@@ -68,9 +68,13 @@ export async function GET(req, context) {
   try {
     const res = await fetch(endpoint, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/sparql-query",
         Accept: "application/sparql-results+json",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
       },
       body: query,
     });

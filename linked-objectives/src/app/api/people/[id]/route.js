@@ -12,30 +12,24 @@ export async function GET(req, context) {
     SELECT ?name ?email ?username ?location ?post ?roleTitle ?roleDescription ?team ?teamName ?department ?departmentName ?company 
     WHERE {
       BIND(<${personUri}> AS ?person)
-
       ?person a foaf:Person .
-
       OPTIONAL { ?person foaf:name ?name. }
       OPTIONAL { ?person foaf:email ?email. }
       OPTIONAL { ?person foaf:accountName ?username. }
       OPTIONAL { ?person vcard:hasAddress/vcard:locality ?location. }
-
       OPTIONAL {
         ?post org:heldBy ?person .
         OPTIONAL { ?post org:role ?roleTitle. }
         OPTIONAL { ?post terms:description ?roleDescription. }
       }
-
       OPTIONAL {
         ?team org:hasPost ?post .
         OPTIONAL { ?team foaf:name ?teamName. }
       }
-
       OPTIONAL {
         ?department org:hasUnit ?team .
         OPTIONAL { ?department foaf:name ?departmentName. }
       }
-
       OPTIONAL {
         ?company org:hasUnit ?department .
       }
@@ -45,6 +39,7 @@ export async function GET(req, context) {
   try {
     const response = await fetch(endpoint, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/sparql-query",
         Accept: "application/sparql-results+json",
@@ -56,50 +51,43 @@ export async function GET(req, context) {
       const errorText = await response.text();
       return new Response(JSON.stringify({ error: errorText }), {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
       });
     }
 
     const json = await response.json();
     const binding = json.results.bindings[0];
-
     if (!binding) {
       return new Response(JSON.stringify({ error: "No data found" }), {
         status: 404,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
       });
     }
 
-    const trimUri = (value) => {
-      if (!value) return null;
-      return value.includes("/") ? value.split("/").pop() : value;
-    };
+    const trimUri = (value) =>
+      value?.includes("/") ? value.split("/").pop() : value;
 
     const dataMap = {};
     let fullPostUri = null;
 
     Object.entries(binding).forEach(([key, val]) => {
       const value = val?.value;
-      switch (key) {
-        case "post":
-        case "team":
-        case "department":
-        case "company":
-          dataMap[key] = trimUri(value);
-          if (key === "post") fullPostUri = value;
-          break;
-        case "roleDescription":
-          dataMap.roleDescription = value;
-          break;
-        default:
-          dataMap[key] = value;
-          break;
+      if (["post", "team", "department", "company"].includes(key)) {
+        dataMap[key] = trimUri(value);
+        if (key === "post") fullPostUri = value;
+      } else {
+        dataMap[key] = value;
       }
     });
 
-    // Get OKRs via post
+    // Fetch OKRs
     let okrs = [];
-
     if (fullPostUri) {
       const okrQuery = `
         PREFIX objectives: <https://data.sick.com/voc/sam/objectives-model/>
@@ -109,8 +97,7 @@ export async function GET(req, context) {
         SELECT DISTINCT ?okr ?label ?type
         WHERE {
           ?okr a objectives:Objective ;
-              rdfs:label ?label .
-
+               rdfs:label ?label .
           {
             ?okr responsibility:isAccountableFor ?who .
             FILTER (?who IN (<${fullPostUri}>, <${personUri}>))
@@ -124,13 +111,13 @@ export async function GET(req, context) {
             FILTER (?who IN (<${fullPostUri}>, <${personUri}>))
             BIND("operates" AS ?type)
           }
-
         }
         ORDER BY ?label
       `;
 
       const okrResponse = await fetch(endpoint, {
         method: "POST",
+        cache: "no-store",
         headers: {
           "Content-Type": "application/sparql-query",
           Accept: "application/sparql-results+json",
@@ -140,87 +127,80 @@ export async function GET(req, context) {
 
       if (okrResponse.ok) {
         const okrJson = await okrResponse.json();
-
-        // For each OKR, fetch state and average progress
         okrs = await Promise.all(
           okrJson.results.bindings.map(async (row) => {
             const okrId = trimUri(row.okr.value);
             const label = row.label.value;
-            const responsibility = row.type?.value || "unknown";
-
+            const responsibility = row.type.value;
             let state = "Planned";
             let progress = null;
 
             // State
-            try {
-              const stateQuery = `
-                SELECT ?state WHERE {
-                  OPTIONAL {
-                    <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
-                      <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
-                  }
+            const stateQuery = `
+              SELECT ?state WHERE {
+                OPTIONAL {
+                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                    <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .
                 }
-              `;
-              const stateRes = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/sparql-query",
-                  Accept: "application/sparql-results+json",
-                },
-                body: stateQuery,
-              });
-              if (stateRes.ok) {
-                const stateJson = await stateRes.json();
-                state =
-                  (
-                    stateJson.results.bindings.find((b) => b.state) || {}
-                  ).state?.value
-                    ?.split("/")
-                    .pop() || "Planned";
               }
-            } catch {}
+            `;
+            const stateRes = await fetch(endpoint, {
+              method: "POST",
+              cache: "no-store",
+              headers: {
+                "Content-Type": "application/sparql-query",
+                Accept: "application/sparql-results+json",
+              },
+              body: stateQuery,
+            });
 
-            // Progress (avg of all KRs)
-            try {
-              const krProgressQuery = `
-                SELECT ?kr ?progress
-                WHERE {
-                  {
-                    <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
-                      <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
-                  } UNION {
-                    ?kr <https://data.sick.com/voc/sam/objectives-model/isKeyResultOf>
-                      <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> .
-                  }
-                  ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
+            if (stateRes.ok) {
+              const stateJson = await stateRes.json();
+              state =
+                stateJson.results.bindings[0]?.state?.value.split("/").pop() ||
+                "Planned";
+            }
+
+            // Progress
+            const krQuery = `
+              SELECT ?progress WHERE {
+                {
+                  <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}>
+                    <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> ?kr .
+                } UNION {
+                  ?kr <https://data.sick.com/voc/sam/objectives-model/isKeyResultOf>
+                    <https://data.sick.com/res/dev/examples/linked-objectives-okrs/${okrId}> .
                 }
-              `;
-              const krRes = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/sparql-query",
-                  Accept: "application/sparql-results+json",
-                },
-                body: krProgressQuery,
-              });
-              if (krRes.ok) {
-                const krJson = await krRes.json();
-                const progressVals = krJson.results.bindings
-                  .map((b) => parseFloat(b.progress.value))
-                  .filter((v) => !isNaN(v));
-                if (progressVals.length > 0) {
-                  progress =
-                    progressVals.reduce((a, b) => a + b, 0) /
-                    progressVals.length;
-                }
+                ?kr <https://data.sick.com/voc/sam/objectives-model/progress> ?progress .
               }
-            } catch {}
+            `;
+            const krRes = await fetch(endpoint, {
+              method: "POST",
+              cache: "no-store",
+              headers: {
+                "Content-Type": "application/sparql-query",
+                Accept: "application/sparql-results+json",
+              },
+              body: krQuery,
+            });
+
+            if (krRes.ok) {
+              const krJson = await krRes.json();
+              const vals = krJson.results.bindings
+                .map((b) => parseFloat(b.progress.value))
+                .filter((v) => !isNaN(v));
+              if (vals.length > 0) {
+                progress = Math.round(
+                  vals.reduce((a, b) => a + b, 0) / vals.length
+                );
+              }
+            }
 
             return {
               id: okrId,
               title: label,
               state,
-              progress: progress !== null ? Math.round(progress) : null,
+              progress,
               responsibility,
             };
           })
@@ -228,7 +208,6 @@ export async function GET(req, context) {
       }
     }
 
-    // ✅ Fix fallback when department is wrongly set to CommonSemantics
     if (
       dataMap.team &&
       dataMap.department === "CommonSemantics" &&
@@ -238,19 +217,16 @@ export async function GET(req, context) {
       dataMap.departmentName = dataMap.teamName;
     }
 
-    // ✅ If still no department but has team, copy team into department
     if (dataMap.team && !dataMap.department) {
       dataMap.department = dataMap.team;
       dataMap.departmentName = dataMap.teamName;
     }
 
-    // ✅ If no team but has department, copy department into team
     if (!dataMap.team && dataMap.department) {
       dataMap.team = dataMap.department;
       dataMap.teamName = dataMap.departmentName;
     }
 
-    // ✅ Always ensure company exists
     if (!dataMap.company) {
       dataMap.company = "Common Semantics";
     }
@@ -261,13 +237,22 @@ export async function GET(req, context) {
         data: dataMap,
         okrs,
       }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
     );
   } catch (err) {
-    console.error("Final catch error:", err);
+    console.error("Error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
     });
   }
 }

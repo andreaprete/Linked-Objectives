@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-import AppLayout from '@/app/components/AppLayout'; // ✅ Add AppLayout import
+import AppLayout from '@/app/components/AppLayout';
 import TeamOkrsTab from '@/app/components/TeamOkrsTab';
 
 export default function TeamPage() {
@@ -17,7 +17,9 @@ export default function TeamPage() {
 
     async function fetchTeam() {
       try {
-        const res = await fetch(`/api/teams/${id}`);
+        const res = await fetch(`/api/teams/${id}`, {
+          cache: 'no-store',
+        });
         const json = await res.json();
         setData(json);
       } catch (err) {
@@ -31,15 +33,16 @@ export default function TeamPage() {
   }, [id]);
 
   if (loading) return (
-      <AppLayout>
-        <main className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-md text-gray-600">Loading Team data...</p>
-          </div>
-        </main>
-      </AppLayout>
-    );
+    <AppLayout>
+      <main className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-md text-gray-600">Loading Team data...</p>
+        </div>
+      </main>
+    </AppLayout>
+  );
+
   if (!data)
     return (
       <AppLayout>
@@ -81,12 +84,11 @@ export default function TeamPage() {
             </div>
           </div>
 
-          {data.okrs?.length > 0 && (
-            <div>
-              <h2 className="text-lg font-semibold mb-2">Related OKRs</h2>
-              <TeamOkrsTab okrs={data.okrs} />
-            </div>
-          )}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Related OKRs</h2>
+            <TeamOkrsTab okrs={data.okrs || []} />
+          </div>
+
         </div>
       </div>
     </AppLayout>

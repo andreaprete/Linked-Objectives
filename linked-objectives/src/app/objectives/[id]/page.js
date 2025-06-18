@@ -37,7 +37,13 @@ export default function ObjectivePage() {
         const keyResultIds = obj.keyResult || [];
         const keyResults = await Promise.all(
           keyResultIds.map(async (krId) => {
-            const res = await fetch(`/api/key-results/${krId}`);
+            const res = await fetch(`/api/key-results/${krId}`, {
+              cache: "no-store",
+              headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+              },
+            });
             const json = await res.json();
             return parseFloat(json.data?.progress || 0);
           })
@@ -92,7 +98,7 @@ export default function ObjectivePage() {
       setShowCreateKR(false);
       window.location.reload();
     } catch (err) {
-      alert("Failed to create key result: " + (errorText || "(no error details)"));
+      alert("Failed to create key result: " + (err?.message || "(no error details)"));
       console.error("Failed to create key result:", err);
     }
   };
@@ -153,9 +159,10 @@ export default function ObjectivePage() {
 
   return (
     <AppLayout>
-      <div className="relative min-h-screen">
-        {/* Main content (blurred when a modal is open) */}
-        <div className={`objective-container transition-all duration-300 ${isAnyModalOpen ? "blur-sm" : ""}`}>
+      {/* Outer content area, must be relative! */}
+      <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen relative">
+        {/* Main content (gets blurred if modal is open) */}
+        <div className={`objective-container transition-all duration-300 ${isAnyModalOpen ? "blur-sm pointer-events-none select-none" : ""}`}>
           <div className="objective-card">
             <div className="objective-header-section row-layout">
               <div className="objective-left-meta">
@@ -299,8 +306,8 @@ export default function ObjectivePage() {
 
         {/* === Modal overlays – for Edit and Create Key Result === */}
         {showEdit && (
-          <div className="modal-overlay">
-            <div className="modal-container">
+          <div className="absolute inset-0 flex items-center justify-center z-50">
+            <div className="w-full max-w-3xl bg-white rounded-xl shadow-xl p-8 mt-10">
               <EditObjectiveModal
                 initialData={data}
                 isOpen={showEdit}
@@ -311,8 +318,8 @@ export default function ObjectivePage() {
           </div>
         )}
         {showCreateKR && (
-          <div className="modal-overlay">
-            <div className="modal-container">
+          <div className="absolute inset-0 flex items-center justify-center z-50">
+            <div className="w-full max-w-3xl bg-white rounded-xl shadow-xl p-8 mt-10">
               <CreateKeyResultModal
                 isOpen={showCreateKR}
                 onClose={() => setShowCreateKR(false)}
