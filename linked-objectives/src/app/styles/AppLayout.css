@@ -1,21 +1,35 @@
-/* Default (scrollable) layout */
+/* Ensure html and body take full height */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+/* Default layout */
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  flex-direction: row;
+  height: 100vh; /* CHANGED from min-height */
+  width: 100%;
+  overflow: hidden; /* Prevent body double scroll */
 }
 
 .main-content {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 100vh;
+  height: 100%; /* CHANGED from min-height */
+  overflow: hidden; /* CHANGED to hidden to contain scroll in main-inner */
 }
 
 .main-inner {
   flex: 1;
-  padding: 2rem;
   overflow: auto;
+  padding: 2rem;
+  height: 100%;
 }
+
 
 /* Strategy Map (non-scrollable) override */
 .app-layout.no-scroll {
