@@ -57,7 +57,6 @@ export async function GET(req) {
         OPTIONAL { ?okr dct:modified ?modifiedDate . }
         OPTIONAL { ?okr objectives_voc:hasKeyResult ?kr . }
         OPTIONAL { ?kr objectives_voc:progress ?progressVal . }
-
         OPTIONAL {
           ?okr dct:temporal ?interval .
           OPTIONAL { ?interval time:hasBeginning ?startDate . }
@@ -79,9 +78,18 @@ export async function GET(req) {
       ORDER BY ?kr ?date
     `;
 
-    const [objectiveResults, krTrendResults] = await Promise.all([
+    const totalKrQuery = `
+      ${PREFIXES}
+      SELECT (COUNT(DISTINCT ?kr) AS ?trueKrCount)
+      WHERE {
+        ?kr a objectives_voc:KeyResult .
+      }
+    `;
+
+    const [objectiveResults, krTrendResults, krCountResults] = await Promise.all([
       queryGraphDB(objectivesQuery, "Objectives"),
-      queryGraphDB(krTrendQuery, "KR Trend")
+      queryGraphDB(krTrendQuery, "KR Trend"),
+      queryGraphDB(totalKrQuery, "KR Global Count")
     ]);
 
     let userOkrs = objectiveResults.results.bindings.map(b => ({
@@ -100,7 +108,6 @@ export async function GET(req) {
         : 0
     }));
 
-    // Remove duplicates by id
     const uniqueOkrsMap = new Map();
     userOkrs.forEach(o => {
       if (!uniqueOkrsMap.has(o.id)) uniqueOkrsMap.set(o.id, o);
@@ -114,17 +121,15 @@ export async function GET(req) {
     }));
 
     // Apply filters
-    const { status: filterStatus, category: filterCategory } = { status, category };
     let filteredOkrs = [...userOkrs];
-
-    if (filterStatus) {
+    if (status) {
       filteredOkrs = filteredOkrs.filter(o =>
-        o.statusName?.toLowerCase().includes(filterStatus)
+        o.statusName?.toLowerCase().includes(status)
       );
     }
-    if (filterCategory) {
+    if (category) {
       filteredOkrs = filteredOkrs.filter(o =>
-        o.categoryName?.toLowerCase().includes(filterCategory)
+        o.categoryName?.toLowerCase().includes(category)
       );
     }
     if (startDate) {
@@ -145,10 +150,11 @@ export async function GET(req) {
     const overallProgress = activeOkrs.length
       ? Math.round(activeOkrs.reduce((acc, o) => acc + o.progress, 0) / activeOkrs.length)
       : 0;
-    const totalKrCount = filteredOkrs.reduce((acc, o) => acc + o.keyResultsCount, 0);
+
+    const trueKrCount = parseInt(krCountResults.results.bindings[0]?.trueKrCount?.value || '0');
     const uniqueCategoryCount = new Set(filteredOkrs.map(o => o.categoryName)).size;
 
-    // Calculate velocity by creation month
+    // Velocity by month
     const byMonth = {};
     filteredOkrs.forEach(o => {
       if (!o.createdDate) return;
@@ -183,7 +189,7 @@ export async function GET(req) {
         summaryMetrics: {
           totalOkrCount,
           overallProgress,
-          totalKrCount,
+          totalKrCount: trueKrCount,
           uniqueCategoryCount
         },
         objectiveVelocity,

@@ -45,14 +45,18 @@ export async function POST(req, context) {
 
   // 2. Insert the new KR and the relation
   const sparql = `
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX objectives_voc: <https://data.sick.com/voc/sam/objectives-model/>
+
     INSERT DATA {
+      <${krUri}> rdf:type objectives_voc:KeyResult .
       <${krUri}> <http://www.w3.org/2000/01/rdf-schema#label> "${title}" .
       <${krUri}> <http://www.w3.org/2000/01/rdf-schema#comment> "${comment || ""}" .
       <${krUri}> <http://purl.org/dc/terms/description> "${description || ""}" .
       <${krUri}> <http://purl.org/dc/terms/created> "${now}" .
       <${krUri}> <http://purl.org/dc/terms/modified> "${now}" .
-      <${krUri}> <https://data.sick.com/voc/sam/objectives-model/progress> "0" .
-      <${objUri}> <https://data.sick.com/voc/sam/objectives-model/hasKeyResult> <${krUri}> .
+      <${krUri}> objectives_voc:progress "0" .
+      <${objUri}> objectives_voc:hasKeyResult <${krUri}> .
     }
   `;
 
