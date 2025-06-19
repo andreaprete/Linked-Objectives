@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import AppLayout from "@/app/components/AppLayout";
 import KeyResults from "../../components/KeyResults";
 import RelatedGraph from "../../components/RelatedGraph";
@@ -19,10 +20,16 @@ export default function ObjectivePage() {
   const [showEdit, setShowEdit] = useState(false);
   const [selectedKeyResults, setSelectedKeyResults] = useState([]);
   const [showCreateKR, setShowCreateKR] = useState(false);
+  const { data: session, status } = useSession();
+  const [canEdit, setCanEdit] = useState(false);
 
   useEffect(() => {
-    async function fetchObjective() {
+    async function fetchObjectiveAndCheckEditPermission() {
       try {
+        if (!session?.user?.email) {
+          return;
+        }
+        // Fetch objective
         const res = await fetch(`/api/objectives/${id}`, {
           cache: "no-store",
           headers: {
@@ -33,38 +40,69 @@ export default function ObjectivePage() {
         const json = await res.json();
         const obj = json.data;
 
-        // 🔍 Fetch key result progress values
+        // Fetch key results
         const keyResultIds = obj.keyResult || [];
         const keyResults = await Promise.all(
           keyResultIds.map(async (krId) => {
-            const res = await fetch(`/api/key-results/${krId}`, {
+            const krRes = await fetch(`/api/key-results/${krId}`, {
               cache: "no-store",
               headers: {
                 "Cache-Control": "no-cache",
                 Pragma: "no-cache",
               },
             });
-            const json = await res.json();
-            return parseFloat(json.data?.progress || 0);
+            const krJson = await krRes.json();
+            return parseFloat(krJson.data?.progress || 0);
           })
         );
-
         const total = keyResults.reduce((acc, val) => acc + val, 0);
-        const averageProgress =
-          keyResults.length > 0 ? total / keyResults.length : 0;
-
+        const averageProgress = keyResults.length > 0 ? total / keyResults.length : 0;
         obj.averageProgress = averageProgress;
 
         setData(obj);
+
+        // Fetch username
+        const usernameRes = await fetch(`/api/getUsername?email=${session.user.email}`);
+        const usernameJson = await usernameRes.json();
+        const username = usernameJson.username;
+        const role = session.user.role;
+
+        const toArray = (val) => {
+          if (!val) return [];
+          return Array.isArray(val) ? val : [val];
+        };
+
+        const involvedUsernames = [
+          ...toArray(obj.accountableFor),
+          ...toArray(obj.caresFor),
+          ...toArray(obj.operates),
+        ];
+
+        const isInvolved = involvedUsernames
+          .map((u) => u.id.toLowerCase())
+          .includes(username?.toLowerCase());
+
+        const isAdmin = role === "admin";
+
+        const permission = isAdmin || (role === "user" && isInvolved);
+        setCanEdit(permission);
+
       } catch (err) {
-        console.error("Error loading objective or key results:", err);
+          console.error("Failed to fetch objective or permissions:", err);
+          alert("Failed to load objective data. Please try again later.");
+        setData(null);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchObjective();
-  }, [id]);
+    if (status === "authenticated") {
+      fetchObjectiveAndCheckEditPermission();
+    } else {
+      setLoading(false);
+    }
+  }, [id, session, status]);
+
 
   const handleSave = async (updatedData) => {
     try {
@@ -78,7 +116,6 @@ export default function ObjectivePage() {
 
       window.location.reload();
     } catch (err) {
-      console.error("Failed to update objective:", err);
       alert("Failed to update objective.");
     }
   };
@@ -121,7 +158,7 @@ export default function ObjectivePage() {
     }
   }
 
-  if (loading) {
+  if (loading || !data) {
     return (
       <AppLayout>
         <main className="flex items-center justify-center min-h-[60vh]">
@@ -134,12 +171,13 @@ export default function ObjectivePage() {
     );
   }
   
-  if (!data)
+  if (!loading && status === "authenticated" && data === null) {
     return (
       <AppLayout>
         <div className="p-6 text-red-500">Failed to load data.</div>
       </AppLayout>
     );
+  }
 
   const formatDate = (value) => {
     if (!value || value === "undefined") return "undefined";
@@ -206,14 +244,16 @@ export default function ObjectivePage() {
                 </div>
               </div>
               <div className="objective-progress-visual">
-                <div className="edit-button-container">
-                  <button
-                    onClick={() => setShowEdit(true)}
-                    className="edit-button"
-                  >
-                    EDIT
-                  </button>
-                </div>
+                {canEdit && (
+                  <div className="edit-button-container">
+                    <button
+                      onClick={() => setShowEdit(true)}
+                      className="edit-button"
+                    >
+                      EDIT
+                    </button>
+                  </div>
+                )}
                 <SemiCircleProgress
                   strokeWidth={8}
                   averageProgress={data.averageProgress || 0}
@@ -252,7 +292,7 @@ export default function ObjectivePage() {
             </div>
 
             {/* Only show Create KR & Delete KR on the Key Results tab */}
-            {activeTab === "keyResults" && (
+            {activeTab === "keyResults" && canEdit && (
               <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button
                   onClick={() => setShowCreateKR(true)}
@@ -288,11 +328,14 @@ export default function ObjectivePage() {
             )}
           </div>
 
-          {activeTab === "keyResults" && (
-            <KeyResults
-              ids={data.keyResult || []}
-              onSelectionChange={setSelectedKeyResults}
-            />
+          {activeTab === "keyResults" &&
+            Array.isArray(data?.keyResult) &&
+            data.keyResult.length > 0 && (
+              <KeyResults
+                key={data.keyResult.join("-")} // 👈 Force remount when IDs change
+                ids={data.keyResult}
+                onSelectionChange={setSelectedKeyResults}
+              />
           )}
           {activeTab === "related" && <RelatedGraph data={data} />}
           {activeTab === "people" && (

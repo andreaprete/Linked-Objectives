@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import AppLayout from "@/app/components/AppLayout";
 import KeyResultHeader from "@/app/components/KeyResultHeader.js";
@@ -19,24 +20,52 @@ export default function ObjectivePage() {
   const [lifecycleStates, setLifecycleStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const [canEdit, setCanEdit] = useState(false);  
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || status !== "authenticated") return;
 
     async function fetchOkr() {
       try {
         const res = await fetch(`http://localhost:3000/api/key-results/${id}`, {
-          cache: "no-store", // 🔥 prevent any cache
+          cache: "no-store",
           headers: {
             "Cache-Control": "no-cache",
             Pragma: "no-cache",
           },
         });
+
         const json = await res.json();
         if (json.lifecycleStates && Array.isArray(json.lifecycleStates)) {
           setLifecycleStates(json.lifecycleStates);
         }
-        setData(json.data);
+
+        const krData = json.data;
+        setData(krData);
+
+        // 👇 Permission logic
+        const email = session.user.email;
+        const role = session.user.role;
+
+        const usernameRes = await fetch(`/api/getUsername?email=${email}`);
+        const { username } = await usernameRes.json();
+
+        const toArray = (val) => Array.isArray(val) ? val : val ? [val] : [];
+
+        const involved = [
+          ...toArray(krData?.linkedObjective?.accountableFor),
+          ...toArray(krData?.linkedObjective?.caresFor),
+          ...toArray(krData?.linkedObjective?.operates),
+        ];
+
+        const isInvolved = involved
+          .map((u) => u.id?.toLowerCase())
+          .includes(username?.toLowerCase());
+
+        const isAdmin = role === "admin";
+        setCanEdit(isAdmin || isInvolved);
+
       } catch (err) {
         console.error("Failed to load OKR data:", err);
       } finally {
@@ -45,7 +74,8 @@ export default function ObjectivePage() {
     }
 
     fetchOkr();
-  }, [id]);
+  }, [id, session, status]);
+
 
     if (loading) return (
       <AppLayout>
@@ -87,6 +117,7 @@ export default function ObjectivePage() {
             title={data.title}
             comment={data.comment}
             setModalOpen={setModalOpen}
+            canEdit={canEdit}
           />
           <div className="flex space-x-6">
             <div className="flex-3">

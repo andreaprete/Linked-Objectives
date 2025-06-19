@@ -1,6 +1,6 @@
 import '@/app/styles/KeyResultHeader.css';
 
-export default function KeyResultHeader({ title, comment, setModalOpen }) {
+export default function KeyResultHeader({ title, comment, setModalOpen, canEdit }) {
   const getInitials = (title) => {
     const words = title.split(' ');
     const firstTwoWords = words.slice(0, 2);
@@ -21,12 +21,14 @@ export default function KeyResultHeader({ title, comment, setModalOpen }) {
           <p className="header-comment">{comment}</p>
         </div>
       </div>
-      <button
-        onClick={() => setModalOpen(true)}
-        className="edit-button"
-      >
-        Edit
-      </button>
+      {canEdit && (
+        <button
+          onClick={() => setModalOpen(true)}
+          className="edit-button"
+        >
+          Edit
+        </button>
+      )}
     </div>
   );
 }

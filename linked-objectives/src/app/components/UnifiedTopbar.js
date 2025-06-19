@@ -29,6 +29,7 @@ export default function UnifiedTopbar() {
   const [initials, setInitials] = useState("U");
   const [fullName, setFullName] = useState("User");
   const [username, setUsername] = useState("user");
+  const [userInfoReady, setUserInfoReady] = useState(false);
   const [dynamicTitle, setDynamicTitle] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -83,12 +84,13 @@ export default function UnifiedTopbar() {
     async function fetchInitials() {
       try {
         const res = await fetch(`/api/getUsername?email=${session.user.email}`);
-        const json = await res.json()
+        const json = await res.json();
         const name = json.fullname || "User";
         const parts = name.trim().split(/\s+/);
+
         setFullName(name);
         setUsername(json.username || "user");
-        console.log("🔍 Split parts:", parts);
+
         let initials = "";
         if (parts.length >= 2) {
           initials = parts[0][0] + parts[1][0];
@@ -99,12 +101,16 @@ export default function UnifiedTopbar() {
         }
 
         setInitials(initials.toUpperCase());
+        setUserInfoReady(true);
       } catch (err) {
         setInitials("US");
+        setUserInfoReady(false);
       }
     }
 
-    fetchInitials();
+    if (session?.user?.email) {
+      fetchInitials();
+    }
   }, [session]);
 
   const handleLogout = () => {
@@ -114,22 +120,30 @@ export default function UnifiedTopbar() {
   return (
     <header className="topbar">
       <div className="topbar-title">{dynamicTitle || "Objectives"}</div>
-      <div className="topbar-user-wrapper">
-        <div className="topbar-user-avatar">
-          <span>{initials}</span>
-        </div>
 
-        <div className="user-dropdown">
-          <div className="dropdown-header">
-            <div className="dropdown-name">{fullName}</div>
-            <div className="dropdown-email">{session?.user?.email}</div>
+      {userInfoReady && (
+        <div className="topbar-user-wrapper" ref={dropdownRef}>
+          <div
+            className="topbar-user-avatar"
+            onClick={() => setDropdownOpen((prev) => !prev)}
+          >
+            <span>{initials}</span>
           </div>
-          <hr />
-          <div onClick={() => router.push(`/homepage/${username}`)}>My Homepage</div>
-          <div onClick={() => router.push(`/people/${username}`)}>My Profile</div>
-          <div onClick={handleLogout}>Log Out</div>
+
+          {dropdownOpen && (
+            <div className="user-dropdown">
+              <div className="dropdown-header">
+                <div className="dropdown-name">{fullName}</div>
+                <div className="dropdown-email">{session?.user?.email}</div>
+              </div>
+              <hr />
+              <div onClick={() => router.push(`/homepage/${username}`)}>My Homepage</div>
+              <div onClick={() => router.push(`/people/${username}`)}>My Profile</div>
+              <div onClick={handleLogout}>Log Out</div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </header>
   );
 }
