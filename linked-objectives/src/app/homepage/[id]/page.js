@@ -80,7 +80,7 @@ export default function HomePage() {
 
   return (
     <AppLayout>
-      <main className="p-6 space-y-6">
+      <main className="p-6 space-y-6 w-[80%] mx-auto">
         <WelcomeBanner name={userData?.name} id={id} teamId={userData?.team} />
         <WeeklyOverview okrs={okrs} />
         <GoalTab
