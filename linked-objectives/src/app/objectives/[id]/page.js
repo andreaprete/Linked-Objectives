@@ -19,6 +19,32 @@ export default function ObjectivePage() {
   const [showEdit, setShowEdit] = useState(false);
   const [selectedKeyResults, setSelectedKeyResults] = useState([]);
   const [showCreateKR, setShowCreateKR] = useState(false);
+  const getStateColorClass = (state) => {
+    switch (state) {
+      case "Draft":
+      case "Idea":
+      case "Planned":
+        return "state-blue";
+      case "Evaluating":
+      case "Approved":
+      case "Released":
+        return "state-purple";
+      case "InProgress":
+      case "Completed":
+      case "Archived":
+        return "state-green";
+      case "Aborted":
+      case "Withdrawn":
+      case "Rejected":
+      case "Cancelled":
+        return "state-red";
+      case "OnHold":
+      case "Deprecated":
+        return "state-orange";
+      default:
+        return "state-gray";
+    }
+  };
 
   useEffect(() => {
     async function fetchObjective() {
@@ -98,7 +124,9 @@ export default function ObjectivePage() {
       setShowCreateKR(false);
       window.location.reload();
     } catch (err) {
-      alert("Failed to create key result: " + (err?.message || "(no error details)"));
+      alert(
+        "Failed to create key result: " + (err?.message || "(no error details)")
+      );
       console.error("Failed to create key result:", err);
     }
   };
@@ -106,7 +134,8 @@ export default function ObjectivePage() {
   // DELETE handler
   async function handleDeleteKeyResults() {
     if (!selectedKeyResults.length) return;
-    if (!window.confirm(`Delete ${selectedKeyResults.length} key result(s)?`)) return;
+    if (!window.confirm(`Delete ${selectedKeyResults.length} key result(s)?`))
+      return;
 
     try {
       const res = await fetch(`/api/objectives/${id}/key-results`, {
@@ -133,7 +162,7 @@ export default function ObjectivePage() {
       </AppLayout>
     );
   }
-  
+
   if (!data)
     return (
       <AppLayout>
@@ -162,7 +191,11 @@ export default function ObjectivePage() {
       {/* Outer content area, must be relative! */}
       <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen relative">
         {/* Main content (gets blurred if modal is open) */}
-        <div className={`objective-container transition-all duration-300 ${isAnyModalOpen ? "blur-sm pointer-events-none select-none" : ""}`}>
+        <div
+          className={`objective-container transition-all duration-300 ${
+            isAnyModalOpen ? "blur-sm pointer-events-none select-none" : ""
+          }`}
+        >
           <div className="objective-card">
             <div className="objective-header-section row-layout">
               <div className="objective-left-meta">
@@ -185,13 +218,17 @@ export default function ObjectivePage() {
                     <span className="temporal-text"> {data.category}</span>
                   </span>
                   <span>
-                    <span className="label status-label">State:</span>
-                    <span className="state"> {data.state}</span>
+                    <span className="label status-label">State: </span>
+                    <span className={`state ${getStateColorClass(data.state)}`}>
+                      {data.state}
+                    </span>
                   </span>
                 </div>
                 <div className="temporal-timeline">
                   <div className="temporal-labels">
-                    <span className="temporal-date">{data.temporal?.start}</span>
+                    <span className="temporal-date">
+                      {data.temporal?.start}
+                    </span>
                     <span className="temporal-date">{data.temporal?.end}</span>
                   </div>
                   <div className="temporal-line">
@@ -229,11 +266,20 @@ export default function ObjectivePage() {
             </div>
           </div>
           {/* Tabs with Create/Delete buttons on the right */}
-          <div className="objective-tabs" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div
+            className="objective-tabs"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <div style={{ display: "flex", gap: "1rem" }}>
               <button
                 onClick={() => setActiveTab("keyResults")}
-                className={`tab-btn ${activeTab === "keyResults" ? "active" : ""}`}
+                className={`tab-btn ${
+                  activeTab === "keyResults" ? "active" : ""
+                }`}
               >
                 Key results
               </button>
@@ -263,7 +309,7 @@ export default function ObjectivePage() {
                     borderRadius: "0.4rem",
                     fontWeight: "500",
                     padding: "0.45rem 1.2rem",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   Create KR
@@ -277,10 +323,14 @@ export default function ObjectivePage() {
                     borderRadius: "0.4rem",
                     fontWeight: "500",
                     padding: "0.45rem 1.2rem",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                   disabled={selectedKeyResults.length === 0}
-                  title={selectedKeyResults.length === 0 ? "Select at least one key result" : ""}
+                  title={
+                    selectedKeyResults.length === 0
+                      ? "Select at least one key result"
+                      : ""
+                  }
                 >
                   Delete KR
                 </button>
@@ -297,7 +347,10 @@ export default function ObjectivePage() {
           {activeTab === "related" && <RelatedGraph data={data} />}
           {activeTab === "people" && (
             <>
-              <PeopleInvolved label="Accountable for" people={data.accountableFor} />
+              <PeopleInvolved
+                label="Accountable for"
+                people={data.accountableFor}
+              />
               <PeopleInvolved label="Cares for" people={data.caresFor} />
               <PeopleInvolved label="Operates" people={data.operates} />
             </>

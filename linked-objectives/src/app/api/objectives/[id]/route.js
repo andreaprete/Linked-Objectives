@@ -355,12 +355,13 @@ export async function GET(req, context) {
       {
         status: 200,
         headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0",
-      "Surrogate-Control": "no-store"
-    },
+          "Content-Type": "application/json",
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+          "Surrogate-Control": "no-store",
+        },
       }
     );
   } catch (err) {
@@ -368,12 +369,13 @@ export async function GET(req, context) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0",
-      "Surrogate-Control": "no-store"
-    },
+        "Content-Type": "application/json",
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+        "Surrogate-Control": "no-store",
+      },
     });
   }
 }
@@ -454,6 +456,20 @@ export async function PUT(req, context) {
       `<${objUri}>`,
       `<https://data.sick.com/voc/sam/objectives-model/category>`,
       `<https://data.sick.com/voc/sam/objectives-model/${body.type}>`
+    );
+    if (t) insertLines.push(t);
+  }
+
+  // STATE
+  if (body.state !== undefined) {
+    deleteLines.push(
+      `<${objUri}> <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state .`
+    );
+
+    const t = triple(
+      `<${objUri}>`,
+      `<https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state>`,
+      `<https://data.sick.com/voc/dev/lifecycle-state-taxonomy/${body.state}>`
     );
     if (t) insertLines.push(t);
   }
@@ -591,12 +607,14 @@ export async function PUT(req, context) {
       OPTIONAL { <${objUri}> <http://purl.org/dc/terms/created> ?created . }
       OPTIONAL { <${objUri}> <http://purl.org/dc/terms/temporal> ?temp . }
       OPTIONAL { <${objUri}-interval> ?tp ?to . }
+      OPTIONAL { <${objUri}> <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/state> ?state . }
       OPTIONAL { ?oldPost ?rolePred <${objUri}> . }
       OPTIONAL { <${objUri}> <https://data.sick.com/voc/sam/objectives-model/needs> ?o . }
       OPTIONAL { <${objUri}> <https://data.sick.com/voc/sam/objectives-model/contributesTo> ?o . }
       OPTIONAL { ?x <https://data.sick.com/voc/sam/objectives-model/needs> <${objUri}> . }
       OPTIONAL { ?x <https://data.sick.com/voc/sam/objectives-model/contributesTo> <${objUri}> . }
     }
+
   `;
 
   // 🔍 Log query for debugging
@@ -620,24 +638,26 @@ export async function PUT(req, context) {
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0",
-      "Surrogate-Control": "no-store"
-    },
+        "Content-Type": "application/json",
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+        "Surrogate-Control": "no-store",
+      },
     });
   } catch (err) {
     console.error("PUT error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0",
-      "Surrogate-Control": "no-store"
-    },
+        "Content-Type": "application/json",
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+        "Surrogate-Control": "no-store",
+      },
     });
   }
 }

@@ -43,7 +43,30 @@
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 9999px;
-  background-color: #22c55e;
+}
+
+.dot-blue {
+  background-color: #2563eb; /* blue */
+}
+
+.dot-purple {
+  background-color: #7c3aed; /* purple */
+}
+
+.dot-green {
+  background-color: #059669; /* green */
+}
+
+.dot-red {
+  background-color: #dc2626; /* red */
+}
+
+.dot-orange {
+  background-color: #f97316; /* orange */
+}
+
+.dot-gray {
+  background-color: #9ca3af; /* neutral gray fallback */
 }
 
 .goal-state {

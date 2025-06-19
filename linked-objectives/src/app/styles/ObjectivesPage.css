@@ -36,7 +36,8 @@
   z-index: 100;
   background: #fff;
   border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
   padding: 2rem;
   width: 100%;
   max-width: 48rem;
@@ -141,10 +142,33 @@
   color: #4b5563;
   margin-bottom: 0.25rem;
 }
-.state {
-  color: #059669;
-  font-size: 0.8rem;
+.state{
+  font-size: 0.8rem
 }
+.state-blue {
+  color: #2563eb; /* Tailwind blue-600 */
+}
+
+.state-purple {
+  color: #7c3aed; /* Tailwind purple-600 */
+}
+
+.state-green {
+  color: #059669; /* Tailwind green-600 */
+}
+
+.state-red {
+  color: #dc2626; /* Tailwind red-600 */
+}
+
+.state-orange {
+  color: #f97316; /* Tailwind orange-500 */
+}
+
+.state-gray {
+  color: #6b7280; /* Tailwind gray-500 */
+}
+
 .progress {
   font-size: 1.5rem;
   font-weight: 700;
