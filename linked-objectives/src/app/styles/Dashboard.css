@@ -224,4 +224,12 @@ body {
   padding: 1rem;
 }
 
+.ganttCard .widgetContentArea {
+  min-height: 400px; /* Or whatever height looks good */
+}
 
+.widgetContentArea {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}

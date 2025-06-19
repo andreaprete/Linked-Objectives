@@ -42,7 +42,7 @@ export async function GET(req) {
 
     const objectivesQuery = `
       ${PREFIXES}
-      SELECT ?okr ?title ?dueDate ?createdDate ?modifiedDate
+      SELECT ?okr ?title ?dueDate ?createdDate ?modifiedDate ?startDate ?endDate
              (SAMPLE(?categoryEnLabel) AS ?categoryName)
              (SAMPLE(?statusEnLabel) AS ?statusName)
              (COUNT(DISTINCT ?kr) AS ?keyResultsCount)
@@ -57,8 +57,14 @@ export async function GET(req) {
         OPTIONAL { ?okr dct:modified ?modifiedDate . }
         OPTIONAL { ?okr objectives_voc:hasKeyResult ?kr . }
         OPTIONAL { ?kr objectives_voc:progress ?progressVal . }
+
+        OPTIONAL {
+          ?okr dct:temporal ?interval .
+          OPTIONAL { ?interval time:hasBeginning ?startDate . }
+          OPTIONAL { ?interval time:hasEnd ?endDate . }
+        }
       }
-      GROUP BY ?okr ?title ?dueDate ?createdDate ?modifiedDate
+      GROUP BY ?okr ?title ?dueDate ?createdDate ?modifiedDate ?startDate ?endDate
     `;
 
     const krTrendQuery = `
@@ -86,11 +92,20 @@ export async function GET(req) {
       dueDate: b.dueDate?.value,
       createdDate: b.createdDate?.value,
       modifiedDate: b.modifiedDate?.value,
+      startDate: b.startDate?.value || null,
+      endDate: b.endDate?.value || null,
       keyResultsCount: parseInt(b.keyResultsCount?.value || '0'),
       progress: b.objectiveProgress?.value
         ? Math.round(parseFloat(b.objectiveProgress.value) * 100)
         : 0
     }));
+
+    // Remove duplicates by id
+    const uniqueOkrsMap = new Map();
+    userOkrs.forEach(o => {
+      if (!uniqueOkrsMap.has(o.id)) uniqueOkrsMap.set(o.id, o);
+    });
+    userOkrs = Array.from(uniqueOkrsMap.values());
 
     const krTrend = krTrendResults.results.bindings.map(b => ({
       kr: b.kr.value.split("/").pop(),
@@ -98,103 +113,107 @@ export async function GET(req) {
       score: parseFloat(b.score.value)
     }));
 
-    return createDashboardResponse(userOkrs, krTrend, { status, category, startDate, endDate });
+    // Apply filters
+    const { status: filterStatus, category: filterCategory } = { status, category };
+    let filteredOkrs = [...userOkrs];
 
+    if (filterStatus) {
+      filteredOkrs = filteredOkrs.filter(o =>
+        o.statusName?.toLowerCase().includes(filterStatus)
+      );
+    }
+    if (filterCategory) {
+      filteredOkrs = filteredOkrs.filter(o =>
+        o.categoryName?.toLowerCase().includes(filterCategory)
+      );
+    }
+    if (startDate) {
+      filteredOkrs = filteredOkrs.filter(o =>
+        o.createdDate && new Date(o.createdDate) >= new Date(startDate)
+      );
+    }
+    if (endDate) {
+      filteredOkrs = filteredOkrs.filter(o =>
+        o.createdDate && new Date(o.createdDate) <= new Date(endDate)
+      );
+    }
+
+    const totalOkrCount = filteredOkrs.length;
+    const activeOkrs = filteredOkrs.filter(o =>
+      o.statusName.toLowerCase().includes("in progress")
+    );
+    const overallProgress = activeOkrs.length
+      ? Math.round(activeOkrs.reduce((acc, o) => acc + o.progress, 0) / activeOkrs.length)
+      : 0;
+    const totalKrCount = filteredOkrs.reduce((acc, o) => acc + o.keyResultsCount, 0);
+    const uniqueCategoryCount = new Set(filteredOkrs.map(o => o.categoryName)).size;
+
+    // Calculate velocity by creation month
+    const byMonth = {};
+    filteredOkrs.forEach(o => {
+      if (!o.createdDate) return;
+      const d = new Date(o.createdDate);
+      const label = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      byMonth[label] = (byMonth[label] || 0) + 1;
+    });
+
+    const objectiveVelocity = Object.entries(byMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, value]) => ({ name, value }));
+
+    const statusMap = {}, categoryMap = {}, progressMap = {
+      "0%": 0, "1-25%": 0, "26-50%": 0,
+      "51-75%": 0, "76-99%": 0, "100%": 0
+    };
+
+    filteredOkrs.forEach(o => {
+      statusMap[o.statusName] = (statusMap[o.statusName] || 0) + 1;
+      categoryMap[o.categoryName] = (categoryMap[o.categoryName] || 0) + 1;
+      const p = o.progress;
+      if (p === 0) progressMap["0%"]++;
+      else if (p <= 25) progressMap["1-25%"]++;
+      else if (p <= 50) progressMap["26-50%"]++;
+      else if (p <= 75) progressMap["51-75%"]++;
+      else if (p < 100) progressMap["76-99%"]++;
+      else progressMap["100%"]++;
+    });
+
+    return new NextResponse(
+      JSON.stringify({
+        summaryMetrics: {
+          totalOkrCount,
+          overallProgress,
+          totalKrCount,
+          uniqueCategoryCount
+        },
+        objectiveVelocity,
+        keyResultScoresTrend: krTrend,
+        distributions: {
+          objectivesByStatus: Object.entries(statusMap).map(([name, value]) => ({ name, value })),
+          objectivesByCategory: Object.entries(categoryMap).map(([name, value]) => ({ name, value })),
+          objectivesByProgress: Object.entries(progressMap)
+            .map(([name, value]) => ({ name, value }))
+            .filter(entry => entry.value > 0)
+        },
+        objectiveTimeline: filteredOkrs.map(o => ({
+          id: o.id,
+          title: o.title,
+          hasBeginning: o.startDate,
+          hasEnd: o.endDate
+        }))
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
   } catch (err) {
     console.error("[API Error]", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
-
-// 📦 Shared response generator
-function createDashboardResponse(objectives, krTrend, filters) {
-  let userOkrs = [...objectives];
-  const { status, category, startDate, endDate } = filters;
-
-  if (status) {
-    userOkrs = userOkrs.filter(o =>
-      o.statusName?.toLowerCase().includes(status)
-    );
-  }
-  if (category) {
-    userOkrs = userOkrs.filter(o =>
-      o.categoryName?.toLowerCase().includes(category)
-    );
-  }
-  if (startDate) {
-    userOkrs = userOkrs.filter(o =>
-      o.createdDate && new Date(o.createdDate) >= new Date(startDate)
-    );
-  }
-  if (endDate) {
-    userOkrs = userOkrs.filter(o =>
-      o.createdDate && new Date(o.createdDate) <= new Date(endDate)
-    );
-  }
-
-  const totalOkrCount = userOkrs.length;
-  const activeOkrs = userOkrs.filter(o =>
-    o.statusName.toLowerCase().includes("in progress")
-  );
-  const overallProgress = activeOkrs.length
-    ? Math.round(activeOkrs.reduce((acc, o) => acc + o.progress, 0) / activeOkrs.length)
-    : 0;
-  const totalKrCount = userOkrs.reduce((acc, o) => acc + o.keyResultsCount, 0);
-  const uniqueCategoryCount = new Set(userOkrs.map(o => o.categoryName)).size;
-
-  const byMonth = {};
-  userOkrs.forEach(o => {
-    if (!o.createdDate) return;
-    const d = new Date(o.createdDate);
-    const label = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    byMonth[label] = (byMonth[label] || 0) + 1;
-  });
-
-  const objectiveVelocity = Object.entries(byMonth)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([name, value]) => ({ name, value }));
-
-  const statusMap = {}, categoryMap = {}, progressMap = {
-    "0%": 0, "1-25%": 0, "26-50%": 0,
-    "51-75%": 0, "76-99%": 0, "100%": 0
-  };
-
-  userOkrs.forEach(o => {
-    statusMap[o.statusName] = (statusMap[o.statusName] || 0) + 1;
-    categoryMap[o.categoryName] = (categoryMap[o.categoryName] || 0) + 1;
-    const p = o.progress;
-    if (p === 0) progressMap["0%"]++;
-    else if (p <= 25) progressMap["1-25%"]++;
-    else if (p <= 50) progressMap["26-50%"]++;
-    else if (p <= 75) progressMap["51-75%"]++;
-    else if (p < 100) progressMap["76-99%"]++;
-    else progressMap["100%"]++;
-  });
-
-  return new NextResponse(
-    JSON.stringify({
-      summaryMetrics: {
-        totalOkrCount,
-        overallProgress,
-        totalKrCount,
-        uniqueCategoryCount
-      },
-      objectiveVelocity,
-      keyResultScoresTrend: krTrend,
-      distributions: {
-        objectivesByStatus: Object.entries(statusMap).map(([name, value]) => ({ name, value })),
-        objectivesByCategory: Object.entries(categoryMap).map(([name, value]) => ({ name, value })),
-        objectivesByProgress: Object.entries(progressMap).map(([name, value]) => ({ name, value })).filter(entry => entry.value > 0)
-      }
-    }),
-    {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    }
-  );
 }

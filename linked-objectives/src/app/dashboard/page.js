@@ -5,6 +5,7 @@ import "@/app/styles/Dashboard.css";
 
 import AppLayout from '@/app/components/AppLayout';
 import OkrVelocityChart from "@/app/components/OkrVelocityChart";
+import GanttChart from '@/app/components/GanttChart';
 
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip,
@@ -166,62 +167,76 @@ function KeyResultScoresTrendChart({ data }) {
     );
 }
 
-export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
+  export default function DashboardPage() {
+    // States...
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isFullyLoaded, setIsFullyLoaded] = useState(false);
 
-  const [summaryMetrics, setSummaryMetrics] = useState({});
-  const [distributionData, setDistributionData] = useState({});
-  const [keyResultScoresTrendData, setKeyResultScoresTrendData] = useState([]);
-  const [objectiveVelocity, setObjectiveVelocity] = useState([]);
+    const [summaryMetrics, setSummaryMetrics] = useState({});
+    const [distributionData, setDistributionData] = useState({});
+    const [keyResultScoresTrendData, setKeyResultScoresTrendData] = useState([]);
+    const [objectiveVelocity, setObjectiveVelocity] = useState([]);
+    const [objectiveTimeline, setObjectiveTimeline] = useState([]);
 
-  // 🆕 Filters
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+    const [selectedStatus, setSelectedStatus] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
-  // 🧠 Dynamic fetch on filters
-  useEffect(() => {
-    async function fetchDashboardData() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const query = new URLSearchParams({
-          ...(selectedStatus && { status: selectedStatus }),
-          ...(selectedCategory && { category: selectedCategory }),
-          ...(startDate && { startDate }),
-          ...(endDate && { endDate })
-        }).toString();
+    // Correct: useMemo OUTSIDE useEffect, in component body
+    const ganttTasks = useMemo(() => {
+      return (objectiveTimeline || []).map(obj => ({
+        id: obj.id,
+        name: obj.title,
+        start: obj.hasBeginning,
+        end: obj.hasEnd,
+      }));
+    }, [objectiveTimeline]);
 
-        const res = await fetch(`/api/dashboard?${query}`, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
-            'Pragma': 'no-cache',
-          },
-        });
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({ error: `API request failed: Status ${res.status}` }));
-          throw new Error(errorData.error || `API request failed: Status ${res.status}`);
+    useEffect(() => {
+      async function fetchDashboardData() {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const query = new URLSearchParams({
+            ...(selectedStatus && { status: selectedStatus }),
+            ...(selectedCategory && { category: selectedCategory }),
+            ...(startDate && { startDate }),
+            ...(endDate && { endDate }),
+          }).toString();
+
+          const res = await fetch(`/api/dashboard?${query}`, {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-store, no-cache, must-revalidate',
+              'Pragma': 'no-cache',
+            },
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ error: `API request failed: Status ${res.status}` }));
+            throw new Error(errorData.error || `API request failed: Status ${res.status}`);
+          }
+
+          const data = await res.json();
+          setSummaryMetrics(data.summaryMetrics || {});
+          setDistributionData(data.distributions || {});
+          setKeyResultScoresTrendData(data.keyResultScoresTrend || []);
+          setObjectiveVelocity(data.objectiveVelocity || []);
+          setObjectiveTimeline(data.objectiveTimeline || []);
+
+          // This is fine here
+          setTimeout(() => setIsFullyLoaded(true), 100);
+        } catch (err) {
+          setError(err.message || "An unknown error occurred.");
+        } finally {
+          setIsLoading(false);
         }
-
-        const data = await res.json();
-        setSummaryMetrics(data.summaryMetrics || {});
-        setDistributionData(data.distributions || {});
-        setKeyResultScoresTrendData(data.keyResultScoresTrend || []);
-        setObjectiveVelocity(data.objectiveVelocity || []);
-        setTimeout(() => setIsFullyLoaded(true), 100);
-      } catch (err) {
-        setError(err.message || "An unknown error occurred.");
-      } finally {
-        setIsLoading(false);
       }
-    }
 
-    fetchDashboardData();
-  }, [selectedStatus, selectedCategory, startDate, endDate]);
+      fetchDashboardData();
+    }, [selectedStatus, selectedCategory, startDate, endDate]);
 
   if (isLoading) {
     return (
@@ -311,6 +326,11 @@ export default function DashboardPage() {
           </AnimatedCard>
           <AnimatedCard title="OKR Creation per day" delay={550}>
             <OkrVelocityChart data={objectiveVelocity} />
+          </AnimatedCard>
+        </div>
+        <div className="w-full mt-6">
+          <AnimatedCard title="Objective Timeline (Gantt Chart)" delay={600}>
+            <GanttChart tasks={ganttTasks} />
           </AnimatedCard>
         </div>
 
