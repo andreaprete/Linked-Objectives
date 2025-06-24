@@ -1,0 +1,35 @@
+.how {
+  padding: 80px 20px;
+  background-color: #f9fafb;
+  text-align: center;
+}
+
+.how h2 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 60px;
+  color: #3C464D;
+}
+
+.steps {
+  list-style: none;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.steps li {
+  font-size: 1.125rem;
+  color: #3C464D;
+}
+
+.steps li strong {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3C464D;
+  margin-bottom: 10px;
+}

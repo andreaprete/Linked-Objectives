@@ -1,0 +1,73 @@
+.hero {
+  background: linear-gradient(to bottom, #0A7CBC, #f9fafb);
+  padding: 80px 20px;
+  color: white;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.text {
+  flex: 1 1 460px;
+}
+
+.text h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.text p {
+  font-size: 1.25rem;
+  color: #e8f0ff;
+  max-width: 500px;
+  margin-bottom: 30px;
+}
+
+.buttons {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.login,
+.signup {
+  padding: 12px 30px;
+  font-weight: bold;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+}
+
+.login {
+  background-color: #0A7CBC;
+  color: white;
+}
+
+.signup {
+  background-color: white;
+  color: #0A7CBC;
+
+}
+
+
+.imageWrapper {
+  flex: 1 1 600px;
+  text-align: right;
+}
+
+.imageWrapper img {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+}
