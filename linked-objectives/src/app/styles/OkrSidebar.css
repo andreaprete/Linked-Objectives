@@ -1,26 +1,104 @@
-.okrItemWrapper {
-  margin-bottom: 12px;
-  cursor: grab;
+.okrCatalogArea {
+  width: 15rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+  position: relative;
+  transition: width 0.3s ease;
+  overflow: hidden;
 }
 
-.okrItemWrapper:active {
-  cursor: grabbing;
+.okrCatalogArea.collapsed {
+  width: 56px;
 }
 
-.okrSVGContainer {
-  width: 100%;
-  height: auto;
+.catalogHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 1rem 1rem 0 1rem;
+}
+
+.toggleSidebarBtn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+.toggleSidebarBtn:hover {
+  color: #111827;
+}
+
+.collapsed-toggle {
+  margin: 8px auto;
   display: flex;
   justify-content: center;
-  align-items: center;
-  border: 1px solid #e0e0e0;
-  background: #ffffff;
-  padding: 4px;
-  border-radius: 6px;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
-  transition: background 0.2s;
 }
 
-.okrSVGContainer:hover {
-  background-color: #f0f8ff;
+.searchInput {
+  flex: 1;
+  padding: 10px 12px 10px 36px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  font-size: 0.95rem;
+  color: #111827;
+  background-image: url('data:image/svg+xml,%3Csvg width="16" height="16" fill="gray" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M11.742 10.344l3.85 3.853a1 1 0 01-1.414 1.414l-3.851-3.85a6.5 6.5 0 111.415-1.415zM7 12.5a5.5 5.5 0 100-11 5.5 5.5 0 000 11z"/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-size: 16px;
+}
+.searchInput::placeholder {
+  color: #9ca3af;
+}
+
+.okrCatalog {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.okrCatalog::-webkit-scrollbar {
+  width: 6px;
+}
+.okrCatalog::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.catalogTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.okrItem {
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: #111827;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  overflow: visible;
+  text-overflow: initial;
+  display: flex;
+  align-items: center;
+  word-break: break-word;
+  line-height: 1.3;
+}
+.okrItem:hover {
+  background-color: #e0f2fe;
+  border-color: #bae6fd;
 }

@@ -1,142 +1,140 @@
 "use client";
-
 import React, { useEffect, useState, useRef } from "react";
-import dynamic from "next/dynamic";
 import "@excalidraw/excalidraw/index.css";
-import "@/app/styles/StrategyMap.css";
 import AppLayout from "@/app/components/AppLayout";
 import OkrSidebar from "@/app/components/OkrSidebar";
-
-const Excalidraw = dynamic(
-  () => import("@excalidraw/excalidraw").then((mod) => mod.Excalidraw),
-  { ssr: false }
-);
-
-const createOkrElement = (okr, x, y) => ({
-  id: `okr-${okr.id}-${Date.now()}`,
-  type: "rectangle",
-  x,
-  y,
-  width: 200,
-  height: 60,
-  angle: 0,
-  strokeColor: "#1f2937",
-  backgroundColor: "#93c5fd",
-  fillStyle: "solid",
-  strokeWidth: 1,
-  roughness: 1,
-  opacity: 100,
-  groupIds: [],
-  seed: Math.floor(Math.random() * 100000),
-  version: 1,
-  versionNonce: Math.floor(Math.random() * 100000),
-  isDeleted: false,
-  locked: false,
-  boundElements: [],
-  updated: Date.now(),
-});
-
-const createOkrLabelElement = (okr, parent) => ({
-  type: "text",
-  version: 1,
-  versionNonce: Math.floor(Math.random() * 100000),
-  isDeleted: false,
-  id: `label-${okr.id}-${Date.now()}`,
-  fillStyle: "solid",
-  strokeWidth: 1,
-  roughness: 0,
-  opacity: 100,
-  angle: 0,
-  x: parent.x + 10,
-  y: parent.y + 20,
-  width: 180,
-  height: 20,
-  seed: Math.floor(Math.random() * 100000),
-  groupIds: [],
-  strokeColor: "#000000",
-  backgroundColor: "transparent",
-  boundElements: [],
-  updated: Date.now(),
-  locked: false,
-  text: okr.title,
-  fontSize: 18,
-  fontFamily: 1,
-  textAlign: "left",
-  verticalAlign: "top",
-  baseline: 14,
-});
+import ExcalidrawWithRef from "./ExcalidrawWithRef";
+import { convertToExcalidrawElements } from "@excalidraw/excalidraw";
 
 export default function StrategyMapPage() {
-  const [excalidrawAPI, setExcalidrawAPI] = useState(null);
-  const wrapperRef = useRef(null);
+  const excalidrawAPIRef = useRef(null);
   const [okrs, setOkrs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const inserted = useRef({}); // Track inserted OKRs and positions
 
   useEffect(() => {
-    async function fetchOKRs() {
-      try {
-        const res = await fetch("/api/objectiveslist");
-        const data = await res.json();
-        setOkrs(data);
-      } catch (err) {
-        console.error("❌ Failed to fetch OKRs:", err);
-      } finally {
-        setLoading(false); 
-      }
-    }
-    fetchOKRs();
+    fetch("/api/objectiveslist")
+      .then((res) => res.json())
+      .then(setOkrs)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleInsertOkr = (okr, e) => {
-    if (
-      !excalidrawAPI ||
-      typeof excalidrawAPI.viewportCoordsToSceneCoords !== "function"
-    ) {
-      console.error("❌ Excalidraw API not ready");
-      return;
-    }
+  const handleInsertOkr = (okr) => {
+    const api = excalidrawAPIRef.current;
+    if (!api) return;
 
-    // ✅ Calculate scene coords based on canvas container
-    const rect = wrapperRef.current.getBoundingClientRect();
-    const coords = excalidrawAPI.viewportCoordsToSceneCoords({
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-    });
+    const insertedMap = inserted.current;
+    if (insertedMap[okr.id]) return;
 
-    const box = createOkrElement(okr, coords.x, coords.y);
-    const label = createOkrLabelElement(okr, box);
-    excalidrawAPI.addElements([box, label]);
+    const count = Object.keys(insertedMap).length;
+    const x = 100 + (count % 3) * 260;
+    const y = 100 + Math.floor(count / 3) * 120;
+
+    insertedMap[okr.id] = { x, y, id: `okr-${okr.id}` };
+
+    const box = convertToExcalidrawElements(
+      [
+        {
+          id: `okr-${okr.id}`,
+          type: "rectangle",
+          x,
+          y,
+          width: 240,
+          height: 60,
+          backgroundColor: "#c0eb75",
+          strokeWidth: 2,
+          strokeColor: "#000000",
+          label: {
+            text: okr.title,
+            fontSize: 16,
+            strokeColor: "#000000",
+            textAlign: "center",
+            verticalAlign: "middle",
+          },
+        },
+      ],
+      { regenerateIds: false }
+    );
+
+    api.updateScene({ elements: [...api.getSceneElements(), ...box] });
   };
 
-  if (loading) return (
-      <AppLayout>
-        <main className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-md text-gray-600">Loading The best Strategy Map...</p>
-          </div>
-        </main>
-      </AppLayout>
-    );
+  const handleConnectRelationships = () => {
+    const api = excalidrawAPIRef.current;
+    if (!api) return;
+
+    const allArrows = [];
+
+    for (const okr of okrs) {
+      const relations = [
+        ...(okr.contributesTo || []).map((to) => ({
+          from: okr.id,
+          to,
+          label: "contributes to",
+        })),
+        ...(okr.contributedToBy || []).map((from) => ({
+          from,
+          to: okr.id,
+          label: "contributed by",
+        })),
+        ...(okr.needs || []).map((to) => ({ from: okr.id, to, label: "needs" })),
+        ...(okr.neededBy || []).map((from) => ({
+          from,
+          to: okr.id,
+          label: "needed by",
+        })),
+      ];
+
+      for (const rel of relations) {
+        const from = inserted.current[rel.from];
+        const to = inserted.current[rel.to];
+        if (!from || !to) continue;
+
+        const x = from.x + 240;
+        const y = from.y + 30;
+        const arrow = {
+          type: "arrow",
+          x,
+          y,
+          points: [[0, 0], [to.x - x, to.y + 30 - y]],
+          strokeColor: "#1e293b",
+          strokeWidth: 2,
+          endArrowhead: "arrow",
+          label: {
+            text: rel.label,
+            fontSize: 14,
+            strokeColor: "#475569",
+          },
+        };
+        allArrows.push(arrow);
+      }
+    }
+
+    const arrowElements = convertToExcalidrawElements(allArrows, { regenerateIds: true });
+    api.updateScene({ elements: [...api.getSceneElements(), ...arrowElements] });
+  };
 
   return (
     <AppLayout>
-      <div className="newCanvasBar">
-        <button
-          className="newCanvasBtn"
-          onClick={() => window.location.reload()}
-        >
-          + New Canvas
-        </button>
-      </div>
-
-      <main className="contentArea flex flex-col md:flex-row gap-4">
-        <div className="excalidrawWrapper flex-1" ref={wrapperRef}>
-          <Excalidraw excalidrawAPI={(api) => setExcalidrawAPI(api)} />
+      {loading ? (
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <p>Loading Strategy Map…</p>
+        </main>
+      ) : (
+        <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <div style={{ margin: "1rem", display: "flex", gap: "1rem" }}>
+            <button onClick={() => window.location.reload()}>+ New Canvas</button>
+            <button onClick={handleConnectRelationships}>🔗 Connect Relationships</button>
+          </div>
+          <div style={{ flex: 1, display: "flex", gap: "1rem", overflow: "hidden" }}>
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <ExcalidrawWithRef onApiReady={(api) => (excalidrawAPIRef.current = api)} />
+            </div>
+            <OkrSidebar okrs={okrs} onOkrClick={handleInsertOkr} />
+          </div>
         </div>
-
-        <OkrSidebar okrs={okrs} onOkrClick={handleInsertOkr} />
-      </main>
+      )}
     </AppLayout>
   );
 }

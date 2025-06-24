@@ -22,7 +22,13 @@ export default function HomePage() {
 
     async function fetchData() {
       try {
-        const res = await fetch(`/api/people/${id}`);
+        const res = await fetch(`/api/people/${id}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        });
+
         const json = await res.json();
         setUserData(json.data);
         setOkrs(json.okrs);
@@ -40,7 +46,11 @@ export default function HomePage() {
     try {
       const res = await fetch("/api/objectives", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-store",
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       });
 
@@ -70,7 +80,7 @@ export default function HomePage() {
 
   return (
     <AppLayout>
-      <main className="p-6 space-y-6">
+      <main className="p-6 space-y-6 w-[80%] mx-auto">
         <WelcomeBanner name={userData?.name} id={id} teamId={userData?.team} />
         <WeeklyOverview okrs={okrs} />
         <GoalTab

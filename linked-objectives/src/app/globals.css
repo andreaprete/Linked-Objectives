@@ -23,10 +23,11 @@ body, html, #__next {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow-x: hidden; /* Prevent horizontal scroll, but allow vertical */
+  overflow: hidden; /* Prevent horizontal scroll, but allow vertical */
 }
 
 * {
   box-sizing: border-box;
 }
+
 

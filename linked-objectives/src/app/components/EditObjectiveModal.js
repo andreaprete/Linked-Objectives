@@ -16,8 +16,8 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
     description: initialData.description || "",
     progress: initialData.progress ?? 0,
     temporal: initialData.temporal || {},
-    type: initialData.category || "tactical",
-    version: initialData.version || "",
+    type: initialData.category || "",
+    state: initialData.state || "",
     accountableFor: initialData.accountableFor?.id || "",
     caresFor: initialData.caresFor?.id || "",
     operates: initialData.operates?.id || "",
@@ -67,7 +67,6 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
 
     fetchInitialData();
   }, [initialData]);
-
 
   useEffect(() => {
     if (!onClose) return; // Defensive in case onClose isn't passed
@@ -205,14 +204,29 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
 
         <div className="grid-two-cols">
           <div>
-            <label className="input-label">Version</label>
-            <input
-              type="text"
-              name="version"
-              value={formData.version}
+            <label className="input-label">State</label>
+            <select
+              name="state"
+              value={formData.state}
               onChange={handleChange}
               className="input-field"
-            />
+            >
+              <option value="Draft">Draft</option>
+              <option value="Idea">Idea</option>
+              <option value="Planned">Planned</option>
+              <option value="InProgress">InProgress</option>
+              <option value="Evaluating">Evaluating</option>
+              <option value="Approved">Approved</option>
+              <option value="Released">Released</option>
+              <option value="Completed">Completed</option>
+              <option value="Archived">Archived</option>
+              <option value="Aborted">Aborted</option>
+              <option value="Deprecated">Deprecated</option>
+              <option value="Rejected">Rejected</option>
+              <option value="OnHold">OnHold</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Withdrawn">Withdrawn</option>
+            </select>
           </div>
           <div>
             <label className="input-label">Type</label>
