@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-import AppLayout from '@/app/components/AppLayout';
-import UserProfile from '@/app/components/UserProfile';
-import OkrList from '@/app/components/OkrList';
+import AppLayout from "@/app/components/AppLayout";
+import UserProfile from "@/app/components/UserProfile";
+import OkrList from "@/app/components/OkrList";
 
 export default function PersonPage() {
   const { id } = useParams();
@@ -25,7 +25,7 @@ export default function PersonPage() {
         setData(json.data);
         setOkrs(json.okrs || []);
       } catch (err) {
-        console.error('Failed to load person data:', err);
+        console.error("Failed to load person data:", err);
       } finally {
         setLoading(false);
       }
@@ -34,37 +34,28 @@ export default function PersonPage() {
     fetchPerson();
   }, [id]);
 
-  if (loading) return (
-    <AppLayout>
-      <main className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-md text-gray-600">Loading People data...</p>
-        </div>
-      </main>
-    </AppLayout>
-  );
+  if (loading)
+    return (
+      <AppLayout>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading People data...</p>
+          </div>
+        </main>
+      </AppLayout>
+    );
 
-  if (!data) return (
-    <AppLayout>
-      <div className="p-6 text-red-500">Person not found.</div>
-    </AppLayout>
-  );
+  if (!data)
+    return (
+      <AppLayout>
+        <div className="p-6 text-red-500">Person not found.</div>
+      </AppLayout>
+    );
 
   const userData = {
-    name: data.name,
-    role: data.roleTitle,
-    description: data.roleDescription,
-    email: data.email,
-    username: data.username,
-    location: data.location,
-    team: data.teamName,
-    department: data.departmentName,
-    company: data.company,
-    teamId: data.team,
-    departmentId: data.department,
-    companyId: data.company,
-    profileImage: "/profileImage.jpg"
+    ...data,
+    profileImage: "/profileImage.jpg",
   };
 
   return (
