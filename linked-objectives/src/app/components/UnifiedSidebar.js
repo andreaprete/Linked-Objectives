@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { FaHome, FaBullseye, FaUsers, FaUserCog, FaThLarge } from 'react-icons/fa';
-import "@/app/styles/UnifiedSidebar.css"; 
+import "@/app/styles/UnifiedSidebar.css";
 import { useSession } from "next-auth/react";
+import { useLoading } from "@/app/contexts/LoadingContext"; // 🆕 Import loading context
 
 const navItems = [
   {
@@ -65,9 +66,9 @@ export default function UnifiedSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
+  const { startLoading } = useLoading(); // 🆕 Access loading control
 
   const email = session?.user?.email;
-
   const [username, setUsername] = useState("user");
 
   useEffect(() => {
@@ -85,10 +86,10 @@ export default function UnifiedSidebar() {
     fetchUsername();
   }, [email]);
 
-  function getActiveItem() {
+  const getActiveItem = () => {
     const found = navItems.find(item => item.match(pathname));
     return found ? found.label : '';
-  }
+  };
 
   const activeItem = getActiveItem();
 
@@ -108,7 +109,10 @@ export default function UnifiedSidebar() {
               icon={item.icon}
               label={item.label}
               active={activeItem === item.label}
-              onClick={() => router.push(path)}
+              onClick={() => {
+                startLoading(`Loading ${item.label}...`); // 🆕 dynamic message
+                router.push(path);
+              }}
             />
           );
         })}

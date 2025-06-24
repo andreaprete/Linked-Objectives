@@ -88,3 +88,21 @@ input::placeholder {
 .btn:hover {
   background-color: #00629a;
 }
+
+.loading-text {
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #0070f3;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

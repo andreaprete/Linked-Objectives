@@ -1,4 +1,4 @@
-    "use client";
+"use client";
 
 import React, { useState } from 'react';
 import { signIn } from "next-auth/react";
@@ -15,6 +15,8 @@ const Login = () => {
     password: '',
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -24,6 +26,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Show loading
 
     const res = await signIn("credentials", {
       redirect: false,
@@ -42,6 +45,7 @@ const Login = () => {
       }
     } else {
       alert("❌ Login failed: Check your credentials");
+      setLoading(false); // Stop loading on failure
     }
   };
 
@@ -52,12 +56,14 @@ const Login = () => {
         <h2>supported by SICK AG</h2>
         <h3>Log In</h3>
         <form onSubmit={handleSubmit}>
+          {loading && <p className="loading-text">🔄 Logging in...</p>}
           <input
             type="email"
             id="email"
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
+            disabled={loading}
             required
           />
           <input
@@ -66,10 +72,13 @@ const Login = () => {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
+            disabled={loading}
             required
           />
           <a href="#" className="forgot">Forgot your password?</a>
-          <button type="submit" className="btn">Log In</button>
+          <button type="submit" className="btn" disabled={loading}>
+            {loading ? "Please wait..." : "Log In"}
+          </button>
         </form>
       </div>
     </div>
