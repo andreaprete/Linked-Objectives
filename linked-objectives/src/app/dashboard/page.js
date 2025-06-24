@@ -303,15 +303,6 @@ export default function DashboardPage() {
           <AnimatedCard title="Objectives by Category" delay={400}>
             <ObjectivesByCategoryBarChart data={distributionData.objectivesByCategory} />
           </AnimatedCard>
-          <AnimatedCard title="Objectives by Progress Range" delay={450}>
-            <ObjectivesByProgressDistributionChart data={distributionData.objectivesByProgress} />
-          </AnimatedCard>
-          <AnimatedCard title="Key Result Scores Trend" delay={500}>
-            <KeyResultScoresTrendChart data={keyResultScoresTrendData} />
-          </AnimatedCard>
-          <AnimatedCard title="OKR Creation per day" delay={550}>
-            <OkrVelocityChart data={objectiveVelocity} />
-          </AnimatedCard>
         </div>
 
       </main>
