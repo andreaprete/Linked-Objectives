@@ -318,22 +318,14 @@ function KeyResultScoresTrendChart({ data }) {
           <AnimatedCard title="Objectives by Category" delay={400}>
             <ObjectivesByCategoryBarChart data={distributionData.objectivesByCategory} />
           </AnimatedCard>
-          <AnimatedCard title="Objectives by Progress Range" delay={450}>
-            <ObjectivesByProgressDistributionChart data={distributionData.objectivesByProgress} />
-          </AnimatedCard>
-          <AnimatedCard title="Key Result Scores Trend" delay={500}>
-            <KeyResultScoresTrendChart data={keyResultScoresTrendData} />
-          </AnimatedCard>
-          <AnimatedCard title="OKR Creation per day" delay={550}>
-            <OkrVelocityChart data={objectiveVelocity} />
-          </AnimatedCard>
         </div>
+
+        {/* Gantt Timeline */}
         <div className="w-full mt-6">
           <AnimatedCard title="Objective Timeline (Gantt Chart)" delay={600}>
             <GanttChart tasks={ganttTasks} />
           </AnimatedCard>
         </div>
-
       </main>
     </AppLayout>
   );
