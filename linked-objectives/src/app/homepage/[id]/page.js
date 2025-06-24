@@ -8,6 +8,7 @@ import CreateObjectiveModal from "@/app/components/CreateObjectiveModal";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+
 export default function HomePage() {
   const { id } = useParams();
   const router = useRouter();
@@ -65,18 +66,17 @@ export default function HomePage() {
     }
   }
 
-  if (loading) {
+  if (loading)
     return (
       <AppLayout>
-        <main className="dashboardContent flex items-center justify-center min-h-[60vh]">
+        <main className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-md text-gray-600">Loading Homepage Data...</p>
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading Homepage...</p>
           </div>
         </main>
       </AppLayout>
     );
-  }
 
   return (
     <AppLayout>

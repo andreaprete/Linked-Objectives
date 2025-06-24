@@ -6,11 +6,17 @@ import OkrSidebar from "@/app/components/OkrSidebar";
 import ExcalidrawWithRef from "./ExcalidrawWithRef";
 import { convertToExcalidrawElements } from "@excalidraw/excalidraw";
 
+const LOCAL_STORAGE_KEY = "strategy-map-scene";
+
 export default function StrategyMapPage() {
   const excalidrawAPIRef = useRef(null);
   const [okrs, setOkrs] = useState([]);
   const [loading, setLoading] = useState(true);
   const inserted = useRef({}); // Track inserted OKRs and positions
+
+  const [popupRelations, setPopupRelations] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     fetch("/api/objectiveslist")
@@ -58,81 +64,195 @@ export default function StrategyMapPage() {
     );
 
     api.updateScene({ elements: [...api.getSceneElements(), ...box] });
-  };
 
-  const handleConnectRelationships = () => {
-    const api = excalidrawAPIRef.current;
-    if (!api) return;
+    // Save current state to localStorage
+    const scene = api.getSceneElements();
+    const appState = api.getAppState();
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify({ elements: scene, appState })
+    );
 
-    const allArrows = [];
+    // Helper to resolve OKR title from ID
+    const getTitleById = (id) =>
+      okrs.find((o) => o.id === id)?.title || `[Unknown: ${id}]`;
 
-    for (const okr of okrs) {
-      const relations = [
-        ...(okr.contributesTo || []).map((to) => ({
-          from: okr.id,
-          to,
-          label: "contributes to",
-        })),
-        ...(okr.contributedToBy || []).map((from) => ({
-          from,
-          to: okr.id,
-          label: "contributed by",
-        })),
-        ...(okr.needs || []).map((to) => ({ from: okr.id, to, label: "needs" })),
-        ...(okr.neededBy || []).map((from) => ({
-          from,
-          to: okr.id,
-          label: "needed by",
-        })),
-      ];
+    const related = new Set(); // To avoid duplicates
+    const suggestions = [];
 
-      for (const rel of relations) {
-        const from = inserted.current[rel.from];
-        const to = inserted.current[rel.to];
-        if (!from || !to) continue;
-
-        const x = from.x + 240;
-        const y = from.y + 30;
-        const arrow = {
-          type: "arrow",
-          x,
-          y,
-          points: [[0, 0], [to.x - x, to.y + 30 - y]],
-          strokeColor: "#1e293b",
-          strokeWidth: 2,
-          endArrowhead: "arrow",
-          label: {
-            text: rel.label,
-            fontSize: 14,
-            strokeColor: "#475569",
-          },
-        };
-        allArrows.push(arrow);
+    // 1. Relationships where current OKR is the source
+    for (const rel of [
+      ...(okr.contributesTo || []).map((to) => ({
+        type: "contributes to",
+        sourceId: okr.id,
+        targetId: to,
+      })),
+      ...(okr.needs || []).map((to) => ({
+        type: "needs",
+        sourceId: okr.id,
+        targetId: to,
+      })),
+    ]) {
+      if (inserted.current[rel.targetId]) {
+        const key = `${rel.sourceId}-${rel.targetId}-${rel.type}`;
+        if (!related.has(key)) {
+          related.add(key);
+          suggestions.push({
+            type: rel.type,
+            source: getTitleById(rel.sourceId),
+            target: getTitleById(rel.targetId),
+          });
+        }
       }
     }
 
-    const arrowElements = convertToExcalidrawElements(allArrows, { regenerateIds: true });
-    api.updateScene({ elements: [...api.getSceneElements(), ...arrowElements] });
+    // 2. Relationships where current OKR is the target
+    for (const other of okrs) {
+      if (inserted.current[other.id]) {
+        if (other.contributesTo?.includes(okr.id)) {
+          const key = `${other.id}-${okr.id}-contributed by`;
+          if (!related.has(key)) {
+            related.add(key);
+            suggestions.push({
+              type: "contributed by",
+              source: getTitleById(other.id),
+              target: getTitleById(okr.id),
+            });
+          }
+        }
+        if (other.needs?.includes(okr.id)) {
+          const key = `${other.id}-${okr.id}-needed by`;
+          if (!related.has(key)) {
+            related.add(key);
+            suggestions.push({
+              type: "needed by",
+              source: getTitleById(other.id),
+              target: getTitleById(okr.id),
+            });
+          }
+        }
+      }
+    }
+
+    // If any relationships found, show popup
+    if (suggestions.length > 0) {
+      setPopupRelations(suggestions);
+      setShowPopup(true);
+    }
   };
 
   return (
     <AppLayout>
       {loading ? (
         <main className="flex items-center justify-center min-h-[60vh]">
-          <p>Loading Strategy Map…</p>
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading Strategy Map...</p>
+          </div>
         </main>
       ) : (
-        <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div
+          style={{
+            height: "100vh",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <div style={{ margin: "1rem", display: "flex", gap: "1rem" }}>
-            <button onClick={() => window.location.reload()}>+ New Canvas</button>
-            <button onClick={handleConnectRelationships}>🔗 Connect Relationships</button>
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+            >
+              + New Canvas
+            </button>
           </div>
-          <div style={{ flex: 1, display: "flex", gap: "1rem", overflow: "hidden" }}>
+
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              gap: "1rem",
+              overflow: "hidden",
+            }}
+          >
             <div style={{ flex: 1, minHeight: 0 }}>
-              <ExcalidrawWithRef onApiReady={(api) => (excalidrawAPIRef.current = api)} />
+              <ExcalidrawWithRef
+                onApiReady={(api) => {
+                  excalidrawAPIRef.current = api;
+
+                  // Load saved state if available
+                  const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+                  if (saved) {
+                    try {
+                      const { elements, appState } = JSON.parse(saved);
+                      api.updateScene({ elements, appState });
+                    } catch (err) {
+                      console.error("Failed to load saved strategy map:", err);
+                    }
+                  }
+                }}
+              />
             </div>
             <OkrSidebar okrs={okrs} onOkrClick={handleInsertOkr} />
           </div>
+
+          {/* Light Popup: Suggested Relationships */}
+          {showPopup && (
+            <div className="fixed bottom-6 right-6 z-50 w-[360px] bg-white border border-gray-200 shadow-lg rounded-lg p-4">
+              <h2 className="text-md font-semibold mb-2">
+                Suggested Relationships
+              </h2>
+              <ul className="space-y-1 text-sm mb-3 max-h-48 overflow-y-auto">
+                {popupRelations.map((r, i) => (
+                  <li key={i} className="text-gray-700 leading-snug">
+                    <strong>{r.source}</strong> <em>{r.type}</em>{" "}
+                    <strong>{r.target}</strong>
+                  </li>
+                ))}
+              </ul>
+              <div className="text-right">
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                >
+                  Got it, I'll draw them myself
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Confirmation Modal for New Canvas */}
+          {showResetConfirm && (
+            <div className="absolute top-0 left-0 w-full h-full z-10 bg-white/30 backdrop-blur-sm flex items-center justify-center">
+              <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+                <h2 className="text-lg font-semibold mb-4">
+                  Start New Canvas?
+                </h2>
+                <p className="text-sm text-gray-700 mb-4">
+                  This will erase your current canvas. Make sure you've saved or
+                  exported it first.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <button
+                    className="px-4 py-1 border rounded hover:bg-gray-100"
+                    onClick={() => setShowResetConfirm(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    onClick={() => {
+                      localStorage.removeItem(LOCAL_STORAGE_KEY);
+                      window.location.reload();
+                    }}
+                  >
+                    Go for it
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </AppLayout>
