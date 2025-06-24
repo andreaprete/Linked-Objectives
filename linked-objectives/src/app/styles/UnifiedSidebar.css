@@ -18,7 +18,7 @@
   color: #fff;
   letter-spacing: 1.5px;
   text-align: center;
-  width: 85%;
+  width: 50%;
   display: block;
 }
 
@@ -105,4 +105,11 @@
   top: 0;
   align-self: flex-start;
   height: 100vh;
+}
+
+.sidebarLogoWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
 }

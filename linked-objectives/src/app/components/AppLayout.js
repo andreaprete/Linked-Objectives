@@ -1,28 +1,48 @@
-// app/components/AppLayout.js
 "use client";
 
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import UnifiedSidebar from './UnifiedSidebar';
 import UnifiedTopbar from './UnifiedTopbar';
 import GlobalLoadingOverlay from './GlobalLoadingOverlay';
-import { LoadingProvider } from "@/app/contexts/LoadingContext";
-import { SessionProvider } from "next-auth/react";
+import { useLoading } from "@/app/contexts/LoadingContext";
 import "@/app/styles/AppLayout.css";
 
 export default function AppLayout({ children }) {
+  const pathname = usePathname();
+  const { isPageTransitioning, loadingLabel, stopPageTransition } = useLoading();
+
+  // ✅ Stop loading when pathname changes
+  useEffect(() => {
+    stopPageTransition();
+  }, [pathname]);
+
   return (
-    <SessionProvider>
-      <LoadingProvider>
-        <GlobalLoadingOverlay />
-        <div className="app-layout">
-          <UnifiedSidebar />
-          <div className="main-content">
-            <UnifiedTopbar />
-            <div className="main-inner">
-              {children}
+    <div className="app-layout">
+      <UnifiedSidebar />
+      <div className="main-content">
+        <UnifiedTopbar />
+        <div
+          className="main-inner"
+          style={{
+            pointerEvents: isPageTransitioning ? "none" : "auto",
+            filter: isPageTransitioning ? "blur(4px)" : "none",
+            transition: "filter 0.3s ease",
+            position: "relative",
+          }}
+        >
+          {children}
+          {isPageTransitioning && (
+            <div className="loading-backdrop">
+              <div className="loading-box">
+                <div className="loading-spinner" />
+                <p className="loading-text">{loadingLabel}</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      </LoadingProvider>
-    </SessionProvider>
+      </div>
+      <GlobalLoadingOverlay />
+    </div>
   );
 }

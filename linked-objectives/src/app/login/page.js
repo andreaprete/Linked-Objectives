@@ -1,21 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
-import '@/app/styles/LoginRegister.css';
-import Logo from '@/app/components/Logo';
+import "@/app/styles/LoginRegister.css";
+import Logo from "@/app/components/Logo";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleChange = (e) => {
     setFormData({
@@ -26,7 +30,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Show loading
+    setLoading(true);
 
     const res = await signIn("credentials", {
       redirect: false,
@@ -45,7 +49,7 @@ const Login = () => {
       }
     } else {
       alert("❌ Login failed: Check your credentials");
-      setLoading(false); // Stop loading on failure
+      setLoading(false);
     }
   };
 
@@ -66,19 +70,31 @@ const Login = () => {
             disabled={loading}
             required
           />
-          <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            disabled={loading}
-            required
-          />
-          <a href="#" className="forgot">Forgot your password?</a>
-          <button type="submit" className="btn" disabled={loading}>
-            {loading ? "Please wait..." : "Log In"}
-          </button>
+
+          <div className="password-wrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={loading}
+              required
+            />
+            <span
+              className="eye-icon"
+              onClick={togglePasswordVisibility}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
+          <div style={{ marginTop: "20px" }}>
+            <button type="submit" className="btn" disabled={loading}>
+              {loading ? "Please wait..." : "Log In"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

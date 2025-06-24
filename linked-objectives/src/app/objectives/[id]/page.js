@@ -14,22 +14,28 @@ import CreateKeyResultModal from "@/app/components/CreateKeyResultModal";
 
 export default function ObjectivePage() {
   const { id } = useParams();
+  const { data: session, status } = useSession();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("keyResults");
   const [showEdit, setShowEdit] = useState(false);
   const [selectedKeyResults, setSelectedKeyResults] = useState([]);
   const [showCreateKR, setShowCreateKR] = useState(false);
-  const { data: session, status } = useSession();
   const [canEdit, setCanEdit] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    let frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
     async function fetchObjectiveAndCheckEditPermission() {
       try {
-        if (!session?.user?.email) {
-          return;
-        }
-        // Fetch objective
+        if (!session?.user?.email) return;
+
         const res = await fetch(`/api/objectives/${id}`, {
           cache: "no-store",
           headers: {
@@ -40,7 +46,6 @@ export default function ObjectivePage() {
         const json = await res.json();
         const obj = json.data;
 
-        // Fetch key results
         const keyResultIds = obj.keyResult || [];
         const keyResults = await Promise.all(
           keyResultIds.map(async (krId) => {
@@ -55,22 +60,19 @@ export default function ObjectivePage() {
             return parseFloat(krJson.data?.progress || 0);
           })
         );
+
         const total = keyResults.reduce((acc, val) => acc + val, 0);
         const averageProgress = keyResults.length > 0 ? total / keyResults.length : 0;
         obj.averageProgress = averageProgress;
 
         setData(obj);
 
-        // Fetch username
         const usernameRes = await fetch(`/api/getUsername?email=${session.user.email}`);
         const usernameJson = await usernameRes.json();
         const username = usernameJson.username;
         const role = session.user.role;
 
-        const toArray = (val) => {
-          if (!val) return [];
-          return Array.isArray(val) ? val : [val];
-        };
+        const toArray = (val) => Array.isArray(val) ? val : val ? [val] : [];
 
         const involvedUsernames = [
           ...toArray(obj.accountableFor),
@@ -83,27 +85,31 @@ export default function ObjectivePage() {
           .includes(username?.toLowerCase());
 
         const isAdmin = role === "admin";
-
-        const permission = isAdmin || (role === "user" && isInvolved);
-        setCanEdit(permission);
+        setCanEdit(isAdmin || (role === "user" && isInvolved));
 
       } catch (err) {
-          console.error("Failed to fetch objective or permissions:", err);
-          alert("Failed to load objective data. Please try again later.");
+        console.error("Failed to fetch objective or permissions:", err);
+        alert("Failed to load objective data. Please try again later.");
         setData(null);
       } finally {
         setLoading(false);
       }
     }
 
-    if (status === "authenticated") {
-      fetchObjectiveAndCheckEditPermission();
-    } else {
-      setLoading(false);
-    }
+    fetchObjectiveAndCheckEditPermission();
   }, [id, session, status]);
 
+  if (status === "loading") {
+    return (
+      <AppLayout>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-gray-600">Checking session...</p>
+        </main>
+      </AppLayout>
+    );
+  }
 
+  
   const handleSave = async (updatedData) => {
     try {
       const res = await fetch(`/api/objectives/${id}`, {
@@ -330,9 +336,10 @@ export default function ObjectivePage() {
 
           {activeTab === "keyResults" &&
             Array.isArray(data?.keyResult) &&
-            data.keyResult.length > 0 && (
+            data.keyResult.length > 0 &&
+            mounted && ( // ✅ render only after mount
               <KeyResults
-                key={data.keyResult.join("-")} // 👈 Force remount when IDs change
+                key={data.keyResult.join("-")}
                 ids={data.keyResult}
                 onSelectionChange={setSelectedKeyResults}
               />

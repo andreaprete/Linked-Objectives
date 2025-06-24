@@ -5,21 +5,26 @@ import { createContext, useContext, useState } from "react";
 const LoadingContext = createContext();
 
 export function LoadingProvider({ children }) {
-  const [isRouteLoading, setIsRouteLoading] = useState(false);
-  const [loadingLabel, setLoadingLabel] = useState(""); // 🆕
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
+  const [loadingLabel, setLoadingLabel] = useState("");
 
-  const startLoading = (label = "Loading...") => {
+  const startPageTransition = (label = "Loading...") => {
     setLoadingLabel(label);
-    setIsRouteLoading(true);
+    setIsPageTransitioning(true);
   };
 
-  const stopLoading = () => {
-    setIsRouteLoading(false);
+  const stopPageTransition = () => {
+    setIsPageTransitioning(false);
     setLoadingLabel("");
   };
 
   return (
-    <LoadingContext.Provider value={{ isRouteLoading, loadingLabel, startLoading, stopLoading }}>
+    <LoadingContext.Provider value={{
+      isPageTransitioning,
+      loadingLabel,
+      startPageTransition,
+      stopPageTransition,
+    }}>
       {children}
     </LoadingContext.Provider>
   );

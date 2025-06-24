@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { FaHome, FaBullseye, FaUsers, FaUserCog, FaThLarge } from 'react-icons/fa';
+import Logo_sidebar from '@/app/components/Logo_sidebar';
 import "@/app/styles/UnifiedSidebar.css";
 import { useSession } from "next-auth/react";
-import { useLoading } from "@/app/contexts/LoadingContext"; // 🆕 Import loading context
+import { useLoading } from "@/app/contexts/LoadingContext";
+
 
 const navItems = [
   {
@@ -66,8 +68,8 @@ export default function UnifiedSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
-  const { startLoading } = useLoading(); // 🆕 Access loading control
-
+  const { startLoading, stopLoading } = useLoading();
+  const { startPageTransition, stopPageTransition } = useLoading();
   const email = session?.user?.email;
   const [username, setUsername] = useState("user");
 
@@ -95,7 +97,9 @@ export default function UnifiedSidebar() {
 
   return (
     <nav className="leftSidebar">
-      <h2 className="sidebarTitle">OKR Tool</h2>
+      <div className="sidebarLogoWrapper">
+        <Logo_sidebar />
+      </div>
       <ul className="navList">
         {navItems.map(item => {
           let path = item.path;
@@ -109,10 +113,10 @@ export default function UnifiedSidebar() {
               icon={item.icon}
               label={item.label}
               active={activeItem === item.label}
-              onClick={() => {
-                startLoading(`Loading ${item.label}...`); // 🆕 dynamic message
-                router.push(path);
-              }}
+             onClick={() => {
+              startPageTransition(`Loading ${item.label}...`);
+              router.push(path);
+            }}
             />
           );
         })}

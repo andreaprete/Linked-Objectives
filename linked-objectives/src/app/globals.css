@@ -30,3 +30,6 @@ body, html, #__next {
   box-sizing: border-box;
 }
 
+.flex-shrink-fix {
+  min-width: 0;
+}
