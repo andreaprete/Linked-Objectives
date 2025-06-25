@@ -10,6 +10,7 @@ import "@/app/styles/AppLayout.css";
 
 export default function AppLayout({ children }) {
   const pathname = usePathname();
+  const isStrategyMap = pathname === "/strategy-map";
   const { isPageTransitioning, loadingLabel, stopPageTransition } = useLoading();
 
   // ✅ Stop loading when pathname changes

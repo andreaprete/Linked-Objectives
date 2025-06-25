@@ -123,3 +123,90 @@
   position: relative;  /* so it stays outside scroll area */
   z-index: 100;
 }
+
+.gantt-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.gantt-toolbar button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.zoom-label { font-size: 0.85rem; color: #374151; }
+
+.gantt-scroll-area {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* tweak toolbar for slider */
+.gantt-toolbar input[type="range"] {
+  width: 140px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+/* ---------------- Month header cell ------------------ */
+.month-header-cell {
+  position:absolute; top:0;
+  height:24px;
+  background:#efefef;
+  border-right:1px solid #ccc;
+  border-bottom:1px solid #ccc;
+  font-size:12px; font-weight:600;
+  color:#054077;
+  display:flex; align-items:center; justify-content:center;
+  white-space:nowrap;
+  z-index:10;               /* above the grey strip */
+  pointer-events:none;
+}
+
+
+/* full-width grey strip behind the labels */
+.month-band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 24px;
+  background: #efefef;
+  z-index: 1;              /* under the text */
+  pointer-events: none;
+}
+
+/* each month cell sits on top of that strip */
+.month-cell {
+  position: absolute;
+  top: 0;
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #054077;
+  text-align: center;
+  white-space: nowrap;
+  border-right: 1px solid #ccc;
+  z-index: 2;              /* above the grey bar */
+  pointer-events: none;
+}
+
+/* vertical grid lines now start at the bottom of the month band */
+.vertical-line {
+  position: absolute;
+  top: 24px;               /* 24 = month band height */
+  bottom: 0;
+  width: 1px;
+  background: #ccc;
+  opacity: 0.3;
+  pointer-events: none;
+}

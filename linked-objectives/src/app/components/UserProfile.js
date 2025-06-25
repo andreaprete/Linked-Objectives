@@ -9,25 +9,29 @@ function getInitials(name) {
 }
 
 export default function UserProfile({ user }) {
-  const roles = user.roles || [];
-  const baseInfo = user;
+  const roles = user.roles ?? [];
   const [activeRoleIndex, setActiveRoleIndex] = useState(0);
   const activeRole = roles[activeRoleIndex];
-  console.log("UserProfile props:", user);
 
   return (
     <div className="user-profile-card">
+      {/* Avatar */}
       <div className="user-profile-avatar">
         <div className="avatar-circle avatar-initials">
-          {getInitials(baseInfo.name)}
+          {getInitials(user.name)}
         </div>
       </div>
 
+      {/* Info */}
       <div className="user-profile-info">
-        <h1 className="user-name">{baseInfo.name}</h1>
+        <h1 className="user-name">{user.name}</h1>
+
+        {/* 👉 always show the role title if a role exists */}
+        {activeRole && <p className="user-role">{activeRole.roleTitle}</p>}
 
         {activeRole ? (
           <>
+            {/* Dropdown only when there’s more than one role */}
             {roles.length > 1 && (
               <div className="mt-2 mb-4">
                 <label
@@ -55,9 +59,9 @@ export default function UserProfile({ user }) {
 
             <div className="user-profile-details">
               <div className="details-column">
-                <p>Email: {baseInfo.email}</p>
-                <p>Username: {baseInfo.username}</p>
-                <p>Location: {baseInfo.location}</p>
+                <p>Email: {user.email}</p>
+                <p>Username: {user.username}</p>
+                <p>Location: {user.location ?? "—"}</p>
               </div>
               <div className="details-column">
                 <p>

@@ -120,6 +120,7 @@ export default function HomePage() {
         </main>
       </AppLayout>
     );
+  }
 
   return (
     <AppLayout>
