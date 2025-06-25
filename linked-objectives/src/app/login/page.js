@@ -1,14 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
-import '@/app/styles/LoginRegister.css'; // Make sure this path is correct
-import Logo from '@/app/components/Logo';
+import React, { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
+import "@/app/styles/LoginRegister.css";
+import Logo from "@/app/components/Logo";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleChange = (e) => {
     setFormData({
@@ -17,12 +28,29 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login Attempt:', formData);
+    setLoading(true);
 
-    // 🔐 BACKEND INTEGRATION HOOK
-    // fetch("/api/login", {...})
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (res.ok) {
+      const graphRes = await fetch(`/api/getUsername?email=${formData.email}`);
+      const json = await graphRes.json();
+
+      if (json.username) {
+        router.push(`/homepage/${json.username}`);
+      } else {
+        router.push("/unauthorized");
+      }
+    } else {
+      alert("❌ Login failed: Check your credentials");
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,24 +60,41 @@ const Login = () => {
         <h2>supported by SICK AG</h2>
         <h3>Log In</h3>
         <form onSubmit={handleSubmit}>
+          {loading && <p className="loading-text">🔄 Logging in...</p>}
           <input
             type="email"
             id="email"
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
+            disabled={loading}
             required
           />
-          <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <a href="#" className="forgot">Forgot your password?</a>
-          <button type="submit" className="btn">Log In</button>
+
+          <div className="password-wrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={loading}
+              required
+            />
+            <span
+              className="eye-icon"
+              onClick={togglePasswordVisibility}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
+          <div style={{ marginTop: "20px" }}>
+            <button type="submit" className="btn" disabled={loading}>
+              {loading ? "Please wait..." : "Log In"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

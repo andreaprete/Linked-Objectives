@@ -1,6 +1,8 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+
+import React, { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import "@/app/styles/UnifiedTopBar.css";
 
 const routeTitleMap = {
@@ -14,14 +16,23 @@ const routeTitleMap = {
 
 function getStaticTitle(pathname) {
   if (routeTitleMap[pathname]) return routeTitleMap[pathname];
-  const found = Object.keys(routeTitleMap).find(key => pathname.startsWith(key));
-  if (found) return routeTitleMap[found];
-  return null;
+  const found = Object.keys(routeTitleMap).find((key) =>
+    pathname.startsWith(key)
+  );
+  return found ? routeTitleMap[found] : null;
 }
 
 export default function UnifiedTopbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [initials, setInitials] = useState("U");
+  const [fullName, setFullName] = useState("User");
+  const [username, setUsername] = useState("user");
+  const [userInfoReady, setUserInfoReady] = useState(false);
   const [dynamicTitle, setDynamicTitle] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const parts = pathname.split("/").filter(Boolean);
@@ -48,8 +59,7 @@ export default function UnifiedTopbar() {
           const res = await fetch(url);
           const json = await res.json();
           setDynamicTitle(json.data?.title || id.replace(/-/g, " "));
-        } catch (err) {
-          console.error("Failed to fetch title:", err);
+        } catch {
           setDynamicTitle(id.replace(/-/g, " "));
         }
       } else {
@@ -60,10 +70,80 @@ export default function UnifiedTopbar() {
     fetchTitle();
   }, [pathname]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    async function fetchInitials() {
+      try {
+        const res = await fetch(`/api/getUsername?email=${session.user.email}`);
+        const json = await res.json();
+        const name = json.fullname || "User";
+        const parts = name.trim().split(/\s+/);
+
+        setFullName(name);
+        setUsername(json.username || "user");
+
+        let initials = "";
+        if (parts.length >= 2) {
+          initials = parts[0][0] + parts[1][0];
+        } else if (parts.length === 1) {
+          initials = parts[0].substring(0, 2);
+        } else {
+          initials = "US";
+        }
+
+        setInitials(initials.toUpperCase());
+        setUserInfoReady(true);
+      } catch (err) {
+        setInitials("US");
+        setUserInfoReady(false);
+      }
+    }
+
+    if (session?.user?.email) {
+      fetchInitials();
+    }
+  }, [session]);
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" });
+  };
+
   return (
     <header className="topbar">
       <div className="topbar-title">{dynamicTitle || "Objectives"}</div>
-      <div className="topbar-user">User</div>
+
+      {userInfoReady && (
+        <div className="topbar-user-wrapper" ref={dropdownRef}>
+          <div
+            className="topbar-user-avatar"
+            onClick={() => setDropdownOpen((prev) => !prev)}
+          >
+            <span>{initials}</span>
+          </div>
+
+          {dropdownOpen && (
+            <div className="user-dropdown">
+              <div className="dropdown-header">
+                <div className="dropdown-name">{fullName}</div>
+                <div className="dropdown-email">{session?.user?.email}</div>
+              </div>
+              <hr />
+              <div onClick={() => router.push(`/homepage/${username}`)}>My Homepage</div>
+              <div onClick={() => router.push(`/people/${username}`)}>My Profile</div>
+              <div onClick={handleLogout}>Log Out</div>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 }

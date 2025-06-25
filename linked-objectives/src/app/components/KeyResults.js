@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import "@/app/styles/KeyResultsComponent.css";
 
 export default function KeyResults({ ids = [], onSelectionChange }) {
   const [keyResults, setKeyResults] = useState([]);
@@ -10,26 +9,43 @@ export default function KeyResults({ ids = [], onSelectionChange }) {
   const [selected, setSelected] = useState([]);
 
   useEffect(() => {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      setKeyResults([]);
+      setSelected([]);
+      setLoading(false);
+      return;
+    }
+
     async function fetchKeyResults() {
+      setLoading(true);
       const results = [];
+
       for (const id of ids) {
         try {
           const res = await fetch(`/api/key-results/${id}`, {
             cache: "no-store",
             headers: {
               "Cache-Control": "no-cache",
-              "Pragma": "no-cache"
-            }
+              "Pragma": "no-cache",
+            },
           });
           const json = await res.json();
-          results.push({ id, ...json.data });
+          if (json?.data) {
+            const progressVal = parseFloat(json.data.progress);
+            results.push({
+              id,
+              ...json.data,
+              progress: isNaN(progressVal) ? 0 : progressVal,
+            });
+          }
         } catch (e) {
           console.error(`Error loading key result ${id}:`, e);
         }
       }
+
       setKeyResults(results);
+      setSelected([]);
       setLoading(false);
-      setSelected([]); // Reset selection on ids change
     }
 
     fetchKeyResults();
@@ -45,47 +61,103 @@ export default function KeyResults({ ids = [], onSelectionChange }) {
     );
   };
 
-  if (loading) return <p>Loading key results...</p>;
-  if (!keyResults.length) return <p>No key results found.</p>;
+  if (loading) {
+    return (
+      <div style={{ padding: "1rem", fontStyle: "italic", color: "#555" }}>
+        Loading key results...
+      </div>
+    );
+  }
+
+  if (!keyResults.length) {
+    return (
+      <div style={{ padding: "1rem", fontStyle: "italic", color: "#888" }}>
+        No key results found.
+      </div>
+    );
+  }
 
   return (
-    <div className="keyresults-wrapper">
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "1rem",
+        padding: "1rem",
+      }}
+    >
       {keyResults.map((kr) => (
         <div
           key={kr.id}
-          className={`keyresult-card${selected.includes(kr.id) ? " selected" : ""}`}
           style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
             border: selected.includes(kr.id)
               ? "2px solid #2563eb"
               : "1px solid #e5e7eb",
-            background: selected.includes(kr.id) ? "#e0e7ff" : "#fff",
-            transition: "background 0.2s, border 0.2s",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
+            backgroundColor: selected.includes(kr.id) ? "#e0e7ff" : "#fff",
+            padding: "1rem",
+            borderRadius: "0.5rem",
+            transition: "all 0.2s ease-in-out",
+            width: "100%",
+            gap: "1rem",
           }}
         >
-          <input
-            type="checkbox"
-            checked={selected.includes(kr.id)}
-            onChange={() => toggleSelect(kr.id)}
-            style={{ marginRight: "1rem" }}
-          />
-          <div style={{ flex: 1 }}>
-            <Link href={`/key-results/${kr.id}`} className="keyresult-title">
+          {/* ⬅ Checkbox */}
+          <div style={{ flexShrink: 0 }}>
+            <input
+              type="checkbox"
+              checked={selected.includes(kr.id)}
+              onChange={() => toggleSelect(kr.id)}
+              style={{ cursor: "pointer" }}
+            />
+          </div>
+
+          {/* 🧠 Main content (title + comment) */}
+          <div style={{ flexGrow: 1, minWidth: 0 }}>
+            <Link
+              href={`/key-results/${kr.id}`}
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: 600,
+                textDecoration: "none",
+                color: "#1d4ed8",
+                display: "block",
+                marginBottom: "0.3rem",
+                wordBreak: "break-word",
+              }}
+            >
               {kr.title}
             </Link>
-            <p className="keyresult-comment">
+            <p style={{ margin: 0, color: "#444", wordBreak: "break-word" }}>
               {kr.comment || "No comment available."}
             </p>
           </div>
-          <div className="keyresult-state-progress" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", marginLeft: "1rem" }}>
-            {/* State at the top, progress below */}
-            <span className="keyresult-state" style={{ fontWeight: 600, color: "#555", marginBottom: "0.2rem" }}>
+
+          {/* ➡ Right metadata */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              flexShrink: 0,
+              marginLeft: "1rem",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span
+              style={{
+                fontWeight: 600,
+                color: "#555",
+                marginBottom: "0.2rem",
+              }}
+            >
               {kr.state || "-"}
             </span>
-            <span className="keyresult-progress">
-              {kr.progress ? `${Math.round(kr.progress)}%` : "0%"}
+            <span style={{ color: "#222" }}>
+              {`${Math.round(kr.progress)}%`}
             </span>
           </div>
         </div>

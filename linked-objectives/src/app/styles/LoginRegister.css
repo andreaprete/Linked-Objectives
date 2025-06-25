@@ -58,6 +58,26 @@ input::placeholder {
   color: #888;
 }
 
+/* ========== PASSWORD WRAPPER ========== */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  padding-right: 36px; /* space for eye icon */
+}
+
+.eye-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+  font-size: 16px;
+}
+
 /* ========== FORGOT LINK ========== */
 .forgot {
   display: block;
@@ -87,4 +107,26 @@ input::placeholder {
 
 .btn:hover {
   background-color: #00629a;
+}
+
+.loading-text {
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #0070f3;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

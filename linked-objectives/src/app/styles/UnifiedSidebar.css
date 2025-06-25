@@ -17,6 +17,9 @@
   margin: 0 10px 32px 10px;
   color: #fff;
   letter-spacing: 1.5px;
+  text-align: center;
+  width: 50%;
+  display: block;
 }
 
 .navList {
@@ -102,4 +105,11 @@
   top: 0;
   align-self: flex-start;
   height: 100vh;
+}
+
+.sidebarLogoWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
 }
