@@ -53,24 +53,75 @@ export async function GET(req, context) {
     }
 
     const json = await response.json();
-    const binding = json.results.bindings[0];
-    if (!binding) {
-      return new Response(JSON.stringify({ error: "No data found" }), { status: 404 });
+    const bindings = json.results.bindings;
+    if (!bindings || bindings.length === 0) {
+      return new Response(JSON.stringify({ error: "No data found" }), {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      });
     }
 
-    const trimUri = (value) => (value?.includes("/") ? value.split("/").pop() : value);
-    const dataMap = {};
-    let fullPostUri = null;
+    const trimUri = (value) =>
+      value?.includes("/") ? value.split("/").pop() : value;
 
-    Object.entries(binding).forEach(([key, val]) => {
-      const value = val?.value;
-      if (["post", "team", "department", "company"].includes(key)) {
-        dataMap[key] = trimUri(value);
-        if (key === "post") fullPostUri = value;
-      } else {
-        dataMap[key] = value;
+    // Base info (name/email/etc.) taken from first binding
+    const primary = bindings[0];
+    const baseData = {
+      name: primary.name?.value,
+      email: primary.email?.value,
+      username: primary.username?.value,
+      location: primary.location?.value,
+    };
+
+    // Gather all roles
+    const roles = bindings.map((binding) => {
+      const role = {};
+      Object.entries(binding).forEach(([key, val]) => {
+        const value = val?.value;
+        if (["post", "team", "department", "company"].includes(key)) {
+          role[key] = trimUri(value);
+        } else if (
+          [
+            "teamName",
+            "departmentName",
+            "roleTitle",
+            "roleDescription",
+          ].includes(key)
+        ) {
+          role[key] = value;
+        }
+      });
+
+      if (
+        role.team &&
+        role.department === "CommonSemantics" &&
+        role.team !== "CommonSemantics"
+      ) {
+        role.department = role.team;
+        role.departmentName = role.teamName;
       }
+
+      if (role.team && !role.department) {
+        role.department = role.team;
+        role.departmentName = role.teamName;
+      }
+
+      if (!role.team && role.department) {
+        role.team = role.department;
+        role.teamName = role.departmentName;
+      }
+
+      if (!role.company) {
+        role.company = "Common Semantics";
+      }
+
+      return role;
     });
+
+    const fullPostUri = bindings[0]?.post?.value; // Keep OKRs from first role only (unchanged)
 
     // Fetch OKRs
     let okrs = [];
@@ -217,31 +268,17 @@ export async function GET(req, context) {
       }
     }
 
-    if (
-      dataMap.team &&
-      dataMap.department === "CommonSemantics" &&
-      dataMap.team !== "CommonSemantics"
-    ) {
-      dataMap.department = dataMap.team;
-      dataMap.departmentName = dataMap.teamName;
-    }
-
-    if (dataMap.team && !dataMap.department) {
-      dataMap.department = dataMap.team;
-      dataMap.departmentName = dataMap.teamName;
-    }
-
-    if (!dataMap.team && dataMap.department) {
-      dataMap.team = dataMap.department;
-      dataMap.teamName = dataMap.departmentName;
-    }
-
-    if (!dataMap.company) {
-      dataMap.company = "Common Semantics";
-    }
+    
 
     return new Response(
-      JSON.stringify({ id, data: dataMap, okrs }),
+      JSON.stringify({
+        id,
+        data: {
+          ...baseData,
+          roles,
+        },
+        okrs,
+      }),
       {
         status: 200,
         headers: {
