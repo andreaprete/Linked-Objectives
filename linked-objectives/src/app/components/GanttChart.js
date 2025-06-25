@@ -63,7 +63,7 @@ export default function GanttChart({ tasks }) {
   /* ───────── pixels / zoom helpers ───────── */
   const dayW      = BASE_DAY_PX * ZOOM_UNIT * zoom;
   const chartW    = Math.max(totalDays * dayW, 1);
-  const dayDiff   = (d1,d2)=>(new Date(d2)-new Date(d1))/86_400_000;
+  const dayDiff = (d1, d2) => (d2.getTime() - d1.getTime()) / 86_400_000;   // ← avoids hidden NaN / TZ tricks
   const dateToPx = (input) => {
     const date = input instanceof Date
       ? input
@@ -99,12 +99,6 @@ export default function GanttChart({ tasks }) {
   const todayPx = (today>=minDate && today<=maxDate)
     ? dayDiff(minDate,today)*dayW : null;
 
-  console.log(
-    "DEBUG months length", months.length,
-    "minDate", minDate?.toISOString?.(),
-    "maxDate", maxDate?.toISOString?.()
-  );
-
   /* ─────────────── render ─────────────── */
   return (
     <div className="gantt-container">
@@ -139,7 +133,6 @@ export default function GanttChart({ tasks }) {
                 ? dateToPx(months[i + 1])
                 : chartW;
               const width = right - left;
-              console.log("MONTH JSX", i, m.toISOString(), { left, width });  // 👈 add this
 
               return (
                 <React.Fragment key={i}>

@@ -210,3 +210,41 @@
   opacity: 0.3;
   pointer-events: none;
 }
+
+/* month separator: visible but doesn’t hide text */
+.vertical-line {
+  position: absolute;
+  top: 24px;                 /* starts below the month band */
+  bottom: 0;
+  width: 1px;
+  background: #9ca3af;      /* a darker neutral */
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 4;               /* 4 = above grey band (z-1) but below bars (z-5) */
+}
+
+/* red “today” line also in the background */
+.today-line {
+  position: absolute;
+  top: 24px;        /* same offset as grid lines */
+  bottom: 0;
+  width: 2px;
+  background: red;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 1;       /* make it the same layer as grid lines */
+}
+
+/* task bars always ABOVE those lines */
+.task-bar {
+  position: absolute;
+  z-index: 5;       /* lift bars above background lines */
+  height: 48px;
+  /* …rest of your existing styles… */
+}
+
+/* optional: lift bars even higher on hover so the shade still comes through */
+.task-bar:hover {
+  z-index: 6;
+  /* …existing hover styles… */
+}
