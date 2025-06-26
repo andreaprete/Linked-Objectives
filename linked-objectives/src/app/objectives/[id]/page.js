@@ -410,26 +410,20 @@ export default function ObjectivePage() {
 
         {/* === Modal overlays – for Edit and Create Key Result === */}
         {showEdit && (
-          <div className="absolute inset-0 flex items-center justify-center z-50">
-            <div className="w-full max-w-3xl bg-white rounded-xl shadow-xl p-8 mt-10">
-              <EditObjectiveModal
-                initialData={data}
-                isOpen={showEdit}
-                onClose={() => setShowEdit(false)}
-                onSave={handleSave}
-              />
-            </div>
-          </div>
+          <EditObjectiveModal
+            initialData={data}
+            open={showEdit}
+            onClose={() => setShowEdit(false)}
+            onSave={handleSave}
+          />
         )}
         {showCreateKR && (
           <div className="absolute inset-0 flex items-center justify-center z-50">
-            <div className="w-full max-w-3xl bg-white rounded-xl shadow-xl p-8 mt-10">
-              <CreateKeyResultModal
-                isOpen={showCreateKR}
-                onClose={() => setShowCreateKR(false)}
-                onCreate={handleCreateKeyResult}
-              />
-            </div>
+            <CreateKeyResultModal
+              isOpen={showCreateKR}
+              onClose={() => setShowCreateKR(false)}
+              onCreate={handleCreateKeyResult}
+            />
           </div>
         )}
       </div>

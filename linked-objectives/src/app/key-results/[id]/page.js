@@ -12,8 +12,6 @@ import DescriptionBox from "@/app/components/DescriptionBox.js";
 import LinkedOkrCard from "@/app/components/LinkedOkrCard.js";
 import EditKeyResultModal from "@/app/components/EditKeyResultModal.js";
 
-import styles from "@/app/styles/KeyResult.css";
-
 export default function ObjectivePage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
@@ -140,17 +138,13 @@ export default function ObjectivePage() {
 
         {/* Modal overlay - only inside main content area */}
         {isModalOpen && (
-          <div className="absolute inset-0 flex items-center justify-center z-50">
-            <div className="w-full max-w-3xl bg-white rounded-xl shadow-xl p-8 mt-10">
-              <EditKeyResultModal
-                initialData={data}
-                lifecycleStates={lifecycleStates}
-                isOpen={isModalOpen}
-                onClose={() => setModalOpen(false)}
-                onSave={handleSave}
-              />
-            </div>
-          </div>
+          <EditKeyResultModal
+            initialData={data}
+            lifecycleStates={lifecycleStates}
+            isOpen={isModalOpen}
+            onClose={() => setModalOpen(false)}
+            onSave={handleSave}
+          />
         )}
       </div>
     </AppLayout>

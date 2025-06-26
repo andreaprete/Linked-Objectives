@@ -231,24 +231,40 @@
   margin-bottom: 2rem;
 }
 
-.edit-button {
-  background-color: #007dc5; 
-  color: white;
-  padding: 0.4rem 1.2rem;
-  border: none;
-  border-radius: 0.75rem;
-  font-weight: 500;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
+/*************************************************
+ * Layout helpers (adjust if your sizes change)
+ *************************************************/
+:root {
+  --sidebar-w: 240px;  /* exact width of the dark sidebar  */
+  --topbar-h: 60px;    /* exact height of the blue bar     */
 }
 
-.edit-button:hover {
-  background-color: #006bb3;
-}
-
-.edit-button-container {
+/* ---------- overlay strip (no blur here!) ---------- */
+.eom-overlay {
+  position: fixed;
+  top: var(--topbar-h);
+  left: var(--sidebar-w);
+  width: calc(100vw - var(--sidebar-w));
+  height: calc(100vh - var(--topbar-h));
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
+  justify-content: center;      /* ⟵ centres horizontally inside strip   */
+  align-items: flex-start;      /* ⟵ start at top, then we add margin-top */
+  z-index: 500;                 /* below the modal box itself            */
+  pointer-events: none;         /* clicks go through except on .eom-box  */
 }
+
+/* ---------- modal box ---------- */
+.eom-box {
+  margin-top: 2rem;             /* distance below the top-bar */
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,.15);
+  width: 100%;
+  max-width: 48rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2rem;
+  pointer-events: auto;         /* regain clickability */
+}
+
+/* Rest of your styles (.input-field, .eom-field …) remain unchanged */

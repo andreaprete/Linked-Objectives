@@ -100,3 +100,48 @@
   padding: 0.5rem;
   border-radius: 0.375rem;
 }
+
+/*************************************************
+ *  Center the modal inside the usable viewport  *
+ *  (ignoring the left sidebar & blue top-bar)   *
+ *************************************************/
+:root {
+  --sidebar-w: 240px;   /* width of the dark sidebar              */
+  --topbar-h : 60px;    /* height of the blue header bar          */
+}
+
+/* ---------- overlay strip ---------- */
+.modal-overlay {
+  position: fixed;
+  top: var(--topbar-h);
+  left: var(--sidebar-w);
+  width: calc(100vw - var(--sidebar-w));
+  height: calc(100vh - var(--topbar-h));
+
+  display: flex;
+  justify-content: center;   /* centre horizontally in the strip */
+  align-items: flex-start;   /* start at top, box adds margin   */
+
+  z-index: 50;
+  pointer-events: none;      /* clicks go through except on box */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px); /* Safari */
+}
+
+/* ---------- modal box ---------- */
+.modal-container {
+  margin-top: 2.5rem;        /* gap below the top-bar */
+  pointer-events: auto;      /* regain clickability   */
+
+  background: #fff;
+  border-radius: 0.75rem;    /* rounded-xl */
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,.1),
+              0 4px 6px  -4px rgba(0,0,0,.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 48rem;          /* max-w-3xl */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ---- everything below stays exactly as you had it ---- */

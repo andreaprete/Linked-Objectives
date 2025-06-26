@@ -141,8 +141,8 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-container">
+    <div className="eom-overlay">
+      <div className="eom-box">
         <h2 className="modal-title">Edit Objective</h2>
 
         <label className="input-label">Title</label>
