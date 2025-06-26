@@ -61,3 +61,16 @@
   color: #4b5563; /* Tailwind's text-gray-600 */
   text-align: center;
 }
+
+/* ensure gauge column large enough */
+.linked-okr-stats {
+  min-width: 200px;
+}
+
+/* coloured state text */
+.state-blue   { color:#3b82f6; }
+.state-purple { color:#8b5cf6; }
+.state-green  { color:#10b981; }
+.state-red    { color:#ef4444; }
+.state-orange { color:#f59e0b; }
+.state-gray   { color:#6b7280; }
