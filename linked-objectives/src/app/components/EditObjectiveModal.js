@@ -4,6 +4,27 @@ import { useState, useEffect } from "react";
 import Select from "react-select";
 import "@/app/styles/EditObjectiveModal.css";
 
+const stateColor = (s) => {
+  switch (s) {
+    case "Draft":
+    case "Idea":
+    case "Planned":           return "#3b82f6";  // blue
+    case "Evaluating":
+    case "Approved":
+    case "Released":          return "#8b5cf6";  // purple
+    case "InProgress":
+    case "Completed":
+    case "Archived":          return "#10b981";  // green
+    case "Aborted":
+    case "Withdrawn":
+    case "Rejected":
+    case "Cancelled":         return "#ef4444";  // red
+    case "OnHold":
+    case "Deprecated":        return "#f59e0b";  // orange
+    default:                  return "#6b7280";  // gray
+  }
+};
+
 export default function EditObjectiveModal({ initialData, onClose, onSave }) {
   const [people, setPeople] = useState([]);
   const [availableOKRs, setAvailableOKRs] = useState([]);
@@ -79,7 +100,17 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  const personOptions = people.map((p) => ({ label: p.name, value: p.id }));
+  const personOptions = people.map((p) => {
+    const title =
+      p.role       ??       // e.g. "Finance Administrator"
+      p.position   ??       // alternate naming
+      p.jobTitle   ??       // …
+      "";
+    return {
+      value : p.id,
+      label : title ? `${p.name} – ${title}` : p.name
+    };
+  });
 
   const formatDate = (date) => {
     if (!date) return "";
@@ -210,22 +241,21 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
               value={formData.state}
               onChange={handleChange}
               className="input-field"
+              style={{ color: stateColor(formData.state) }}
             >
-              <option value="Draft">Draft</option>
-              <option value="Idea">Idea</option>
-              <option value="Planned">Planned</option>
-              <option value="InProgress">InProgress</option>
-              <option value="Evaluating">Evaluating</option>
-              <option value="Approved">Approved</option>
-              <option value="Released">Released</option>
-              <option value="Completed">Completed</option>
-              <option value="Archived">Archived</option>
-              <option value="Aborted">Aborted</option>
-              <option value="Deprecated">Deprecated</option>
-              <option value="Rejected">Rejected</option>
-              <option value="OnHold">OnHold</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="Withdrawn">Withdrawn</option>
+              {[
+                "Draft","Idea","Planned","InProgress","Evaluating","Approved","Released",
+                "Completed","Archived","Aborted","Deprecated","Rejected",
+                "OnHold","Cancelled","Withdrawn"
+              ].map((s) => (
+                <option
+                  key={s}
+                  value={s}
+                  style={{ color: stateColor(s) }}
+                >
+                  {s}
+                </option>
+              ))}
             </select>
           </div>
           <div>

@@ -261,7 +261,7 @@
   box-shadow: 0 10px 20px rgba(0,0,0,.15);
   width: 100%;
   max-width: 48rem;
-  max-height: 90vh;
+  max-height: 86vh;
   overflow-y: auto;
   padding: 2rem;
   pointer-events: auto;         /* regain clickability */
