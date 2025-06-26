@@ -13,11 +13,8 @@ export default function Hero() {
             Keep everyone focused and accountable to turn goals into results.
           </p>
           <div className={styles.buttons}>
-              <Link href="/register">
-            <button className={styles.signup}>Sign Up</button>
-            </Link>
             <Link href="/login">
-            <button className={styles.login}>Log In</button>
+            <button className={styles.signup}>Log In</button>
             </Link>
           </div>
         </div>

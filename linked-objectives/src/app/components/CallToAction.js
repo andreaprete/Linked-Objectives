@@ -7,9 +7,6 @@ export default function CallToAction() {
       <h2><b>Ready to align your strategy and drive real results?</b></h2>
       <p>Start managing OKRs with clarity — for free.</p>
       <div className={styles.buttons}>
-        <Link href="/register">
-          <button className={styles.signup}>Sign Up</button>
-        </Link>
         <Link href="/login">
           <button className={styles.login}>Log In</button>
         </Link>
