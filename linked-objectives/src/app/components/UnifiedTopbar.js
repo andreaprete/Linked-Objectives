@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import "@/app/styles/UnifiedTopBar.css";
+import { getUsername } from "@/lib/userCache"; // ✅ NEW
 
 const routeTitleMap = {
   "/homepage": "Home",
@@ -81,40 +82,46 @@ export default function UnifiedTopbar() {
   }, []);
 
   useEffect(() => {
-    async function fetchInitials() {
-      try {
-        const res = await fetch(`/api/getUsername?email=${session.user.email}`);
-        const json = await res.json();
-        const name = json.fullname || "User";
-        const parts = name.trim().split(/\s+/);
+  async function fetchUserInfo() {
+    try {
+      if (!session?.user?.email) return;
 
-        setFullName(name);
-        setUsername(json.username || "user");
+      const res = await fetch(`/api/getUsername?email=${encodeURIComponent(session.user.email)}`);
+      const json = await res.json();
 
-        let initials = "";
-        if (parts.length >= 2) {
-          initials = parts[0][0] + parts[1][0];
-        } else if (parts.length === 1) {
-          initials = parts[0].substring(0, 2);
-        } else {
-          initials = "US";
-        }
+      const uname = json.username || "user";
+      const name = json.fullname || "User";
 
-        setInitials(initials.toUpperCase());
-        setUserInfoReady(true);
-      } catch (err) {
-        setInitials("US");
-        setUserInfoReady(false);
+      setUsername(uname);
+      setFullName(name);
+
+      const parts = name.trim().split(/\s+/);
+      let initials = "";
+
+      if (parts.length >= 2) {
+        initials = parts[0][0] + parts[1][0];
+      } else if (parts.length === 1) {
+        initials = parts[0].substring(0, 2);
+      } else {
+        initials = "US";
       }
-    }
 
-    if (session?.user?.email) {
-      fetchInitials();
+      setInitials(initials.toUpperCase());
+      setUserInfoReady(true);
+    } catch (err) {
+      console.error("Failed to load user info:", err);
+      setInitials("US");
+      setUserInfoReady(false);
     }
-  }, [session]);
+  }
+
+  fetchUserInfo();
+}, [session]);
+
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });
+    sessionStorage.removeItem("cachedUsername"); // ✅ clear cache on logout
   };
 
   return (

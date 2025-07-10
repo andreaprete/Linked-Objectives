@@ -1,39 +1,44 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Target } from 'lucide-react';
-import AppLayout from '../components/AppLayout';
-import OkrCardsForList from '../components/OkrCardsForList';
+import { useEffect, useState } from "react";
+import { Target } from "lucide-react";
+import AppLayout from "../components/AppLayout";
+import OkrCardsForList from "../components/OkrCardsForList";
 import "@/app/styles/ObjectivesListPage.css";
-import { SortAsc, SortDesc, ArrowDownAZ, BarChart2 } from 'lucide-react';
+import { ArrowDownAZ, BarChart2 } from "lucide-react";
 
 const stateColor = (s) => {
   switch (s) {
     case "Draft":
     case "Idea":
-    case "Planned": return "#3b82f6";  // blue
+    case "Planned":
+      return "#3b82f6";
     case "Evaluating":
     case "Approved":
-    case "Released": return "#8b5cf6";  // purple
+    case "Released":
+      return "#8b5cf6";
     case "InProgress":
     case "Completed":
-    case "Archived": return "#10b981";  // green
+    case "Archived":
+      return "#10b981";
     case "Aborted":
     case "Withdrawn":
     case "Rejected":
-    case "Cancelled": return "#ef4444";  // red
+    case "Cancelled":
+      return "#ef4444";
     case "OnHold":
-    case "Deprecated": return "#f59e0b";  // orange
-    default: return "#6b7280";  // gray
+    case "Deprecated":
+      return "#f59e0b";
+    default:
+      return "#6b7280";
   }
 };
 
 export default function ObjectivesListPage() {
   const [objectives, setObjectives] = useState([]);
-  const [details, setDetails] = useState({});
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [expandedColumn, setExpandedColumn] = useState(null);
   const [columnSorts, setColumnSorts] = useState({});
 
@@ -43,11 +48,12 @@ export default function ObjectivesListPage() {
 
   const toggleSort = (state, field) => {
     setColumnSorts((prev) => {
-      const current = prev[state]?.field === field ? prev[state].direction : null;
+      const current =
+        prev[state]?.field === field ? prev[state].direction : null;
       const nextDirection = current === "asc" ? "desc" : "asc";
       return {
         ...prev,
-        [state]: { field, direction: nextDirection }
+        [state]: { field, direction: nextDirection },
       };
     });
   };
@@ -55,42 +61,29 @@ export default function ObjectivesListPage() {
   const sortOkrs = (okrs, sort) => {
     if (!sort) return okrs;
     return [...okrs].sort((a, b) => {
-      const valA = sort.field === "name"
-        ? a.detail.title?.toLowerCase() || ""
-        : a.detail.progress || 0;
-      const valB = sort.field === "name"
-        ? b.detail.title?.toLowerCase() || ""
-        : b.detail.progress || 0;
+      const valA =
+        sort.field === "name" ? a.title?.toLowerCase() || "" : a.progress || 0;
+      const valB =
+        sort.field === "name" ? b.title?.toLowerCase() || "" : b.progress || 0;
 
       return sort.direction === "asc"
-        ? valA > valB ? 1 : -1
-        : valA < valB ? 1 : -1;
+        ? valA > valB
+          ? 1
+          : -1
+        : valA < valB
+        ? 1
+        : -1;
     });
   };
 
   useEffect(() => {
     async function fetchObjectives() {
       try {
-        const res = await fetch('/api/objectiveslist', { cache: 'no-store' });
+        const res = await fetch("/api/objectiveslist", { cache: "no-store" });
         const list = await res.json();
         setObjectives(list);
-
-        const detailsMap = {};
-        await Promise.all(
-          list.map(async (obj) => {
-            try {
-              const res = await fetch(`/api/objectives/${obj.id}`, { cache: 'no-store' });
-              const json = await res.json();
-              detailsMap[obj.id] = json.data;
-            } catch (e) {
-              console.error(`Failed to fetch details for ${obj.id}:`, e);
-            }
-          })
-        );
-
-        setDetails(detailsMap);
       } catch (err) {
-        console.error('Failed to load objectives list:', err);
+        console.error("Failed to load objectives list:", err);
       } finally {
         setLoading(false);
       }
@@ -100,24 +93,23 @@ export default function ObjectivesListPage() {
   }, []);
 
   const filteredObjectives = objectives.filter((okr) => {
-    const detail = details[okr.id] || {};
     const matchesSearch =
-      (detail.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (detail.description || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || detail.category === categoryFilter;
+      (okr.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (okr.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" || okr.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
   const uniqueCategories = [
-    ...new Set(Object.values(details).map((d) => d.category).filter(Boolean)),
+    ...new Set(objectives.map((d) => d.category).filter(Boolean)),
   ];
 
   const groupedByState = {};
   filteredObjectives.forEach((okr) => {
-    const detail = details[okr.id] || {};
-    const state = detail.state || "Unspecified";
+    const state = okr.state || "Unspecified";
     if (!groupedByState[state]) groupedByState[state] = [];
-    groupedByState[state].push({ ...okr, detail });
+    groupedByState[state].push(okr);
   });
 
   if (loading) {
@@ -140,7 +132,9 @@ export default function ObjectivesListPage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div className="flex items-center gap-3 mb-3 md:mb-0">
               <Target className="text-blue-600" size={24} />
-              <h2 className="text-xl font-semibold text-blue-600">Objectives – Kanban View</h2>
+              <h2 className="text-xl font-semibold text-blue-600">
+                Objectives – Kanban View
+              </h2>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <input
@@ -157,14 +151,18 @@ export default function ObjectivesListPage() {
               >
                 <option value="all">All Categories</option>
                 {uniqueCategories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
           {filteredObjectives.length === 0 ? (
-            <p className="text-gray-500 text-center py-6">No OKRs match your criteria.</p>
+            <p className="text-gray-500 text-center py-6">
+              No OKRs match your criteria.
+            </p>
           ) : (
             <div className="kanban-board">
               {Object.entries(groupedByState).map(([state, okrs]) => {
@@ -175,11 +173,16 @@ export default function ObjectivesListPage() {
                 return (
                   <div
                     key={state}
-                    className={`kanban-column ${isExpanded ? "expanded" : "collapsed"}`}
+                    className={`kanban-column ${
+                      isExpanded ? "expanded" : "collapsed"
+                    }`}
                     onClick={() => toggleColumn(state)}
                   >
                     <div className="kanban-column-header">
-                      <h3 className="kanban-column-title" style={{ color: stateColor(state) }}>
+                      <h3
+                        className="kanban-column-title"
+                        style={{ color: stateColor(state) }}
+                      >
                         {state}
                       </h3>
                       <div className="kanban-column-sort-controls">
@@ -208,11 +211,11 @@ export default function ObjectivesListPage() {
                         <OkrCardsForList
                           key={okr.id}
                           id={okr.id}
-                          title={okr.detail.title || okr.title}
-                          description={okr.detail.description}
-                          averageProgress={okr.detail.progress || 0}
-                          state={okr.detail.state}
-                          category={okr.detail.category}
+                          title={okr.title}
+                          description={okr.description}
+                          averageProgress={okr.progress || 0}
+                          state={okr.state}
+                          category={okr.category}
                         />
                       ))}
                     </div>

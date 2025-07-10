@@ -1,55 +1,61 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { FaHome, FaBullseye, FaUsers, FaUserCog, FaThLarge } from 'react-icons/fa';
-import Logo_sidebar from '@/app/components/Logo_sidebar';
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  FaHome,
+  FaBullseye,
+  FaUsers,
+  FaUserCog,
+  FaThLarge,
+} from "react-icons/fa";
+import Logo_sidebar from "@/app/components/Logo_sidebar";
 import "@/app/styles/UnifiedSidebar.css";
 import { useSession } from "next-auth/react";
 import { useLoading } from "@/app/contexts/LoadingContext";
-
+import { getUsername } from "@/lib/userCache"; // ✅ <-- new import
 
 const navItems = [
   {
-    label: 'Home',
+    label: "Home",
     icon: FaHome,
-    path: '/homepage',
+    path: "/homepage",
     match: (pathname) =>
-      pathname === '/homepage' || pathname.startsWith('/homepage/'),
+      pathname === "/homepage" || pathname.startsWith("/homepage/"),
   },
   {
-    label: 'Dashboard',
+    label: "Dashboard",
     icon: FaThLarge,
-    path: '/dashboard',
-    match: (pathname) => pathname === '/dashboard',
+    path: "/dashboard",
+    match: (pathname) => pathname === "/dashboard",
   },
   {
-    label: 'Goals',
+    label: "Goals",
     icon: FaBullseye,
-    path: '/objectives',
+    path: "/objectives",
     match: (pathname) =>
-      pathname === '/objectives' || pathname.startsWith('/objectives/'),
+      pathname === "/objectives" || pathname.startsWith("/objectives/"),
   },
   {
-    label: 'Teams',
+    label: "Teams",
     icon: FaUsers,
-    path: '/teams',
+    path: "/teams",
     match: (pathname) =>
-      pathname === '/teams' || pathname.startsWith('/teams/'),
+      pathname === "/teams" || pathname.startsWith("/teams/"),
   },
   {
-    label: 'People',
+    label: "People",
     icon: FaUserCog,
-    path: '/people',
+    path: "/people",
     match: (pathname) =>
-      pathname === '/people' || pathname.startsWith('/people/'),
+      pathname === "/people" || pathname.startsWith("/people/"),
   },
   {
-    label: 'Strategy-Map',
+    label: "Strategy-Map",
     icon: FaThLarge,
-    path: '/strategy-map',
-    match: (pathname) => pathname === '/strategy-map',
-  }
+    path: "/strategy-map",
+    match: (pathname) => pathname === "/strategy-map",
+  },
 ];
 
 function SidebarItem({ icon, label, active, onClick }) {
@@ -68,29 +74,21 @@ export default function UnifiedSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
-  const { startLoading, stopLoading } = useLoading();
-  const { startPageTransition, stopPageTransition } = useLoading();
-  const email = session?.user?.email;
+  const { startPageTransition } = useLoading();
+
   const [username, setUsername] = useState("user");
 
   useEffect(() => {
-    async function fetchUsername() {
-      if (!email) return;
-      try {
-        const res = await fetch(`/api/getUsername?email=${encodeURIComponent(email)}`);
-        const json = await res.json();
-        setUsername(json.username || "user");
-      } catch {
-        setUsername("user");
-      }
-    }
+    if (!session?.user?.email) return;
 
-    fetchUsername();
-  }, [email]);
+    getUsername(session.user.email).then((uname) => {
+      setUsername(uname);
+    });
+  }, [session]);
 
   const getActiveItem = () => {
-    const found = navItems.find(item => item.match(pathname));
-    return found ? found.label : '';
+    const found = navItems.find((item) => item.match(pathname));
+    return found ? found.label : "";
   };
 
   const activeItem = getActiveItem();
@@ -101,7 +99,7 @@ export default function UnifiedSidebar() {
         <Logo_sidebar />
       </div>
       <ul className="navList">
-        {navItems.map(item => {
+        {navItems.map((item) => {
           let path = item.path;
           if (item.label === "Home") {
             path = `/homepage/${username}`;
@@ -113,10 +111,10 @@ export default function UnifiedSidebar() {
               icon={item.icon}
               label={item.label}
               active={activeItem === item.label}
-             onClick={() => {
-              startPageTransition(`Loading ${item.label}...`);
-              router.push(path);
-            }}
+              onClick={() => {
+                startPageTransition(`Loading ${item.label}...`);
+                router.push(path);
+              }}
             />
           );
         })}

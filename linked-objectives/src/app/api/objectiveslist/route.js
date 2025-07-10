@@ -5,11 +5,24 @@ export async function GET() {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX objv: <https://data.sick.com/voc/sam/objectives-model/>
+    PREFIX dc: <http://purl.org/dc/terms/>
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    PREFIX state: <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/>
 
-    SELECT ?obj ?label ?needs ?contributesTo ?reverseObj ?reversePred
+    SELECT ?obj ?label ?comment ?description ?created ?modified ?version ?progress ?category ?state
+           ?kr ?needs ?contributesTo ?reverseObj ?reversePred
     WHERE {
       ?obj rdf:type objv:Objective .
       OPTIONAL { ?obj rdfs:label ?label . }
+      OPTIONAL { ?obj rdfs:comment ?comment . }
+      OPTIONAL { ?obj dc:description ?description . }
+      OPTIONAL { ?obj dc:created ?created . }
+      OPTIONAL { ?obj dc:modified ?modified . }
+      OPTIONAL { ?obj owl:versionInfo ?version . }
+      OPTIONAL { ?obj objv:progress ?progress . }
+      OPTIONAL { ?obj objv:category ?category . }
+      OPTIONAL { ?obj state:state ?state . }
+      OPTIONAL { ?obj objv:hasKeyResult ?kr . }
       OPTIONAL { ?obj objv:needs ?needs . }
       OPTIONAL { ?obj objv:contributesTo ?contributesTo . }
       OPTIONAL {
@@ -20,64 +33,63 @@ export async function GET() {
   `;
 
   try {
-    const response = await fetch(endpoint, {
+    const res = await fetch(endpoint, {
       method: "POST",
-      cache: "no-store", // ✅ Prevents fetch caching
+      cache: "no-store",
       headers: {
         "Content-Type": "application/sparql-query",
         Accept: "application/sparql-results+json",
-        "Cache-Control": "no-store, no-cache, must-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
       },
       body: query,
     });
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error("SPARQL query failed: " + err);
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error("SPARQL query failed: " + errorText);
     }
 
-    const json = await response.json();
+    const json = await res.json();
     const objMap = {};
 
-    json.results.bindings.forEach((binding) => {
-      const id = binding.obj.value.split("/").pop();
-      const label = binding.label?.value || id;
-
+    json.results.bindings.forEach((b) => {
+      const id = b.obj.value.split("/").pop();
       if (!objMap[id]) {
         objMap[id] = {
           id,
-          title: label,
+          title: b.label?.value || id,
+          description: b.description?.value || "",
+          comment: b.comment?.value || "",
+          created: b.created?.value || null,
+          modified: b.modified?.value || null,
+          version: b.version?.value || null,
+          progress: b.progress ? parseFloat(b.progress.value) : null,
+          category: b.category?.value.split("/").pop() || null,
+          state: b.state?.value.split("/").pop() || null,
+          keyResults: [],
           needs: [],
-          neededBy: [],
           contributesTo: [],
           contributedToBy: [],
+          neededBy: [],
         };
       }
 
-      if (binding.needs) {
-        const targetId = binding.needs.value.split("/").pop();
-        if (!objMap[id].needs.includes(targetId)) {
-          objMap[id].needs.push(targetId);
-        }
-      }
+      const pushIfNew = (arr, uri) => {
+        const val = uri?.value?.split("/").pop();
+        if (val && !arr.includes(val)) arr.push(val);
+      };
 
-      if (binding.contributesTo) {
-        const targetId = binding.contributesTo.value.split("/").pop();
-        if (!objMap[id].contributesTo.includes(targetId)) {
-          objMap[id].contributesTo.push(targetId);
-        }
-      }
+      pushIfNew(objMap[id].keyResults, b.kr);
+      pushIfNew(objMap[id].needs, b.needs);
+      pushIfNew(objMap[id].contributesTo, b.contributesTo);
 
-      if (binding.reverseObj && binding.reversePred) {
-        const reverseId = binding.reverseObj.value.split("/").pop();
-        const pred = binding.reversePred.value;
+      if (b.reverseObj && b.reversePred) {
+        const reverseId = b.reverseObj.value.split("/").pop();
+        const pred = b.reversePred.value;
 
         if (pred.endsWith("needs")) {
-          objMap[id].neededBy.push(reverseId);
+          pushIfNew(objMap[id].neededBy, b.reverseObj);
         } else if (pred.endsWith("contributesTo")) {
-          objMap[id].contributedToBy.push(reverseId);
+          pushIfNew(objMap[id].contributedToBy, b.reverseObj);
         }
       }
     });
@@ -86,18 +98,14 @@ export async function GET() {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "no-store, no-cache, must-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
+        "Cache-Control": "no-store",
       },
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (err) {
+    console.error("Failed to load enriched objective list:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store, no-cache, must-revalidate",
-      },
+      headers: { "Content-Type": "application/json" },
     });
   }
 }
