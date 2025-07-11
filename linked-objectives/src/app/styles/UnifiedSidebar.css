@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  box-shadow: 2px 0 12px 0 rgba(13,132,198,0.08);
+  box-shadow: 2px 0 12px 0 rgba(13, 132, 198, 0.08);
   z-index: 21;
   border-right: 1.5px solid #5b6a77;
 }
@@ -35,8 +35,8 @@
   transition: background 0.15s, color 0.15s;
 }
 
-.navItem button,
-.navItemActive button {
+.navItem a,
+.navItemActive a {
   display: flex;
   align-items: center;
   gap: 13px;
@@ -55,11 +55,11 @@
 }
 
 .navItemActive,
-.navItemActive button {
+.navItemActive a {
   background: #fff !important;
   color: #0d84c6 !important;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .navItem:hover,
@@ -67,17 +67,17 @@
   background: #fff;
 }
 
-.navItem:hover button,
-.navItem:focus-within button {
+.navItem:hover a,
+.navItem:focus-within a {
   color: #0d84c6;
 }
 
-.navItemActive button svg,
-.navItem:hover button svg {
+.navItemActive a svg,
+.navItem:hover a svg {
   color: #0d84c6 !important;
 }
 
-.navItem button svg {
+.navItem a svg {
   color: #e5e5e5;
   transition: color 0.16s;
 }
@@ -94,8 +94,8 @@
     text-align: center;
     letter-spacing: 0.5px;
   }
-  .navItem button span,
-  .navItemActive button span {
+  .navItem a span,
+  .navItemActive a span {
     display: none;
   }
 }
@@ -112,4 +112,22 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 32px;
+}
+
+.a {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #e5e5e5;
+  padding: 13px 15px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1.05em;
+  font-family: inherit;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
 }

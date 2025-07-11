@@ -50,8 +50,9 @@ export async function GET() {
   `;
 
   try {
-    const response = await fetch(endpoint, {
+    const res = await fetch(endpoint, {
       method: "POST",
+      cache: "no-store",
       cache: "no-store",
       headers: {
         "Content-Type": "application/sparql-query",
@@ -60,9 +61,9 @@ export async function GET() {
       body: query,
     });
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error("SPARQL query failed: " + err);
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error("SPARQL query failed: " + errorText);
     }
 
     const json = await response.json();
@@ -125,8 +126,9 @@ export async function GET() {
         "Cache-Control": "no-store",
       },
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (err) {
+    console.error("Failed to load enriched objective list:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

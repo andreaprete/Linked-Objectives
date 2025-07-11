@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useParams } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
 
-import AppLayout from '@/app/components/AppLayout';        // << NEW unified layout!
-import CompanyHeader from '@/app/components/CompanyHeader';
-import DepartmentCard from '@/app/components/DepartmentCard';
-import OkrTable from '@/app/components/OkrTable';
+import AppLayout from "@/app/components/AppLayout"; // << NEW unified layout!
+import CompanyHeader from "@/app/components/CompanyHeader";
+import DepartmentCard from "@/app/components/DepartmentCard";
+import OkrTable from "@/app/components/OkrTable";
 
 export default function CompanyPage() {
   const { id } = useParams();
@@ -16,7 +16,7 @@ export default function CompanyPage() {
   const departmentSectionRef = useRef(null);
 
   const scrollToDepartments = () => {
-    departmentSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    departmentSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function CompanyPage() {
         const json = await res.json();
         setData(json);
       } catch (err) {
-        console.error('Failed to load company data:', err);
+        console.error("Failed to load company data:", err);
       } finally {
         setLoading(false);
       }
@@ -43,50 +43,53 @@ export default function CompanyPage() {
     fetchCompany();
   }, [id]);
 
-  if (loading) return (
-    <AppLayout>
-      <main className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-md text-gray-600">Loading Company data...</p>
-        </div>
-      </main>
-    </AppLayout>
-  );
-  if (!data) return <p className="p-6 text-red-500">Error loading company data.</p>;
+  if (loading)
+    return (
+      <AppLayout>
+        <main className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="spinner w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-md text-gray-600">Loading Company data...</p>
+          </div>
+        </main>
+      </AppLayout>
+    );
+  if (!data)
+    return <p className="p-6 text-red-500">Error loading company data.</p>;
 
   return (
     <AppLayout>
-      <div className="flex justify-center py-6 bg-gray-100 min-h-screen">
-        <div className="max-w-5xl w-full space-y-6 px-4">
-          <CompanyHeader
-            name={data.name}
-            homepage={data.homepage}
-            stats={data.stats}
-            onDepartmentsClick={scrollToDepartments}
-          />
+      <main className="p-6 space-y-6 w-[80%] mx-auto"> 
+        <CompanyHeader
+          name={data.name}
+          homepage={data.homepage}
+          stats={data.stats}
+          onDepartmentsClick={scrollToDepartments}
+        />
 
-          <div className="bg-white rounded-xl shadow p-6" ref={departmentSectionRef}>
-            <h2 className="text-xl font-semibold mb-4">Departments</h2>
-            <div className="space-y-3">
-              {data.departments?.slice(0, visibleDepts).map((dept, i) => (
-                <DepartmentCard key={dept.id} department={dept} index={i} />
-              ))}
+        <div
+          className="bg-white rounded-xl shadow p-6"
+          ref={departmentSectionRef}
+        >
+          <h2 className="text-xl font-semibold mb-4">Departments</h2>
+          <div className="space-y-3">
+            {data.departments?.slice(0, visibleDepts).map((dept, i) => (
+              <DepartmentCard key={dept.id} department={dept} index={i} />
+            ))}
 
-              {visibleDepts < data.departments.length && (
-                <div
-                  className="text-blue-600 text-sm hover:underline cursor-pointer"
-                  onClick={() => setVisibleDepts((prev) => prev + 3)}
-                >
-                  Show More ...
-                </div>
-              )}
-            </div>
+            {visibleDepts < data.departments.length && (
+              <div
+                className="text-blue-600 text-sm hover:underline cursor-pointer"
+                onClick={() => setVisibleDepts((prev) => prev + 3)}
+              >
+                Show More ...
+              </div>
+            )}
           </div>
-
-          <OkrTable okrs={data.okrs} />
         </div>
-      </div>
+
+        <OkrTable okrs={data.okrs} />
+      </main>
     </AppLayout>
   );
 }
