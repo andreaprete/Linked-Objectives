@@ -52,8 +52,8 @@ export default function TeamPage() {
 
   return (
     <AppLayout>
-      <div className="flex justify-center bg-gray-100 min-h-screen pt-6 pb-16">
-        <div className="bg-white rounded-xl shadow p-6 space-y-6 max-w-5xl w-full">
+      <main className="p-6 space-y-6 w-[80%] mx-auto"> 
+        <div className="bg-white rounded-xl shadow p-6 space-y-6  w-full">
           <div>
             <h1 className="text-2xl font-bold mb-2">{data.team}</h1>
             <p className="text-gray-500 mb-6">
@@ -90,7 +90,7 @@ export default function TeamPage() {
           </div>
 
         </div>
-      </div>
+      </main>
     </AppLayout>
   );
 }

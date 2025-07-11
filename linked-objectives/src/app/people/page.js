@@ -88,8 +88,8 @@ export default function PeoplePage() {
 
   return (
     <AppLayout>
-      <div className="people-list-bg min-h-screen py-8 flex flex-col items-center">
-        <div className="w-full max-w-6xl px-4 space-y-6">
+      <main className="people-list-bg min-h-screen py-8 flex flex-col items-center p-6 space-y-6 w-[80%] mx-auto">
+        <div className="w-full px-4 ">
           <PeopleHeader
             count={people.length}
             search={search}
@@ -117,7 +117,7 @@ export default function PeoplePage() {
             </>
           )}
         </div>
-      </div>
+      </main>
     </AppLayout>
   );
 }

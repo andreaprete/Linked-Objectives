@@ -85,7 +85,7 @@ export default function UserProfile({ user }) {
                 <p>
                   Company:{" "}
                   <Link
-                    href={`/companies/${activeRole.company}`}
+                    href={`/companies/${activeRole.companyId}`}
                     className="text-blue-600 hover:underline"
                   >
                     {activeRole.company}

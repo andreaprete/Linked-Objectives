@@ -76,8 +76,7 @@ export default function DepartmentPage() {
 
   return (
     <AppLayout>
-      <div className="flex justify-center py-6 bg-gray-100 min-h-screen">
-        <div className="max-w-5xl w-full space-y-6 px-4">
+      <main className="p-6 space-y-6 w-[80%] mx-auto"> 
           <DepartmentHeader
             name={data.department}
             company={data.company}
@@ -110,8 +109,7 @@ export default function DepartmentPage() {
               <OkrTable okrs={data.okrs} />
             </div>
           )}
-        </div>
-      </div>
+      </main>
     </AppLayout>
   );
 }

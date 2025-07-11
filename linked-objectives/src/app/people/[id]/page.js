@@ -60,10 +60,10 @@ export default function PersonPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <main className="p-6 space-y-6 w-[80%] mx-auto"> 
         <UserProfile user={userData} />
         <OkrList username={data.name} okrs={okrs} />
-      </div>
+      </main>
     </AppLayout>
   );
 }

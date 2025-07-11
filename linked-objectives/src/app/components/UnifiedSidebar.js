@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   FaHome,
   FaBullseye,
@@ -12,8 +13,7 @@ import {
 import Logo_sidebar from "@/app/components/Logo_sidebar";
 import "@/app/styles/UnifiedSidebar.css";
 import { useSession } from "next-auth/react";
-import { useLoading } from "@/app/contexts/LoadingContext";
-import { getUsername } from "@/lib/userCache"; // ✅ <-- new import
+import { getUsername } from "@/lib/userCache";
 
 const navItems = [
   {
@@ -40,15 +40,13 @@ const navItems = [
     label: "Teams",
     icon: FaUsers,
     path: "/teams",
-    match: (pathname) =>
-      pathname === "/teams" || pathname.startsWith("/teams/"),
+    match: (pathname) => pathname === "/teams" || pathname.startsWith("/teams/"),
   },
   {
     label: "People",
     icon: FaUserCog,
     path: "/people",
-    match: (pathname) =>
-      pathname === "/people" || pathname.startsWith("/people/"),
+    match: (pathname) => pathname === "/people" || pathname.startsWith("/people/"),
   },
   {
     label: "Strategy-Map",
@@ -58,40 +56,30 @@ const navItems = [
   },
 ];
 
-function SidebarItem({ icon, label, active, onClick }) {
-  const IconComponent = icon;
+function SidebarItem({ icon: IconComponent, label, href, active }) {
   return (
     <li className={active ? "navItemActive" : "navItem"}>
-      <button onClick={onClick}>
+      <Link href={href}>
         <IconComponent aria-hidden="true" />
         <span>{label}</span>
-      </button>
+      </Link>
     </li>
   );
 }
 
 export default function UnifiedSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { data: session } = useSession();
-  const { startPageTransition } = useLoading();
-
   const [username, setUsername] = useState("user");
 
   useEffect(() => {
     if (!session?.user?.email) return;
-
     getUsername(session.user.email).then((uname) => {
       setUsername(uname);
     });
   }, [session]);
 
-  const getActiveItem = () => {
-    const found = navItems.find((item) => item.match(pathname));
-    return found ? found.label : "";
-  };
-
-  const activeItem = getActiveItem();
+  const activeItem = navItems.find((item) => item.match(pathname))?.label || "";
 
   return (
     <nav className="leftSidebar">
@@ -100,9 +88,9 @@ export default function UnifiedSidebar() {
       </div>
       <ul className="navList">
         {navItems.map((item) => {
-          let path = item.path;
+          let href = item.path;
           if (item.label === "Home") {
-            path = `/homepage/${username}`;
+            href = `/homepage/${username}`;
           }
 
           return (
@@ -110,11 +98,8 @@ export default function UnifiedSidebar() {
               key={item.label}
               icon={item.icon}
               label={item.label}
+              href={href}
               active={activeItem === item.label}
-              onClick={() => {
-                startPageTransition(`Loading ${item.label}...`);
-                router.push(path);
-              }}
             />
           );
         })}

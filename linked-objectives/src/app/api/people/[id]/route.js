@@ -117,6 +117,7 @@ export async function GET(req, context) {
       if (!role.company) {
         role.company = "Common Semantics";
       }
+      role.companyId = role.company.replace(/\s+/g, "");
 
       return role;
     });
