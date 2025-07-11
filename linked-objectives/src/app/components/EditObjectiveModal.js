@@ -160,13 +160,43 @@ export default function EditObjectiveModal({ initialData, onClose, onSave }) {
     setNewOkrRelation("needs");
   };
 
+  const toSickDate = (iso) => {
+    if (!iso) return "";
+    const date = new Date(iso);
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }); // → "25 Mar 2025"
+  };
+
   const handleSubmit = async () => {
-    const resolved = {
-      ...formData,
-      accountableFor: people.find((p) => p.id === formData.accountableFor),
-      caresFor: people.find((p) => p.id === formData.caresFor),
-      operates: people.find((p) => p.id === formData.operates),
-    };
+    const resolvePost = (personId) => {
+    const person = people.find((p) => p.id === personId);
+    return person?.postId || "";  // or person.positionId or however it's stored
+  };
+
+  const resolved = {
+    ...formData,
+    temporal: {
+      start: toSickDate(formData.temporal.start),
+      end: toSickDate(formData.temporal.end),
+    },
+    accountableFor: (() => {
+      const p = people.find((x) => x.id === formData.accountableFor);
+      return p?.postId ? { id: p.postId } : undefined;
+    })(),
+    caresFor: (() => {
+      const p = people.find((x) => x.id === formData.caresFor);
+      return p?.postId ? { id: p.postId } : undefined;
+    })(),
+    operates: (() => {
+      const p = people.find((x) => x.id === formData.operates);
+      return p?.postId ? { id: p.postId } : undefined;
+    })(),
+  };
+    console.log("Resolved payload before PUT:", resolved);
+
     await onSave(resolved);
     onClose();
   };

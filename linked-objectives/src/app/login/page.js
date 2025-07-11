@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { signIn } from "next-auth/react";
+import React, { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import "@/app/styles/LoginRegister.css";
@@ -10,6 +10,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const router = useRouter();
+  const { data: session, status } = useSession(); // 🧠 Session hook
 
   const [formData, setFormData] = useState({
     email: "",
@@ -18,6 +19,22 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // 🛑 Redirect if already logged in
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.email) {
+      const checkAndRedirect = async () => {
+        const graphRes = await fetch(`/api/getUsername?email=${session.user.email}`);
+        const json = await graphRes.json();
+        if (json.username) {
+          router.replace(`/homepage/${json.username}`);
+        } else {
+          router.replace("/unauthorized");
+        }
+      };
+      checkAndRedirect();
+    }
+  }, [status, session, router]);
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
@@ -52,6 +69,9 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  // 🌀 Optional loading spinner while session is checking
+  if (status === "loading") return null;
 
   return (
     <div className="page-container">

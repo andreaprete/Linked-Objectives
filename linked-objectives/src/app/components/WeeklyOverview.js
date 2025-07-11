@@ -1,18 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import GoalCard from "./GoalCard";
 import "@/app/styles/WeeklyOverview.css";
 
-export function WeeklyOverview() {
-  const { id } = useParams();
+export function WeeklyOverview({ okrs = [] }) {
   const [goals, setGoals] = useState([]);
   const [weekLabel, setWeekLabel] = useState("");
 
   useEffect(() => {
-    if (!id) return;
-
     const today = new Date();
 
     const monday = new Date(today);
@@ -40,30 +36,21 @@ export function WeeklyOverview() {
     const weekNum = getWeekNumber(today);
     setWeekLabel(`Week ${weekNum} | ${formatDate(monday)} - ${formatDate(sunday)}`);
 
-    fetch(`/api/people/${id}`)
-      .then((res) => res.json())
-      .then((resJson) => {
-        const allOkrs = resJson.okrs || [];
+    const parseToDate = (str) => {
+      const date = new Date(str);
+      return isNaN(date) ? new Date(Date.parse(str + " GMT")) : date;
+    };
 
-        Promise.all(
-          allOkrs.map((okr) =>
-            fetch(`/api/objectives/${okr.id}`)
-              .then((res) => res.json())
-              .then((json) => ({ id: okr.id, ...json.data }))
-          )
-        ).then((detailedOkrs) => {
-          const filtered = detailedOkrs.filter((okr) => {
-            if (!okr.temporal?.end) return false;
-            const endDate = new Date(Date.parse(okr.temporal?.end));
-            return endDate >= monday && endDate <= sunday;
-          });
+    const filtered = okrs.filter((okr) => {
+      const rawEnd = okr.interval?.hasEnd || okr.temporal?.end;
+      if (!rawEnd) return false;
+      const endDate = parseToDate(rawEnd);
+      return endDate >= monday && endDate <= sunday;
+    });
 
-          // ✅ Remove duplicates by ID
-          const unique = Array.from(new Map(filtered.map(o => [o.id, o])).values());
-          setGoals(unique);
-        });
-      });
-  }, [id]);
+    const unique = Array.from(new Map(filtered.map(o => [o.id, o])).values());
+    setGoals(unique);
+  }, [okrs]);
 
   return (
     <section className="weekly-overview">

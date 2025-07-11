@@ -541,7 +541,15 @@ export async function PUT(req, context) {
 
   for (const [field, pred] of Object.entries(roles)) {
     if (body[field]?.id) {
-      const postUri = `https://data.sick.com/res/dev/examples/common-semantics/${body[field].id}`;
+      let postId = body[field].id;
+
+      // ✅ FIX: remove incorrect prefixes
+      if (postId.startsWith("orgdata:")) {
+        postId = postId.replace("orgdata:", "");
+      }
+
+      const postUri = `https://data.sick.com/res/dev/examples/common-semantics/${postId}`;
+
       deleteLines.push(
         `<${objUri}> <https://data.sick.com/voc/sam/responsibility-model/${pred}> ?oldPost .`
       );

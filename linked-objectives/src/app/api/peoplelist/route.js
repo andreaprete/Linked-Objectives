@@ -6,14 +6,14 @@ export async function GET() {
     PREFIX objectives: <https://data.sick.com/voc/sam/objectives-model/>
     PREFIX responsibility: <https://data.sick.com/voc/sam/responsibility-model/>
 
-    SELECT ?personUri ?name ?roleTitle ?team ?teamName ?departmentName ?company (COUNT(DISTINCT ?okr) AS ?objectiveCount) WHERE {
+    SELECT ?personUri ?post ?name ?roleTitle ?team ?teamName ?departmentName ?company (COUNT(DISTINCT ?okr) AS ?objectiveCount) WHERE {
       ?personUri a foaf:Person ;
                  foaf:name ?name .
 
       OPTIONAL {
         ?post org:heldBy ?personUri .
         OPTIONAL { ?post org:role ?roleTitle . }
-        OPTIONAL {
+        OPTIONAL {  
           ?team org:hasPost ?post .
           OPTIONAL { ?team foaf:name ?teamName . }
           OPTIONAL {
@@ -28,24 +28,18 @@ export async function GET() {
 
       OPTIONAL {
         {
-          ?okr a objectives:Objective .
-          {
-            ?okr responsibility:isAccountableFor ?post
-          } UNION {
-            ?okr responsibility:caresFor ?post
-          } UNION {
-            ?okr responsibility:operates ?post
-          } UNION {
-            ?okr responsibility:isAccountableFor ?personUri
-          } UNION {
-            ?okr responsibility:caresFor ?personUri
-          } UNION {
-            ?okr responsibility:operates ?personUri
-          }
+        ?okr a objectives:Objective .
+        {
+          ?okr responsibility:isAccountableFor ?post
+        } UNION {
+          ?okr responsibility:caresFor ?post
+        } UNION {
+          ?okr responsibility:operates ?post
+        }
         }
       }
     }
-    GROUP BY ?personUri ?name ?roleTitle ?team ?teamName ?departmentName ?company
+    GROUP BY ?personUri ?post ?name ?roleTitle ?team ?teamName ?departmentName ?company
     ORDER BY ?name
   `;
 
@@ -66,16 +60,19 @@ export async function GET() {
     }
 
     const json = await response.json();
-    const people = json.results.bindings.map((b) => ({
-      id: b.personUri.value.split('/').pop(),
-      name: b.name?.value || "",
-      role: b.roleTitle?.value || "",
-      team: b.teamName?.value || "",
-      teamId: b.team?.value.split('/').pop() || "",  // ✅ used for link
-      department: b.departmentName?.value || "",
-      company: b.company?.value.split('/').pop() || "", // ✅ used for link
-      objectiveCount: parseInt(b.objectiveCount.value, 10) || 0,
-    }));
+    const people = json.results.bindings
+      .filter((b) => b.post && b.post.value)
+      .map((b) => ({
+        id: b.personUri.value.split('/').pop(),
+        name: b.name?.value || "",
+        role: b.roleTitle?.value || "",
+        team: b.teamName?.value || "",
+        teamId: b.team?.value.split('/').pop() || "",
+        department: b.departmentName?.value || "",
+        company: b.company?.value.split('/').pop() || "",
+        objectiveCount: parseInt(b.objectiveCount.value, 10) || 0,
+        postId: b.post?.value.split("/").pop() || "",
+      }));
 
     return new Response(JSON.stringify(people), {
       status: 200,

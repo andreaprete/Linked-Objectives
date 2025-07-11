@@ -31,7 +31,7 @@ export default function ObjectivePage() {
   
   const getStateColorClass = (state) => {
     switch (state) {
-      case "Draft":
+      case "Draft": 
       case "Idea":
       case "Planned":
         return "state-blue";
@@ -129,8 +129,11 @@ export default function ObjectivePage() {
   if (status === "loading") {
     return (
       <AppLayout>
-        <main className="flex items-center justify-center min-h-[60vh]">
-          <p className="text-gray-600">Checking session...</p>
+        <main className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-gray-600 text-sm">Checking session...</p>
+          </div>
         </main>
       </AppLayout>
     );

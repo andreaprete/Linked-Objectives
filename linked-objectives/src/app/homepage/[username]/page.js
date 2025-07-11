@@ -125,7 +125,11 @@ export default function HomePage() {
   return (
     <AppLayout>
       <main className="p-6 space-y-6 w-[80%] mx-auto">
-        <WelcomeBanner name={userData?.name} id={username} teamId={userData?.team} />
+        <WelcomeBanner
+          name={userData?.name}
+          id={username}
+          teamId={userData?.roles?.[0]?.team}
+        />
         <WeeklyOverview okrs={okrs} />
         <GoalTab
           okrs={okrs}

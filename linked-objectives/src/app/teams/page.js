@@ -111,7 +111,7 @@ export default function TeamsPage() {
             No teams match your criteria.
           </p>
         ) : (
-          <div className="space-y-4">
+          <div className="rowdisplay">
             {filteredTeams.map((team) => (
               <TeamsCardForList key={team.id} team={team} />
             ))}

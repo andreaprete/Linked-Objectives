@@ -104,7 +104,7 @@ export async function GET(req) {
       endDate: b.endDate?.value || null,
       keyResultsCount: parseInt(b.keyResultsCount?.value || '0'),
       progress: b.objectiveProgress?.value
-        ? Math.round(parseFloat(b.objectiveProgress.value) * 100)
+        ? Math.round(parseFloat(b.objectiveProgress.value))
         : 0
     }));
 
