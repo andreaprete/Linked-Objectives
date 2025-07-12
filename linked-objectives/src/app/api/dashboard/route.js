@@ -39,14 +39,15 @@ export async function GET(req) {
     const category = searchParams.get("category")?.toLowerCase();
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
+    const progressBand = searchParams.get("progress");
 
     const objectivesQuery = `
       ${PREFIXES}
       SELECT ?okr ?title ?dueDate ?createdDate ?modifiedDate ?startDate ?endDate
-             (SAMPLE(?categoryEnLabel) AS ?categoryName)
-             (SAMPLE(?statusEnLabel) AS ?statusName)
-             (COUNT(DISTINCT ?kr) AS ?keyResultsCount)
-             (AVG(xsd:decimal(?progressVal)) AS ?objectiveProgress)
+            (SAMPLE(?categoryEnLabel) AS ?categoryName)
+            (SAMPLE(?statusEnLabel) AS ?statusName)
+            (COUNT(DISTINCT ?kr) AS ?keyResultsCount)
+            (AVG(xsd:decimal(?progressVal)) AS ?objectiveProgress)
       WHERE {
         ?okr a objectives_voc:Objective ;
              rdfs:label ?title .
@@ -78,18 +79,9 @@ export async function GET(req) {
       ORDER BY ?kr ?date
     `;
 
-    const totalKrQuery = `
-      ${PREFIXES}
-      SELECT (COUNT(DISTINCT ?kr) AS ?trueKrCount)
-      WHERE {
-        ?kr a objectives_voc:KeyResult .
-      }
-    `;
-
-    const [objectiveResults, krTrendResults, krCountResults] = await Promise.all([
+    const [objectiveResults, krTrendResults] = await Promise.all([
       queryGraphDB(objectivesQuery, "Objectives"),
-      queryGraphDB(krTrendQuery, "KR Trend"),
-      queryGraphDB(totalKrQuery, "KR Global Count")
+      queryGraphDB(krTrendQuery, "KR Trend")
     ]);
 
     let userOkrs = objectiveResults.results.bindings.map(b => ({
@@ -142,6 +134,20 @@ export async function GET(req) {
         o.createdDate && new Date(o.createdDate) <= new Date(endDate)
       );
     }
+    if (progressBand) {
+      filteredOkrs = filteredOkrs.filter(o => {
+        const p = o.progress || 0;
+        switch (progressBand) {
+          case "0%": return p === 0;
+          case "1-25%": return p > 0 && p <= 25;
+          case "26-50%": return p > 25 && p <= 50;
+          case "51-75%": return p > 50 && p <= 75;
+          case "76-99%": return p > 75 && p < 100;
+          case "100%": return p === 100;
+          default: return true;
+        }
+      });
+    }
 
     const totalOkrCount = filteredOkrs.length;
     const activeOkrs = filteredOkrs.filter(o =>
@@ -151,7 +157,22 @@ export async function GET(req) {
       ? Math.round(activeOkrs.reduce((acc, o) => acc + o.progress, 0) / activeOkrs.length)
       : 0;
 
-    const trueKrCount = parseInt(krCountResults.results.bindings[0]?.trueKrCount?.value || '0');
+    // NEW: Count real KRs from filtered OKRs
+    let filteredKrCount = 0;
+    const filteredOkrUris = filteredOkrs.map(o => `<https://data.sick.com/res/dev/examples/linked-objectives-okrs/${o.id}>`);
+    if (filteredOkrUris.length > 0) {
+      const dynamicKrCountQuery = `
+        ${PREFIXES}
+        SELECT (COUNT(DISTINCT ?kr) AS ?filteredKrCount)
+        WHERE {
+          VALUES ?okr { ${filteredOkrUris.join(' ')} }
+          ?okr objectives_voc:hasKeyResult ?kr .
+        }
+      `;
+      const krCountResult = await queryGraphDB(dynamicKrCountQuery, "Filtered KR Count");
+      filteredKrCount = parseInt(krCountResult.results.bindings[0]?.filteredKrCount?.value || '0');
+    }
+
     const uniqueCategoryCount = new Set(filteredOkrs.map(o => o.categoryName)).size;
 
     // Velocity by month
@@ -189,7 +210,7 @@ export async function GET(req) {
         summaryMetrics: {
           totalOkrCount,
           overallProgress,
-          totalKrCount: trueKrCount,
+          totalKrCount: filteredKrCount,
           uniqueCategoryCount
         },
         objectiveVelocity,

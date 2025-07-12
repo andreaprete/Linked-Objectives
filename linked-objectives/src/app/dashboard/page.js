@@ -15,16 +15,6 @@ import {
 
 const LIGHT_CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1', '#06B6D4', '#6B7280'];
 
-const getLightStatusColor = (status) => {
-  const lowerStatus = status ? status.toLowerCase().replace(/\s+/g, '') : 'unknown';
-  const colorMap = {
-    inprogress: LIGHT_CHART_COLORS[0], done: LIGHT_CHART_COLORS[1], completed: LIGHT_CHART_COLORS[1],
-    planned: LIGHT_CHART_COLORS[6], onhold: LIGHT_CHART_COLORS[2], aborted: LIGHT_CHART_COLORS[3],
-    evaluating: LIGHT_CHART_COLORS[4], notstarted: LIGHT_CHART_COLORS[8], unknown: LIGHT_CHART_COLORS[8],
-  };
-  return colorMap[lowerStatus] || LIGHT_CHART_COLORS[8];
-};
-
 const AnimatedCard = ({ children, className = "", title, cardType = "widget", delay = 0 }) => {
     const [isVisible, setIsVisible] = useState(false);
     useEffect(() => {
@@ -63,20 +53,78 @@ const ChartPlaceholder = ({ message = "No data available." }) => (
 );
 
 function ObjectivesByStatusPieChart({ data }) {
-    if (!data || data.length === 0) return <ChartPlaceholder message="No status data." />;
-    return (
-        <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-                <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={70} innerRadius={35} dataKey="value" nameKey="name"
-                    label={({ name, percent, value }) => value > 0 ? `${name}: ${(percent * 100).toFixed(0)}%` : null}>
-                    {data.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={getLightStatusColor(entry.name)} stroke="#ffffff" strokeWidth={1.5} />
-                    ))}
-                </Pie>
-                <Tooltip /> <Legend iconType="circle" />
-            </PieChart>
-        </ResponsiveContainer>
-    );
+  if (!data || data.length === 0) return <ChartPlaceholder message="No status data." />;
+
+  const stateColor = (status) => {
+    switch (status) {
+      case 'Draft':
+      case 'Idea':
+      case 'Planned':           return '#3b82f6'; // blue
+      case 'Evaluating':
+      case 'Approved':
+      case 'Released':          return '#8b5cf6'; // purple
+      case 'InProgress':
+      case 'Completed':
+      case 'Archived':          return '#10b981'; // green
+      case 'Aborted':
+      case 'Withdrawn':
+      case 'Rejected':
+      case 'Cancelled':         return '#ef4444'; // red
+      case 'OnHold':
+      case 'Deprecated':        return '#f59e0b'; // orange
+      default:                  return '#6b7280'; // gray
+    }
+  };
+
+  const getTintedColor = (hex, factor) => {
+    let r = parseInt(hex.substr(1, 2), 16);
+    let g = parseInt(hex.substr(3, 2), 16);
+    let b = parseInt(hex.substr(5, 2), 16);
+    r = Math.min(255, Math.floor(r + (255 - r) * factor));
+    g = Math.min(255, Math.floor(g + (255 - g) * factor));
+    b = Math.min(255, Math.floor(b + (255 - b) * factor));
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  };
+
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          outerRadius={70}
+          innerRadius={35}
+          dataKey="value"
+          nameKey="name"
+          label={({ name, percent, value }) =>
+            value > 0 ? `${name}: ${(percent * 100).toFixed(0)}%` : null
+          }
+        >
+          {(() => {
+            const colorCounts = {};
+            return data.map((entry, index) => {
+              const baseColor = stateColor(entry.name);
+              const count = colorCounts[baseColor] || 0;
+              colorCounts[baseColor] = count + 1;
+              const tint = count * 0.1;
+              const finalColor = count === 0 ? baseColor : getTintedColor(baseColor, tint);
+              return (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={finalColor}
+                  stroke="#ffffff"
+                  strokeWidth={1.5}
+                />
+              );
+            });
+          })()}
+        </Pie>
+        <Tooltip />
+      </PieChart>
+    </ResponsiveContainer>
+  );
 }
 
 function OverallProgressGaugeChart({ progress = 0 }) {
@@ -178,6 +226,8 @@ function KeyResultScoresTrendChart({ data }) {
     const [keyResultScoresTrendData, setKeyResultScoresTrendData] = useState([]);
     const [objectiveVelocity, setObjectiveVelocity] = useState([]);
     const [objectiveTimeline, setObjectiveTimeline] = useState([]);
+    const [selectedRole, setSelectedRole] = useState("");
+    const [selectedProgress, setSelectedProgress] = useState("");
 
     const [selectedStatus, setSelectedStatus] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
@@ -202,6 +252,8 @@ function KeyResultScoresTrendChart({ data }) {
           const query = new URLSearchParams({
             ...(selectedStatus && { status: selectedStatus }),
             ...(selectedCategory && { category: selectedCategory }),
+            ...(selectedRole && { role: selectedRole }),
+            ...(selectedProgress && { progress: selectedProgress }),
             ...(startDate && { startDate }),
             ...(endDate && { endDate }),
           }).toString();
@@ -236,7 +288,7 @@ function KeyResultScoresTrendChart({ data }) {
       }
 
       fetchDashboardData();
-    }, [selectedStatus, selectedCategory, startDate, endDate]);
+    }, [selectedStatus, selectedCategory, selectedProgress, startDate, endDate]);
 
   if (isLoading) {
     return (
@@ -272,21 +324,48 @@ function KeyResultScoresTrendChart({ data }) {
         {/* 🧩 Filter Bar */}
         <section className="filterBar flex flex-wrap gap-4 items-center p-4 bg-gray-50 rounded-md shadow-sm border">
           <label className="text-sm">
-            Status:
+            State:
             <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="ml-2 p-1 border rounded">
               <option value="">All</option>
+              <option value="idea">Idea</option>
+              <option value="draft">Draft</option>
               <option value="planned">Planned</option>
-              <option value="inprogress">In Progress</option>
+              <option value="evaluating">Evaluating</option>
+              <option value="approved">Approved</option>
+              <option value="released">Released</option>
+              <option value="in progress">In Progress</option>
               <option value="completed">Completed</option>
               <option value="done">Done</option>
-              <option value="onhold">On Hold</option>
+              <option value="archived">Archived</option>
+              <option value="on hold">On Hold</option>
               <option value="aborted">Aborted</option>
+              <option value="rejected">Rejected</option>
+              <option value="withdrawn">Withdrawn</option>
+              <option value="deprecated">Deprecated</option>
             </select>
           </label>
 
           <label className="text-sm">
             Category:
-            <input type="text" placeholder="e.g. Marketing" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="ml-2 p-1 border rounded" />
+            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="ml-2 p-1 border rounded">
+              <option value="">All</option>
+              <option value="strategic">Strategic</option>
+              <option value="tactical">Tactical</option>
+              <option value="operational">Operational</option>
+            </select>
+          </label>
+
+          <label className="text-sm">
+            Progress:
+            <select value={selectedProgress} onChange={(e) => setSelectedProgress(e.target.value)} className="ml-2 p-1 border rounded">
+              <option value="">All</option>
+              <option value="0%">0%</option>
+              <option value="1-25%">1-25%</option>
+              <option value="26-50%">26-50%</option>
+              <option value="51-75%">51-75%</option>
+              <option value="76-99%">76-99%</option>
+              <option value="100%">100%</option>
+            </select>
           </label>
 
           <label className="text-sm">
@@ -298,6 +377,17 @@ function KeyResultScoresTrendChart({ data }) {
             End Date:
             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ml-2 p-1 border rounded" />
           </label>
+
+          <button onClick={() => {
+            setSelectedStatus("");
+            setSelectedCategory("");
+            setSelectedRole("");
+            setSelectedProgress("");
+            setStartDate("");
+            setEndDate("");
+          }} className="ml-4 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm">
+            Reset Filters
+          </button>
         </section>
 
         {/* KPI Cards */}
