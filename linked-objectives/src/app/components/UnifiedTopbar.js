@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import "@/app/styles/UnifiedTopBar.css";
-import { getUsername } from "@/lib/userCache"; // ✅ NEW
 
 const routeTitleMap = {
   "/homepage": "Home",

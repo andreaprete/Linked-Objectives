@@ -13,7 +13,6 @@ import {
 import Logo_sidebar from "@/app/components/Logo_sidebar";
 import "@/app/styles/UnifiedSidebar.css";
 import { useSession } from "next-auth/react";
-import { getUsername } from "@/lib/userCache";
 
 const navItems = [
   {
@@ -73,10 +72,25 @@ export default function UnifiedSidebar() {
   const [username, setUsername] = useState("user");
 
   useEffect(() => {
-    if (!session?.user?.email) return;
-    getUsername(session.user.email).then((uname) => {
-      setUsername(uname);
-    });
+    async function fetchUsername() {
+      if (!session?.user?.email) return;
+
+      try {
+        const res = await fetch(`/api/getUsername?email=${encodeURIComponent(session.user.email)}`);
+        const data = await res.json();
+
+        if (data.username) {
+          setUsername(data.username);
+        } else {
+          setUsername("user"); // fallback
+        }
+      } catch (err) {
+        console.error("Failed to load username:", err);
+        setUsername("user");
+      }
+    }
+
+    fetchUsername();
   }, [session]);
 
   const activeItem = navItems.find((item) => item.match(pathname))?.label || "";

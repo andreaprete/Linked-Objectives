@@ -66,7 +66,7 @@ export async function GET() {
       throw new Error("SPARQL query failed: " + errorText);
     }
 
-    const json = await response.json();
+    const json = await res.json();
     const results = json.results.bindings;
 
     const objMap = {};
