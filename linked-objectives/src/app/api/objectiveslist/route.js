@@ -13,6 +13,7 @@ export async function GET() {
     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 
     SELECT ?obj ?title ?desc ?category ?state ?stateScheme ?kr ?krProgress ?krState ?krStateScheme ?email
+           ?needs ?contributesTo ?reverseObj ?reversePred
     WHERE {
       ?obj rdf:type objv:Objective .
 
@@ -46,80 +47,106 @@ export async function GET() {
         ?post org:heldBy ?person .
         ?person foaf:email ?email .
       }
+
+      OPTIONAL { ?obj objv:needs ?needs . }
+      OPTIONAL { ?obj objv:contributesTo ?contributesTo . }
+
+      OPTIONAL {
+        ?reverseObj ?reversePred ?obj .
+        FILTER (?reversePred IN (objv:needs, objv:contributesTo))
+      }
     }
   `;
 
   try {
     const res = await fetch(endpoint, {
       method: "POST",
-      cache: "no-store",
-      cache: "no-store",
       headers: {
         "Content-Type": "application/sparql-query",
         Accept: "application/sparql-results+json",
       },
       body: query,
+      cache: "no-store",
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error("SPARQL query failed: " + errorText);
-    }
-
-    const json = await res.json();
-    const results = json.results.bindings;
+    if (!res.ok) throw new Error("SPARQL query failed: " + (await res.text()));
+    const data = await res.json();
 
     const objMap = {};
 
-    results.forEach((binding) => {
-      const objId = binding.obj.value.split("/").pop();
+    data.results.bindings.forEach((b) => {
+      const id = b.obj.value.split("/").pop();
 
-      if (!objMap[objId]) {
-        objMap[objId] = {
-          id: objId,
-          title: binding.title?.value || objId,
-          description: binding.desc?.value || "",
-          category: binding.category?.value?.split("/").pop() || null,
-          state: binding.state?.value?.split("/").pop() || "Unspecified",
-          stateDimension: binding.stateScheme?.value?.split("/").pop() || null,
+      if (!objMap[id]) {
+        objMap[id] = {
+          id,
+          title: b.title?.value || id,
+          description: b.desc?.value || "",
+          category: b.category?.value?.split("/").pop() || null,
+          state: b.state?.value?.split("/").pop() || "Unspecified",
+          stateDimension: b.stateScheme?.value?.split("/").pop() || null,
           people: new Set(),
           keyResults: [],
+          needs: [],
+          neededBy: [],
+          contributesTo: [],
+          contributedToBy: [],
         };
       }
 
-      const email = binding.email?.value;
-      if (email) {
-        objMap[objId].people.add(email);
+      const obj = objMap[id];
+
+      if (b.email?.value) obj.people.add(b.email.value);
+
+      if (b.kr?.value && b.krProgress?.value) {
+        const krState = b.krState?.value?.split("/").pop();
+        if (!["Aborted", "Withdrawn", "Rejected", "Cancelled"].includes(krState)) {
+          obj.keyResults.push(parseFloat(b.krProgress.value));
+        }
       }
 
-      if (binding.kr && binding.krProgress) {
-        const progress = parseFloat(binding.krProgress.value);
-        const krState = binding.krState?.value?.split("/").pop();
-        if (!["Aborted", "Withdrawn", "Rejected", "Cancelled"].includes(krState)) {
-          objMap[objId].keyResults.push(progress);
+      if (b.needs?.value) {
+        const targetId = b.needs.value.split("/").pop();
+        if (!obj.needs.includes(targetId)) obj.needs.push(targetId);
+      }
+
+      if (b.contributesTo?.value) {
+        const targetId = b.contributesTo.value.split("/").pop();
+        if (!obj.contributesTo.includes(targetId)) obj.contributesTo.push(targetId);
+      }
+
+      if (b.reverseObj?.value && b.reversePred?.value) {
+        const reverseId = b.reverseObj.value.split("/").pop();
+        const pred = b.reversePred.value;
+
+        if (pred.endsWith("needs") && !obj.neededBy.includes(reverseId)) {
+          obj.neededBy.push(reverseId);
+        } else if (pred.endsWith("contributesTo") && !obj.contributedToBy.includes(reverseId)) {
+          obj.contributedToBy.push(reverseId);
         }
       }
     });
 
-    const objectiveList = Object.values(objMap).map((obj) => {
-      const avgProgress =
-        obj.keyResults.length > 0
-          ? obj.keyResults.reduce((a, b) => a + b, 0) / obj.keyResults.length
-          : 0;
+    const result = Object.values(objMap).map((o) => {
+      const avg = o.keyResults.length ? o.keyResults.reduce((a, b) => a + b, 0) / o.keyResults.length : 0;
 
       return {
-        id: obj.id,
-        title: obj.title,
-        description: obj.description,
-        category: obj.category,
-        state: obj.state,
-        stateDimension: obj.stateDimension,
-        people: Array.from(obj.people),
-        progress: Math.round(avgProgress),
+        id: o.id,
+        title: o.title,
+        description: o.description,
+        category: o.category,
+        state: o.state,
+        stateDimension: o.stateDimension,
+        people: Array.from(o.people),
+        progress: Math.round(avg),
+        needs: o.needs,
+        neededBy: o.neededBy,
+        contributesTo: o.contributesTo,
+        contributedToBy: o.contributedToBy,
       };
     });
 
-    return new Response(JSON.stringify(objectiveList), {
+    return new Response(JSON.stringify(result), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -127,7 +154,7 @@ export async function GET() {
       },
     });
   } catch (err) {
-    console.error("Failed to load enriched objective list:", err);
+    console.error("Objective GET failed:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
