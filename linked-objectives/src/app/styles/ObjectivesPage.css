@@ -251,6 +251,7 @@
 }
 
 
+
 /* disabled state (optional) */
 .edit-button:disabled,
 .edit-button[disabled] {
@@ -260,7 +261,7 @@
   opacity: 0.7;
 }
 
-.custom-hover-button {
+.delete-button {
   background: #ef4444;
   color: white;
   border: none;
@@ -273,4 +274,12 @@
 
 .custom-hover-button:hover {
   background: #f50b0b;
+}
+
+.delete-button:disabled,
+.delete-button[disabled] {
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  opacity: 0.7;
 }

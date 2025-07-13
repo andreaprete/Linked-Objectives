@@ -359,7 +359,7 @@ export default function ObjectivePage() {
                 </button>
                 <button
                   onClick={handleDeleteKeyResults}
-                  className="edit-button custom-hover-button"
+                  className="delete-button custom-hover-button"
                   disabled={selectedKeyResults.length === 0}
                   title={
                     selectedKeyResults.length === 0
