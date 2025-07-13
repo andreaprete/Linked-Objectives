@@ -24,6 +24,15 @@ export default function OkrTable({ okrs }) {
       : visible.join(', ');
   };
 
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    if (isNaN(date)) return 'N/A';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const extractIndex = (id) => {
     const match = id?.match(/obj-(\d+)/);
     return match ? parseInt(match[1], 10) : '—';
@@ -59,7 +68,7 @@ export default function OkrTable({ okrs }) {
                   {showDepartments && (
                     <td>{formatDepartments(okr.linkedUnits)}</td>
                   )}
-                  <td>{okr.modified || 'N/A'}</td>
+                  <td>{okr.modified ? formatDate(okr.modified) : 'N/A'}</td>
                   <td>{okr.state || 'N/A'}</td>
                 </tr>
               ))}
