@@ -147,7 +147,7 @@ const ObjectivesListPage = () => {
 
   return (
     <AppLayout>
-      <div className="flex justify-center px-4 py-8">
+      <div className="flex justify-center px-4">
         <div className="objectives-content-container w-full max-w-7xl">
           <div className="objectives-header-section">
             <div className="objectives-page-header">
