@@ -28,10 +28,10 @@ export default function ObjectivePage() {
     let frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
-  
+
   const getStateColorClass = (state) => {
     switch (state) {
-      case "Draft": 
+      case "Draft":
       case "Idea":
       case "Planned":
         return "state-blue";
@@ -89,17 +89,20 @@ export default function ObjectivePage() {
         );
 
         const total = keyResults.reduce((acc, val) => acc + val, 0);
-        const averageProgress = keyResults.length > 0 ? total / keyResults.length : 0;
+        const averageProgress =
+          keyResults.length > 0 ? total / keyResults.length : 0;
         obj.averageProgress = averageProgress;
 
         setData(obj);
 
-        const usernameRes = await fetch(`/api/getUsername?email=${session.user.email}`);
+        const usernameRes = await fetch(
+          `/api/getUsername?email=${session.user.email}`
+        );
         const usernameJson = await usernameRes.json();
         const username = usernameJson.username;
         const role = session.user.role;
 
-        const toArray = (val) => Array.isArray(val) ? val : val ? [val] : [];
+        const toArray = (val) => (Array.isArray(val) ? val : val ? [val] : []);
 
         const involvedUsernames = [
           ...toArray(obj.accountableFor),
@@ -113,7 +116,6 @@ export default function ObjectivePage() {
 
         const isAdmin = role === "admin";
         setCanEdit(isAdmin || (role === "user" && isInvolved));
-
       } catch (err) {
         console.error("Failed to fetch objective or permissions:", err);
         alert("Failed to load objective data. Please try again later.");
@@ -139,7 +141,6 @@ export default function ObjectivePage() {
     );
   }
 
-  
   const handleSave = async (updatedData) => {
     try {
       const res = await fetch(`/api/objectives/${id}`, {
@@ -209,7 +210,7 @@ export default function ObjectivePage() {
       </AppLayout>
     );
   }
-  
+
   if (!loading && status === "authenticated" && data === null) {
     return (
       <AppLayout>
@@ -352,29 +353,13 @@ export default function ObjectivePage() {
               <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button
                   onClick={() => setShowCreateKR(true)}
-                  style={{
-                    background: "#2563eb",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "0.4rem",
-                    fontWeight: "500",
-                    padding: "0.45rem 1.2rem",
-                    cursor: "pointer",
-                  }}
+                  className="edit-button"
                 >
                   Create KR
                 </button>
                 <button
                   onClick={handleDeleteKeyResults}
-                  style={{
-                    background: "#ef4444",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "0.4rem",
-                    fontWeight: "500",
-                    padding: "0.45rem 1.2rem",
-                    cursor: "pointer",
-                  }}
+                  className="edit-button custom-hover-button"
                   disabled={selectedKeyResults.length === 0}
                   title={
                     selectedKeyResults.length === 0
@@ -397,7 +382,7 @@ export default function ObjectivePage() {
                 ids={data.keyResult}
                 onSelectionChange={setSelectedKeyResults}
               />
-          )}
+            )}
           {activeTab === "related" && <RelatedGraph data={data} />}
           {activeTab === "people" && (
             <>
