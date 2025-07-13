@@ -40,7 +40,7 @@ const MetricCard = ({ title, value, description, delay }) => {
         return () => clearTimeout(timer);
     }, [delay]);
     return (
-        <div className={`kpiCard ${isVisible ? 'widgetVisible' : ''}`} style={{ transitionDelay: `${delay || 0}ms` }}>
+        <div className={`aligned-cards kpiCard ${isVisible ? 'widgetVisible' : ''}`} style={{ transitionDelay: `${delay || 0}ms` }}>
             <div className="kpiValue">{value}</div>
             <div className="kpiLabel">{title}</div>
             {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
@@ -392,9 +392,9 @@ function KeyResultScoresTrendChart({ data }) {
 
         {/* KPI Cards */}
         <section className="kpiRow grid grid-cols-2 md:grid-cols-4 gap-4">
-          <MetricCard title="Themes" value={summaryMetrics.uniqueCategoryCount || 0} description="Unique Categories" delay={100} />
+          <MetricCard title="Categories" value={summaryMetrics.uniqueCategoryCount || 0} delay={100} />
           <MetricCard title="Objectives" value={summaryMetrics.totalOkrCount || 0} delay={150} />
-          <MetricCard title="Key Results" value={summaryMetrics.totalKrCount || 0} description="Total KRs" delay={200} />
+          <MetricCard title="Key Results" value={summaryMetrics.totalKrCount || 0} delay={200} />
         </section>
 
         {/* Main Widgets */}
