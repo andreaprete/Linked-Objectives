@@ -13,6 +13,7 @@ import {
 import Logo_sidebar from "@/app/components/Logo_sidebar";
 import "@/app/styles/UnifiedSidebar.css";
 import { useSession } from "next-auth/react";
+import SickLogo from "./SickLogo";
 
 const navItems = [
   {
@@ -39,13 +40,15 @@ const navItems = [
     label: "Teams",
     icon: FaUsers,
     path: "/teams",
-    match: (pathname) => pathname === "/teams" || pathname.startsWith("/teams/"),
+    match: (pathname) =>
+      pathname === "/teams" || pathname.startsWith("/teams/"),
   },
   {
     label: "People",
     icon: FaUserCog,
     path: "/people",
-    match: (pathname) => pathname === "/people" || pathname.startsWith("/people/"),
+    match: (pathname) =>
+      pathname === "/people" || pathname.startsWith("/people/"),
   },
   {
     label: "Strategy-Map",
@@ -76,7 +79,9 @@ export default function UnifiedSidebar() {
       if (!session?.user?.email) return;
 
       try {
-        const res = await fetch(`/api/getUsername?email=${encodeURIComponent(session.user.email)}`);
+        const res = await fetch(
+          `/api/getUsername?email=${encodeURIComponent(session.user.email)}`
+        );
         const data = await res.json();
 
         if (data.username) {
@@ -99,6 +104,21 @@ export default function UnifiedSidebar() {
     <nav className="leftSidebar">
       <div className="sidebarLogoWrapper">
         <Logo_sidebar />
+
+        <div
+          className="logo-container"
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            gap: "0.3rem",
+          }}
+        >
+          <span style={{ fontSize: "0.5rem", color: "#ffffff" }}>
+            supported by
+          </span>
+          <SickLogo width="40px" style={{ marginBottom: 0 }} />
+        </div>
       </div>
       <ul className="navList">
         {navItems.map((item) => {

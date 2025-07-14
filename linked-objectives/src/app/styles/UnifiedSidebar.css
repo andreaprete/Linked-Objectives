@@ -105,13 +105,15 @@
   top: 0;
   align-self: flex-start;
   height: 100vh;
+  padding-top: 0;
 }
 
 .sidebarLogoWrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 2rem;
+  flex-direction: column;
 }
 
 .a {

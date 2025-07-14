@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
+import SickLogo from "@/app/components/SickLogo";
 import "@/app/styles/LoginRegister.css";
 import Logo from "@/app/components/Logo";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const router = useRouter();
-  const { data: session, status } = useSession(); // 🧠 Session hook
+  const { data: session, status } = useSession();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -24,7 +24,9 @@ const Login = () => {
   useEffect(() => {
     if (status === "authenticated" && session?.user?.email) {
       const checkAndRedirect = async () => {
-        const graphRes = await fetch(`/api/getUsername?email=${session.user.email}`);
+        const graphRes = await fetch(
+          `/api/getUsername?email=${session.user.email}`
+        );
         const json = await graphRes.json();
         if (json.username) {
           router.replace(`/homepage/${json.username}`);
@@ -77,7 +79,18 @@ const Login = () => {
     <div className="page-container">
       <div className="auth-box">
         <Logo />
-        <h2>supported by SICK AG</h2>
+        <div
+          className="logo-container"
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.3rem",
+          }}
+        >
+          <span style={{ fontSize: "0.5rem", color: "#444" }}>supported by</span>
+          <SickLogo width="40px" style={{ marginBottom: 0 }} />
+        </div>
+
         <h3>Log In</h3>
         <form onSubmit={handleSubmit}>
           {loading && <p className="loading-text">🔄 Logging in...</p>}
