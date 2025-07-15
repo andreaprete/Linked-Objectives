@@ -1,4 +1,6 @@
-export async function GET(req, context) {
+import { requireLogin } from "@/lib/auth/requireLogin";
+
+export async function getKeyResultsData(req, context) {
   const { id } = context.params;
   const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const endpoint = `http://localhost:7200/repositories/linked-objectives`;
@@ -194,11 +196,89 @@ export async function GET(req, context) {
   }
 }
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 export async function PUT(req, context) {
   const { id } = context.params;
   const krUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const body = await req.json();
 
+  // 🔒 AUTHORIZATION CHECK
+  const session = await getServerSession(authOptions);
+  const userEmail = session?.user?.email;
+  const userRole = session?.user?.role;
+
+  if (!userEmail) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  }
+
+  if (userRole !== "admin") {
+    // Fetch parent objective of this KR
+    const endpoint = "http://localhost:7200/repositories/linked-objectives";
+    const parentQuery = `
+      PREFIX objv: <https://data.sick.com/voc/sam/objectives-model/>
+      SELECT ?obj WHERE {
+        <${krUri}> objv:isKeyResultOf ?obj .
+      } LIMIT 1
+    `;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/sparql-query",
+        Accept: "application/sparql-results+json",
+      },
+      body: parentQuery,
+    });
+
+    if (!res.ok) {
+      return new Response(JSON.stringify({ error: "Failed to fetch parent objective" }), { status: 500 });
+    }
+
+    const json = await res.json();
+    const parentUri = json?.results?.bindings?.[0]?.obj?.value;
+
+    if (!parentUri) {
+      return new Response(JSON.stringify({ error: "Parent objective not found" }), { status: 404 });
+    }
+
+    // Now resolve the emails linked to parent objective
+    const responsibilityQuery = `
+      PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+      PREFIX org: <http://www.w3.org/ns/org#>
+      PREFIX responsibility: <https://data.sick.com/voc/sam/responsibility-model/>
+      SELECT ?email WHERE {
+        {
+          <${parentUri}> responsibility:isAccountableFor ?post .
+        } UNION {
+          <${parentUri}> responsibility:caresFor ?post .
+        } UNION {
+          <${parentUri}> responsibility:operates ?post .
+        }
+        ?post org:heldBy ?person .
+        ?person foaf:email ?email .
+      }
+    `;
+
+    const emailRes = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/sparql-query",
+        Accept: "application/sparql-results+json",
+      },
+      body: responsibilityQuery,
+    });
+
+    const emailJson = await emailRes.json();
+    const authorizedEmails = emailJson.results.bindings.map(b => b.email.value);
+
+    if (!authorizedEmails.includes(userEmail)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    }
+  }
+
+  // ✅ Proceed with update if authorized
   const insertStatements = [];
   if (body.title !== undefined)
     insertStatements.push(`<${krUri}> <http://www.w3.org/2000/01/rdf-schema#label> """${body.title}""" .`);
@@ -272,3 +352,5 @@ export async function PUT(req, context) {
     });
   }
 }
+
+export const GET = requireLogin(getKeyResultsData);

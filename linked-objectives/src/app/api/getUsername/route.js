@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { requireLogin } from "@/lib/auth/requireLogin";
 
-export async function GET(req) {
+export async function getUsername(req) {
   const email = req.nextUrl.searchParams.get("email");
 
   if (!email) {
@@ -51,3 +52,5 @@ export async function GET(req) {
     return NextResponse.json({ error: "Failed to fetch username" }, { status: 500 });
   }
 }
+
+export const GET = requireLogin(getUsername);

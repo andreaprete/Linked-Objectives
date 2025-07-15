@@ -1,4 +1,6 @@
-export async function GET() {
+import { requireLogin } from "@/lib/auth/requireLogin";
+
+export async function getPeopleList() {
   const endpoint = 'http://localhost:7200/repositories/linked-objectives';
   const sparqlQuery = `
     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -90,3 +92,5 @@ export async function GET() {
     });
   }
 }
+
+export const GET = requireLogin(getPeopleList);

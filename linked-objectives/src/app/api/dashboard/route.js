@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireLogin } from "@/lib/auth/requireLogin";
 
 const GRAPHDB_URL = process.env.GRAPHDB_URL || 'http://localhost:7200';
 const REPOSITORY_ID = process.env.GRAPHDB_REPOSITORY || 'linked-objectives';
@@ -32,7 +33,7 @@ PREFIX time: <http://www.w3.org/2006/time#>
 PREFIX dct: <http://purl.org/dc/terms/>
 `;
 
-export async function GET(req) {
+export async function getOkrSummary(req) {
   try {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status")?.toLowerCase();
@@ -244,3 +245,5 @@ export async function GET(req) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+export const GET = requireLogin(getOkrSummary);

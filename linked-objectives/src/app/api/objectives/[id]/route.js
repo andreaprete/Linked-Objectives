@@ -1,4 +1,6 @@
-export async function GET(req, context) {
+import { requireLogin } from "@/lib/auth/requireLogin";
+
+export async function getObjectivesData(req, context) {
   const { id } = context.params;
   const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const endpoint = `http://localhost:7200/repositories/linked-objectives`;
@@ -15,10 +17,11 @@ export async function GET(req, context) {
     const query = `
       PREFIX foaf: <http://xmlns.com/foaf/0.1/>
       PREFIX org: <http://www.w3.org/ns/org#>
-      SELECT ?person ?name ?roleTitle WHERE {
+      SELECT ?person ?name ?roleTitle ?email WHERE {
         <${postUri}> org:heldBy ?person ;
                      org:role ?roleTitle .
         ?person foaf:name ?name .
+        OPTIONAL { ?person foaf:email ?email . }
       }
     `;
 
@@ -42,6 +45,7 @@ export async function GET(req, context) {
         id: row.person.value.split("/").pop(),
         name: row.name.value,
         role: row.roleTitle.value,
+        email: row.email?.value || null, 
       };
     } catch (err) {
       console.error("Error resolving post to person:", err);
@@ -53,8 +57,9 @@ export async function GET(req, context) {
     const query = `
     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
     PREFIX org: <http://www.w3.org/ns/org#>
-    SELECT ?name ?roleTitle WHERE {
+    SELECT ?name ?roleTitle ?email WHERE {
       OPTIONAL { <${personUri}> foaf:name ?name . }
+      OPTIONAL { <${personUri}> foaf:email ?email . }
       OPTIONAL {
         ?post org:heldBy <${personUri}> ;
               org:role ?roleTitle .
@@ -80,6 +85,7 @@ export async function GET(req, context) {
         id: personId,
         name: row?.name?.value || personId,
         role: row?.roleTitle?.value || null,
+        email: row?.email?.value || null,
       };
     } catch (err) {
       console.error("Error resolving person directly with role:", err);
@@ -104,7 +110,7 @@ export async function GET(req, context) {
 
     const json = await response.json();
     const dataMap = {};
-
+    dataMap.people = new Set();
     json.results.bindings.forEach((binding) => {
       const predicate = binding.predicate.value;
       const object = binding.object.value;
@@ -191,8 +197,12 @@ export async function GET(req, context) {
 
       if (resolved) {
         dataMap[key] = resolved;
+        if (resolved.email) {
+          dataMap.people.add(resolved.email);
+        }
       }
     }
+    dataMap.people = Array.from(dataMap.people);
 
     // Temporal handling
     if (dataMap.temporal) {
@@ -380,7 +390,19 @@ export async function GET(req, context) {
   }
 }
 
+export const GET = requireLogin(getObjectivesData);
+
+import { getToken } from "next-auth/jwt";
+
 export async function PUT(req, context) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+  if (!token) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  }
+
+  const email = token.email;
+  const role = token.role;
   const { id } = context.params;
   const objUri = `https://data.sick.com/res/dev/examples/linked-objectives-okrs/${id}`;
   const body = await req.json();
@@ -388,6 +410,25 @@ export async function PUT(req, context) {
 
   const insertLines = [];
   const deleteLines = [];
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const getRes = await fetch(`${baseUrl}/api/objectives/${context.params.id}`);
+
+  if (!getRes.ok) {
+    const errorText = await getRes.text();
+    console.error("Failed to fetch objective data:", errorText);
+    return new Response(JSON.stringify({ error: "Failed to verify access" }), { status: 500 });
+  }
+
+  const getJson = await getRes.json();
+
+  const allowedEmails = getJson?.data?.people || [];
+
+  const isAllowed = role === "admin" || allowedEmails.includes(email);
+
+  if (!isAllowed) {
+    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+  }
 
   // Safe triple: skip empty strings
   const triple = (s, p, o) => {

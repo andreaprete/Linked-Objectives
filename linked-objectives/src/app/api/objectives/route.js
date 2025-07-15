@@ -1,8 +1,17 @@
+import { getToken } from "next-auth/jwt";
+
 export async function POST(req) {
+  // 1. 🔐 Authenticate and check admin role
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+  if (!token || token.role !== "admin") {
+    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+  }
+
   const endpoint = "http://localhost:7200/repositories/linked-objectives";
   const body = await req.json();
 
-  // 🔍 Get all existing objective IDs
+  // 2. 🧠 Fetch existing objective IDs
   const idQuery = `
     PREFIX objectives: <https://data.sick.com/voc/sam/objectives-model/>
     SELECT ?id WHERE {

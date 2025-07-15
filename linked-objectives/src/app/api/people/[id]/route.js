@@ -1,4 +1,7 @@
-export async function GET(req, context) {
+import { requireLogin } from "@/lib/auth/requireLogin";
+import { get } from "http";
+
+export async function getPeopleData(req, context) {
   const { id } = context.params;
   const personUri = `https://data.sick.com/res/dev/examples/common-semantics/${id}`;
   const endpoint = `http://localhost:7200/repositories/linked-objectives`;
@@ -298,4 +301,6 @@ export async function GET(req, context) {
       },
     });
   }
-} 
+}
+
+export const GET = requireLogin(getPeopleData);

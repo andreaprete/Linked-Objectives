@@ -1,4 +1,6 @@
-export async function GET(req, context) {
+import { requireLogin } from "@/lib/auth/requireLogin";
+
+async function getCompanyData(req, context) {
     const { id } = context.params;
     const endpoint = `http://localhost:7200/repositories/linked-objectives`;
     const companyUri = `https://data.sick.com/res/dev/examples/common-semantics/${id}`;
@@ -234,4 +236,16 @@ export async function GET(req, context) {
       });
     }
   }
-  
+
+async function handler(req, context, session) {
+  if (req.method === "GET") {
+    return await getCompanyData(req, context); // ✅ call and return the GET response
+  }
+
+  return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
+    status: 405,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+export const GET = requireLogin(handler);

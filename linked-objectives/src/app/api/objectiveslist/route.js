@@ -1,4 +1,6 @@
-export async function GET() {
+import { requireLogin } from "@/lib/auth/requireLogin";
+
+export async function getObjectiveList() {
   const endpoint = "http://localhost:7200/repositories/linked-objectives";
 
   const query = `
@@ -161,3 +163,5 @@ export async function GET() {
     });
   }
 }
+
+export const GET = requireLogin(getObjectiveList);
