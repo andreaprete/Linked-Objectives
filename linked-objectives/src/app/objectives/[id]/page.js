@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import AppLayout from "@/app/components/AppLayout";
 import KeyResults from "../../components/KeyResults";
@@ -15,6 +16,7 @@ import CreateKeyResultModal from "@/app/components/CreateKeyResultModal";
 export default function ObjectivePage() {
   const { id } = useParams();
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("keyResults");
@@ -72,6 +74,12 @@ export default function ObjectivePage() {
         });
         const json = await res.json();
         const obj = json.data;
+                
+        // If no valid data or no title → redirect to not-found
+        if (!obj || !obj.title) {
+          router.replace("/not-found");
+          return;
+        }
 
         const keyResultIds = obj.keyResult || [];
         const keyResults = await Promise.all(

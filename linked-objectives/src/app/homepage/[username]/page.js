@@ -13,14 +13,15 @@ export default function HomePage() {
   const { username } = useParams();
   const router = useRouter();
   const { data: session, status } = useSession();
+
   const [userData, setUserData] = useState(null);
   const [okrs, setOkrs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(null);
-  const userRole = session?.user?.role;
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const userRole = session?.user?.role;
 
-  // Authorization check
+  // 🔐 Authorization check
   useEffect(() => {
     if (status === "loading") return;
 
@@ -37,7 +38,6 @@ export default function HomePage() {
         const res = await fetch(`/api/getUsername?email=${loggedInEmail}`, {
           cache: "no-store",
         });
-
         const json = await res.json();
         const loggedInUsername = json.username;
 
@@ -60,7 +60,7 @@ export default function HomePage() {
     checkAuthorization();
   }, [session, username, status, router]);
 
-  // Data fetching, only after authorization
+  // 📡 Data fetching after authorization
   useEffect(() => {
     if (!username || authorized !== true) return;
 
@@ -74,18 +74,26 @@ export default function HomePage() {
         });
 
         const json = await res.json();
+
+        if (!res.ok || json.error) {
+          router.replace("/not-found");
+          return;
+        }
+
         setUserData(json.data);
         setOkrs(json.okrs);
       } catch (err) {
         console.error("Failed to load OKR data:", err);
+        router.replace("/not-found");
       } finally {
         setLoading(false);
       }
     }
 
     fetchData();
-  }, [username, authorized]);
+  }, [username, authorized, router]);
 
+  // 🆕 Create OKR handler
   async function handleCreateOKR(formData) {
     try {
       const res = await fetch("/api/objectives", {
@@ -109,6 +117,7 @@ export default function HomePage() {
     }
   }
 
+  // 🌀 Loading fallback
   if (status === "loading" || authorized === null || loading) {
     return (
       <AppLayout>

@@ -46,12 +46,12 @@ export default function PersonPage() {
       </AppLayout>
     );
 
-  if (!data)
-    return (
-      <AppLayout>
-        <div className="p-6 text-red-500">Person not found.</div>
-      </AppLayout>
-    );
+  if (!data) {
+    if (typeof window !== "undefined") {
+      window.location.replace("/not-found");
+    }
+    return null;
+  }
 
   const userData = {
     ...data,

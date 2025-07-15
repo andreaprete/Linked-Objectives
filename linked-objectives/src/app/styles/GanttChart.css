@@ -248,3 +248,13 @@
   z-index: 6;
   /* …existing hover styles… */
 }
+
+.month-end-line {
+  position: absolute;
+  top: 24px;
+  bottom: 0;
+  width: 1px;
+  border-left: 1px dotted #888;
+  pointer-events: none;
+  z-index: 1;
+}

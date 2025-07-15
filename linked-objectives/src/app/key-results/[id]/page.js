@@ -1,32 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import AppLayout from "@/app/components/AppLayout";
-import KeyResultHeader from "@/app/components/KeyResultHeader.js";
-import ProgressBar from "@/app/components/ProgressBar.js";
-import MetaInfo from "@/app/components/MetaInfo.js";
-import DescriptionBox from "@/app/components/DescriptionBox.js";
-import LinkedOkrCard from "@/app/components/LinkedOkrCard.js";
-import EditKeyResultModal from "@/app/components/EditKeyResultModal.js";
+import KeyResultHeader from "@/app/components/KeyResultHeader";
+import ProgressBar from "@/app/components/ProgressBar";
+import MetaInfo from "@/app/components/MetaInfo";
+import DescriptionBox from "@/app/components/DescriptionBox";
+import LinkedOkrCard from "@/app/components/LinkedOkrCard";
+import EditKeyResultModal from "@/app/components/EditKeyResultModal";
 
 export default function ObjectivePage() {
   const { id } = useParams();
+  const router = useRouter();
+  const { data: session, status } = useSession();
+
   const [data, setData] = useState(null);
   const [lifecycleStates, setLifecycleStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
-  const { data: session, status } = useSession();
-  const [canEdit, setCanEdit] = useState(false);  
+  const [canEdit, setCanEdit] = useState(false);
 
   useEffect(() => {
     if (!id || status !== "authenticated") return;
 
     async function fetchOkr() {
       try {
-        const res = await fetch(`http://localhost:3000/api/key-results/${id}`, {
+        const res = await fetch(`/api/key-results/${id}`, {
           cache: "no-store",
           headers: {
             "Cache-Control": "no-cache",
@@ -35,14 +37,20 @@ export default function ObjectivePage() {
         });
 
         const json = await res.json();
+
+        const krData = json?.data;
+        if (!krData || !krData.title) {
+          router.replace("/not-found");
+          return;
+        }
+
         if (json.lifecycleStates && Array.isArray(json.lifecycleStates)) {
           setLifecycleStates(json.lifecycleStates);
         }
 
-        const krData = json.data;
         setData(krData);
 
-        // 👇 Permission logic
+        // ✅ Check if user can edit
         const email = session.user.email;
         const role = session.user.role;
 
@@ -66,16 +74,18 @@ export default function ObjectivePage() {
 
       } catch (err) {
         console.error("Failed to load OKR data:", err);
+        router.replace("/not-found");
       } finally {
         setLoading(false);
       }
     }
 
     fetchOkr();
-  }, [id, session, status]);
+  }, [id, session, status, router]);
 
-
-    if (loading) return (
+  // ⏳ Show loading state
+  if (loading) {
+    return (
       <AppLayout>
         <main className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
@@ -85,13 +95,18 @@ export default function ObjectivePage() {
         </main>
       </AppLayout>
     );
-  if (!data || Object.keys(data).length === 0)
+  }
+
+  // 🚫 Fail-safe fallback (shouldn't hit due to redirect)
+  if (!data) {
     return (
       <AppLayout>
-        <div className="p-6 text-red-500">Failed to load Key Result.</div>
+        <div className="p-6 text-red-500">Key Result not found.</div>
       </AppLayout>
     );
+  }
 
+  // 💾 Save handler
   const handleSave = async (updatedData) => {
     try {
       const res = await fetch(`/api/key-results/${id}`, {
@@ -101,22 +116,30 @@ export default function ObjectivePage() {
       });
 
       if (!res.ok) throw new Error("Update failed");
+
       setData((prev) => ({ ...prev, ...updatedData }));
       setModalOpen(false);
     } catch (err) {
       console.error("Failed to save updates:", err);
     }
   };
+
   return (
     <AppLayout>
-      <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen relative">    
-        <div className={`transition-all duration-300 w-full max-w-[1200px] bg-white rounded-xl shadow p-8 space-y-6 mx-auto ${isModalOpen ? "blur-sm pointer-events-none select-none" : ""}`}>
-          <KeyResultHeader
-            title={data.title}
-            comment={data.comment}
-            setModalOpen={setModalOpen}
-            canEdit={canEdit}
-          />
+      <div className="flex justify-center items-start bg-gray-100 pt-4 min-h-screen relative">
+        <div
+          className={`transition-all duration-300 w-full max-w-[1200px] bg-white rounded-xl shadow p-8 space-y-6 mx-auto ${
+            isModalOpen ? "blur-sm pointer-events-none select-none" : ""
+          }`}
+        >
+          {data.title && (
+            <KeyResultHeader
+              title={data.title}
+              comment={data.comment}
+              setModalOpen={setModalOpen}
+              canEdit={canEdit}
+            />
+          )}
           <div className="flex space-x-6">
             <div className="flex-3">
               <ProgressBar progress={data.progress} state={data.state} />
@@ -136,7 +159,6 @@ export default function ObjectivePage() {
           />
         </div>
 
-        {/* Modal overlay - only inside main content area */}
         {isModalOpen && (
           <EditKeyResultModal
             initialData={data}

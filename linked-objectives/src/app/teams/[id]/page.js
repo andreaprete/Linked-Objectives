@@ -43,12 +43,12 @@ export default function TeamPage() {
     </AppLayout>
   );
 
-  if (!data)
-    return (
-      <AppLayout>
-        <p className="p-6 text-red-500">Failed to load team.</p>
-      </AppLayout>
-    );
+  if (!data || !data.team || data.members.length === 0) {
+    if (typeof window !== "undefined") {
+      window.location.replace("/not-found");
+    }
+    return null;
+  }
 
   return (
     <AppLayout>

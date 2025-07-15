@@ -8,9 +8,9 @@ export async function middleware(req) {
 
   const publicPaths = ["/", "/login", "/register", "/landingpage"];
 
-  if (
-    publicPaths.some((path) => pathname.startsWith(path)) ||
-    pathname.startsWith("/photos/")
+if (
+  publicPaths.includes(pathname) ||
+  pathname.startsWith("/photos/")
   ) {
     return NextResponse.next();
   }

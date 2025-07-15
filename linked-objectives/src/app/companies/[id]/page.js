@@ -1,15 +1,16 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 
-import AppLayout from "@/app/components/AppLayout"; // << NEW unified layout!
+import AppLayout from "@/app/components/AppLayout";
 import CompanyHeader from "@/app/components/CompanyHeader";
 import DepartmentCard from "@/app/components/DepartmentCard";
 import OkrTable from "@/app/components/OkrTable";
 
 export default function CompanyPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [visibleDepts, setVisibleDepts] = useState(3);
@@ -32,6 +33,18 @@ export default function CompanyPage() {
           },
         });
         const json = await res.json();
+
+        // Check if the company does not exist
+        const isInvalid =
+          json.departments?.length === 0 &&
+          json.okrs?.length === 0 &&
+          !json.homepage;
+
+        if (isInvalid) {
+          router.replace("/not-found");
+          return;
+        }
+
         setData(json);
       } catch (err) {
         console.error("Failed to load company data:", err);
@@ -41,7 +54,7 @@ export default function CompanyPage() {
     }
 
     fetchCompany();
-  }, [id]);
+  }, [id, router]);
 
   if (loading)
     return (
@@ -54,12 +67,17 @@ export default function CompanyPage() {
         </main>
       </AppLayout>
     );
+
   if (!data)
-    return <p className="p-6 text-red-500">Error loading company data.</p>;
+    return (
+      <AppLayout>
+        <main className="p-6 text-red-500">Error loading company data.</main>
+      </AppLayout>
+    );
 
   return (
     <AppLayout>
-      <main className="p-6 space-y-6 w-[80%] mx-auto"> 
+      <main className="p-6 space-y-6 w-[80%] mx-auto">
         <CompanyHeader
           name={data.name}
           homepage={data.homepage}
@@ -67,10 +85,7 @@ export default function CompanyPage() {
           onDepartmentsClick={scrollToDepartments}
         />
 
-        <div
-          className="bg-white rounded-xl shadow p-6"
-          ref={departmentSectionRef}
-        >
+        <div className="bg-white rounded-xl shadow p-6" ref={departmentSectionRef}>
           <h2 className="text-xl font-semibold mb-4">Departments</h2>
           <div className="space-y-3">
             {data.departments?.slice(0, visibleDepts).map((dept, i) => (

@@ -128,32 +128,38 @@ export default function GanttChart({ tasks }) {
           {/* ───── month band & vertical grid ───── */}
           <div className="month-band" style={{ width: chartW }}>
             {months.map((m, i) => {
-              const left  = dateToPx(m);
-              const right = i + 1 < months.length
-                ? dateToPx(months[i + 1])
-                : chartW;
+              const left = dateToPx(m);
+              const right = i + 1 < months.length ? dateToPx(months[i + 1]) : chartW;
               const width = right - left;
 
               return (
                 <React.Fragment key={i}>
                   {/* label cell */}
-                  <div
-                    className="month-cell"
-                    style={{ left, width }}
-                  >
+                  <div className="month-cell" style={{ left, width }}>
                     {m.toLocaleString("default", {
                       month: "short",
                       year: "numeric",
                     })}
                   </div>
-                  {/* grid line */}
+
+                  {/* start-of-month line */}
                   <div className="vertical-line" style={{ left }} />
                 </React.Fragment>
               );
             })}
           </div>
           {todayPx!==null && <div className="today-line" style={{left:todayPx}} />}
-
+          {months.map((m, i) => {
+            const monthEnd = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+            const monthEndPx = dateToPx(new Date(monthEnd.getFullYear(), monthEnd.getMonth(), monthEnd.getDate() + 1));
+            return (
+              <div
+                key={`month-end-${i}`}
+                className="month-end-line"
+                style={{ left: monthEndPx, top: 24 }}
+              />
+            );
+          })}
           {/* tasks */}
           {valid.map((t,i)=>{
             const left = dateToPx(t.start);
