@@ -390,7 +390,9 @@ export async function getObjectivesData(req, context) {
   }
 }
 
-export const GET = requireLogin(getObjectivesData);
+export async function GET(req, context) {
+  return await getObjectivesData(req, context);
+}
 
 import { getToken } from "next-auth/jwt";
 
