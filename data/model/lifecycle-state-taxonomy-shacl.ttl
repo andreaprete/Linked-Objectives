@@ -1,0 +1,146 @@
+# Copyright (c) 2025 SICK AG
+# Provided by Burkhard Weber, Head of Linked Data
+# Licensed under the MIT License
+
+@prefix : <https://data.sick.com/voc/dev/lifecylce-state-taxonomy/shacl/> .
+
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+##################################################
+# 1. Ensure that all state values are SKOS concepts
+##################################################
+
+:HasStateShape a sh:NodeShape ;
+    sh:targetSubjectsOf :hasState ;
+    sh:property [
+        sh:path :hasState ;
+        sh:class skos:Concept ;
+        sh:message "All values of :hasState must be instances of skos:Concept." ;
+    ] .
+
+##################################################
+# 2. Ensure dimension-specific state properties point to the correct concept scheme
+##################################################
+
+:DevelopmentStateShape a sh:NodeShape ;
+    sh:targetSubjectsOf :hasDevelopmentState ;
+    sh:property [
+        sh:path :hasDevelopmentState ;
+        sh:class skos:Concept ;
+        sh:nodeKind sh:IRI ;
+        sh:sparql [
+            a sh:SPARQLConstraint ;
+            sh:message "Development state must belong to DevelopmentStateScheme." ;
+            sh:select """
+                SELECT $this WHERE {
+                  $this :hasDevelopmentState ?state .
+                  FILTER NOT EXISTS {
+                    ?state skos:inScheme :DevelopmentStateScheme .
+                  }
+                }
+            """ ;
+        ]
+    ] .
+
+:MaturityStateShape a sh:NodeShape ;
+    sh:targetSubjectsOf :hasMaturityState ;
+    sh:property [
+        sh:path :hasMaturityState ;
+        sh:class skos:Concept ;
+        sh:nodeKind sh:IRI ;
+        sh:sparql [
+            a sh:SPARQLConstraint ;
+            sh:message "Maturity state must belong to MaturityStateScheme." ;
+            sh:select """
+                SELECT $this WHERE {
+                  $this :hasMaturityState ?state .
+                  FILTER NOT EXISTS {
+                    ?state skos:inScheme :MaturityStateScheme .
+                  }
+                }
+            """ ;
+        ]
+    ] .
+
+:DecisionStateShape a sh:NodeShape ;
+    sh:targetSubjectsOf :hasDecisionState ;
+    sh:property [
+        sh:path :hasDecisionState ;
+        sh:class skos:Concept ;
+        sh:nodeKind sh:IRI ;
+        sh:sparql [
+            a sh:SPARQLConstraint ;
+            sh:message "Decision state must belong to DecisionStateScheme." ;
+            sh:select """
+                SELECT $this WHERE {
+                  $this :hasDecisionState ?state .
+                  FILTER NOT EXISTS {
+                    ?state skos:inScheme :DecisionStateScheme .
+                  }
+                }
+            """ ;
+        ]
+    ] .
+
+:ReleaseStateShape a sh:NodeShape ;
+    sh:targetSubjectsOf :hasReleaseState ;
+    sh:property [
+        sh:path :hasReleaseState ;
+        sh:class skos:Concept ;
+        sh:nodeKind sh:IRI ;
+        sh:sparql [
+            a sh:SPARQLConstraint ;
+            sh:message "Release state must belong to ReleaseStateScheme." ;
+            sh:select """
+                SELECT $this WHERE {
+                  $this :hasReleaseState ?state .
+                  FILTER NOT EXISTS {
+                    ?state skos:inScheme :ReleaseStateScheme .
+                  }
+                }
+            """ ;
+        ]
+    ] .
+
+##################################################
+# 3. Ensure that nextState belongs to the same ConceptScheme
+##################################################
+
+:NextStateSameSchemeShape a sh:NodeShape ;
+    sh:targetSubjectsOf :nextState ;
+    sh:property [
+        sh:path :nextState ;
+        sh:class skos:Concept ;
+        sh:sparql [
+            a sh:SPARQLConstraint ;
+            sh:message "The object of :nextState must be in the same skos:ConceptScheme as the subject." ;
+            sh:select """
+                SELECT $this ?next WHERE {
+                  $this skos:inScheme ?scheme .
+                  $this :nextState ?next .
+                  FILTER NOT EXISTS {
+                    ?next skos:inScheme ?scheme .
+                  }
+                }
+            """ ;
+        ]
+    ] .
+
+##################################################
+# 4. Validate use of rdf:List in OrderedCollections
+##################################################
+
+:OrderedCollectionShape a sh:NodeShape ;
+    sh:targetClass skos:OrderedCollection ;
+    sh:property [
+        sh:path rdf:first ;
+        sh:class skos:Concept ;
+        sh:message "rdf:first must point to a skos:Concept." ;
+    ] ;
+    sh:property [
+        sh:path rdf:rest ;
+        sh:nodeKind sh:List ;
+        sh:message "rdf:rest must be a valid RDF List." ;
+    ] .

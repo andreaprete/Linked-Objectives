@@ -1,0 +1,189 @@
+# Copyright (c) 2025 SICK AG
+# Provided by Dr. Morten Meyer, Data Architect
+# Licensed under the MIT License
+
+@prefix : <https://data.sick.com/voc/sam/responsibility-model/> .
+@prefix org: <http://www.w3.org/ns/org#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix terms: <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+
+:caresFor a owl:ObjectProperty ;
+    rdfs:label "cares for"@en ;
+    rdfs:domain :AttendantPost ;
+    rdfs:isDefinedBy : ;
+    rdfs:subPropertyOf :hasFormalResponsibilityFor ;
+    owl:inverseOf :isCaredForBy ;
+    skos:definition "This property expresses that some attendant post cares for something."@en ;
+    skos:prefLabel "cares for"@en .
+
+:hasAccountability a owl:ObjectProperty ;
+    rdfs:label "has accountability"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:range :HeadPost ;
+    rdfs:subPropertyOf owl:topObjectProperty ;
+    owl:inverseOf :isAccountableFor ;
+    skos:definition "This property expresses that a thing has for its accountability a given head post as responsible."@en ;
+    skos:prefLabel "has accountability"@en .
+
+:isManagedBy a owl:ObjectProperty ;
+    rdfs:label "is managed by"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:range :ManagerPost ;
+    rdfs:subPropertyOf owl:topObjectProperty ;
+    owl:inverseOf :manages ;
+    skos:definition "This property expresses that something is managed by the given post."@en ;
+    skos:prefLabel "is managed by"@en .
+
+:isOperatedBy a owl:ObjectProperty ;
+    rdfs:label "is operated by"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:subPropertyOf owl:topObjectProperty ;
+    owl:inverseOf :operates ;
+    skos:definition "This property expresses that some operational aspect of the thing is in responsibility of the given operational post."@en ;
+    skos:prefLabel "is operated by"@en .
+
+:isOwnedBy a owl:ObjectProperty ;
+    rdfs:label "is owned by"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:range :ResponsibleOrganizationalUnit ;
+    owl:inverseOf :owns ;
+    skos:definition "This property expresses that something is in the ownership of a certain organizational unit."@en ;
+    skos:prefLabel "is owned by"@en .
+
+:OperationalPost a owl:Class ;
+    rdfs:label "Operational Post"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:subClassOf :ResponsiblePost ;
+    skos:definition "An operational post is a post that is responsible for the realization of one or more particular aspects of the technical deliverables. The operational post does not represent a stakeholder group. It has at least one role from the development and operational level that clarifies for which aspects the post is responsible."@en ;
+    skos:prefLabel "Operational Post"@en .
+
+:ResponsiblePerson a owl:Class ;
+    rdfs:label "Responsible Person"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:subClassOf prov:Person ;
+    skos:definition "A responsible person, is a person that holds at least one responsible post."@en ;
+    skos:prefLabel "Responsible Person"@en .
+
+:isAccountableFor a owl:ObjectProperty ;
+    rdfs:label "is accountable for"@en ;
+    rdfs:domain :HeadPost ;
+    rdfs:isDefinedBy : ;
+    rdfs:subPropertyOf :hasFormalResponsibilityFor ;
+    skos:definition "This property expresses that a head post is accountable for a thing."@en ;
+    skos:prefLabel "is accountable for"@en .
+
+:isCaredForBy a owl:ObjectProperty ;
+    rdfs:label "is cared for by"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:range :AttendantPost ;
+    rdfs:subPropertyOf owl:topObjectProperty ;
+    skos:definition "This property expresses that something is cared for by the given attendant post."@en ;
+    skos:prefLabel "is cared for by"@en .
+
+:manages a owl:ObjectProperty ;
+    rdfs:label "manages"@en ;
+    rdfs:domain :ManagerPost ;
+    rdfs:isDefinedBy : ;
+    rdfs:subPropertyOf :hasFormalResponsibilityFor ;
+    skos:definition "This property expresses that some manager post manages a thing."@en ;
+    skos:prefLabel "manages"@en .
+
+:operates a owl:ObjectProperty ;
+    rdfs:label "operates"@en ;
+    rdfs:domain :OperationalPost ;
+    rdfs:isDefinedBy : ;
+    rdfs:subPropertyOf :hasFormalResponsibilityFor ;
+    skos:definition "This property expresses that some operational post has responsibility for an operational aspect of a given thing."@en ;
+    skos:prefLabel "operates"@en .
+
+:owns a owl:ObjectProperty ;
+    rdfs:label "owns"@en ;
+    rdfs:domain :ResponsibleOrganizationalUnit ;
+    rdfs:isDefinedBy : ;
+    rdfs:subPropertyOf :hasResponsibilityFor ;
+    skos:definition "This property expresses that some organizational unit owns something and has legal responsibility for it."@en ;
+    skos:prefLabel "owns"@en .
+
+:AttendantPost a owl:Class ;
+    rdfs:label "Attendant Post"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:subClassOf :ResponsiblePost ;
+    skos:definition "A Attendant post is the post that is responsible for the definition and fulfilment of the technical deliverables associated with a product, asset or other target of responsibility ('technical' refers to the content, methods and actions to meet requirement). The Attendant post has at least one 'Attendant' role, but can have also other roles. Therefore, it represents the interest of the team of developers of the target of responsibility."@en ;
+    skos:prefLabel "Attendant Post"@en .
+
+:HeadPost a owl:Class ;
+    rdfs:label "Head Post"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:subClassOf :ResponsiblePost ;
+    skos:definition "A head post is the post within an organizational unit that is formally responsible for the availability and quality of internally required resources and for the business success of the unit. The post has at least the role of one 'Head', but can have also other roles. The head post therefore represents the interest of the board in the strategic goals of the enterprise and of the unit within it."@en ;
+    skos:prefLabel "Head Post"@en .
+
+:ManagerPost a owl:Class ;
+    rdfs:label "Manager Post"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:subClassOf :ResponsiblePost ;
+    skos:definition "A manager post is the post that is responsible for the definition and fulfilment of business deliverables, i.e. the user and customer requirements, associated with a product, asset or other target of responsibility. The manager post has at least one 'Manager' role, but can have also other roles. Therefore, it represents the interest of the customers and users of the target of responsibility."@en ;
+    skos:prefLabel "Manager Post"@en .
+
+:hasResponsibilityFor a owl:ObjectProperty ;
+    rdfs:label "has responsibility for"@en ;
+    rdfs:isDefinedBy : ;
+    skos:definition "This property expresses that something has responsibility of something else without any further specification."@en ;
+    skos:prefLabel "has responsibility for"@en ;
+    skos:scopeNote "We should evaluate whether the inverse properties are necessary / practical for our implementations." .
+
+:ResponsibleOrganizationalUnit a owl:Class ;
+    rdfs:label "Responsible Orgranizational Unit"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:subClassOf org:OrganizationalUnit ;
+    skos:definition "A responsible organizational unit is the unit within an organization, which formally owns a product, asset or other target of responsibility. The head post is head of this responsible unit."@en ;
+    skos:prefLabel "Responsible Orgranizational Unit"@en .
+
+:hasFormalResponsibilityFor a owl:ObjectProperty ;
+    rdfs:label "has formal responsibility for"@en ;
+    rdfs:domain :ResponsiblePost ;
+    rdfs:isDefinedBy : ;
+    rdfs:subPropertyOf :hasResponsibilityFor ;
+    skos:definition "This property expresses that a Post is formally responsible for something else without specification of the context of the responsibility."@en ;
+    skos:prefLabel "has formal responsibility for"@en .
+
+:ResponsiblePost a owl:Class ;
+    rdfs:label "Responsible Post"@en ;
+    rdfs:isDefinedBy : ;
+    rdfs:subClassOf org:Post ;
+    skos:definition "A responsible post is a post in an organizational unit that has at least one of the responsibilites associated with a target. It is recommended to link an informative description of the character of the responsibility."@en ;
+    skos:editorialNote "Descriptions of the responsibilities should be linked to the post with core:specification."@en ;
+    skos:prefLabel "Responsible Post"@en ;
+    skos:scopeNote "The textual definition could make this class a union of the different possible posts with responsibility. However it is modeled as a superclass for simplicity and because the current subclasses may not be exclusive."@en .
+
+: a owl:Ontology ;
+    rdfs:label "Responsibility Ontology"@en ;
+    terms:creator <https://data.sick.com/res/sam/users/29460078-7119-4520-b98d-3004a36a79c5>,
+        <https://data.sick.com/res/sam/users/e8e435d9-a9fb-48b5-aa02-cf9a3e7de746> ;
+    terms:description "A basic ontology, to describe responsibilities in the context of the SICK Application Model."@en ;
+    terms:isVersionOf <https://data.sick.com/res/sam/profiles/6a80ef03-d511-4d98-8fcc-a99e15f317a9> ;
+    terms:issued "2022-05-12" ;
+    terms:modified "2025-02-03" ;
+    terms:rights "Copyright @ 2022 SICK AG"@en ;
+    vann:preferredNamespacePrefix "responsibility-model" ;
+    vann:preferredNamespaceUri "https://data.sick.com/voc/sam/responsibility-model/" ;
+    owl:priorVersion <https://data.sick.com/res/sam/profiles/6d053c14-e911-447e-bd6a-986b0c809343> ;
+    owl:versionIRI <https://data.sick.com/voc/sam/responsibility-model/2.1.1/> ;
+    owl:versionInfo "2.1.1" ;
+    skos:changeNote "2022-05-12: Initial release of the SICK Application Model Responsibility ontology used in the SICK Marketplace.",
+        "2023-03-23: Annotation added.",
+        "2023-03-28: Formalization of new responsibility model and annotations.",
+        "2023-09-06: Added properties for a simple connection without restrictions and detailed out semantics of relations between properties.",
+        "2024-12-06: added profile place concept and prior version to ontology annotation.",
+        "2025-02-03: Renaming: omitting 'SICK Application Model - ' in labels." ;
+    skos:definition "A basic ontology, to describe responsibilities in the context of the SICK Application Model."@en ;
+    skos:prefLabel "Responsibility Ontology"@en .
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( :ResponsibleOrganizationalUnit :ResponsiblePerson :ResponsiblePost ) .
+

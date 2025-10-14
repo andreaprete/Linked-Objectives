@@ -1,0 +1,479 @@
+# This RDF file provides a structured example dataset for the open source project
+# "Linked Objectives". It demonstrates how semantic OKRs (Objectives and Key Results)
+# can be modeled using open standards such as RDF, RDFS, OWL, and Dublin Core Terms.
+#
+# The dataset defines exemplary Objectives and Key Results, enriched with metadata
+# including lifecycle states, responsible roles, and temporal scopes. It serves as
+# a demonstrator and test case supporting the broader goal of making goal-setting
+# and progress tracking more transparent and machine-readable.
+#
+# Intended use: example, testing, and onboarding within the Linked Objectives project.
+#
+# Copyright (c) 2025 SICK AG
+# Provided by Burkhard Weber, Head of Linked Data
+# Licensed under the MIT License
+
+@prefix : <https://data.sick.com/res/dev/examples/linked-objectives-okrs/> .
+
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix objectives: <https://data.sick.com/voc/sam/objectives-model/> .
+@prefix lifecycle: <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/> .
+@prefix responsibility: <https://data.sick.com/voc/sam/responsibility-model/> .
+@prefix orgdata: <https://data.sick.com/res/dev/examples/common-semantics/> .
+
+
+# Objective 1
+:obj-1 a objectives:Objective ;
+    rdfs:label "Building Linked Objectives with Open Standards and Open World Models"@en ;
+    rdfs:comment "Demonstrates semantic OKRs using open standards and a linked data model."@en;
+    dct:description "Launch an open-source prototype of 'Linked Objectives' as a data-centric, semantic OKR tool that demonstrates the potential of Linked Data and open standards."@en ;
+    objectives:category objectives:operational ;
+    lifecycle:state lifecycle:Planned;
+    owl:versionInfo "1.0.0" ;
+    dct:created "2025-03-31"^^xsd:date ;
+    dct:modified "2025-03-31"^^xsd:date ;
+    responsibility:isAccountableFor orgdata:FounderCEO ;
+    responsibility:caresFor orgdata:ProductManager ;
+    responsibility:operates orgdata:ProductManager ;
+    objectives:contributesTo :obj-2, :obj-3, :obj-4 ;
+    dct:temporal :interval-obj-1 ;
+    objectives:hasKeyResult :kr-1-1, :kr-1-2, :kr-1-3, :kr-1-4, :kr-1-5, :kr-1-6 .
+
+:interval-obj-1 a time:Interval ;
+    time:hasBeginning "2025-04-01"^^xsd:date ;
+    time:hasEnd "2025-06-30"^^xsd:date .
+
+:kr-1-1 a objectives:KeyResult ;
+    rdfs:label "Open-source release on GitHub"@en ;
+    rdfs:comment "Publishes the open-source version of the OKR tool."@en ;
+    dct:description "Release the full project as open-source on GitHub, including setup instructions, an open license, and contribution guidelines."@en ;
+    dct:isPartOf :obj-1 ;
+    lifecycle:state lifecycle:Planned;    
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-1-2 a objectives:KeyResult ;
+    rdfs:label "Display RDF test data"@en ;
+    rdfs:comment "Visualizes test data in RDF format through the UI."@en ;
+    dct:description "Load and render a complete OKR test dataset (RDF format) and display it via the user interface."@en ;
+    dct:isPartOf :obj-1 ;
+    lifecycle:state lifecycle:Planned;    
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-1-3 a objectives:KeyResult ;
+    rdfs:label "Lifecycle management via UI/API"@en ;
+    rdfs:comment "Provides CRUD functionality for OKRs via UI and API."@en ;
+    dct:description "Enable full lifecycle management of OKRs and Key Results (create, view, edit, delete) via the UI and a RESTful API."@en ;
+    dct:isPartOf :obj-1 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-1-4 a objectives:KeyResult ;
+    rdfs:label "Searchable OKR interface"@en ;
+    rdfs:comment "Enables search and filtering of OKRs."@en ;
+    dct:description "Develop a basic user interface to browse, filter, and search OKRs with at least three functional search/filter options."@en ;
+    dct:isPartOf :obj-1 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-1-5 a objectives:KeyResult ;
+    rdfs:label "Diagram editor integration"@en ;
+    rdfs:comment "Allows OKR modeling via drag-and-drop diagrams."@en ;
+    dct:description "Integrate a diagram editor (e.g., Excalidraw integration) enabling drag & drop composition of OKRs."@en ;
+    dct:isPartOf :obj-1 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-1-6 a objectives:KeyResult ;
+    rdfs:label "Usability test"@en ;
+    rdfs:comment "Gathers insights through user testing."@en ;
+    dct:description "Conduct a usability test with at least 10 users and document 5 or more actionable insights for future improvements."@en ;
+    dct:isPartOf :obj-1 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+# Objective 2
+:obj-2 a objectives:Objective ;
+    rdfs:label "Validating User Value and Practical Use of Semantic OKRs"@en ;
+    rdfs:comment "Validates practical usability and user acceptance of Linked Objectives."@en;
+    dct:description "Evaluate how well 'Linked Objectives' fits real-world OKR needs by gathering feedback, running use cases, and refining based on user input."@en;
+    objectives:category objectives:tactical ;
+    lifecycle:state lifecycle:Planned;
+    owl:versionInfo "1.0.0" ;
+    dct:created "2025-03-31"^^xsd:date ;
+    dct:modified "2025-03-31"^^xsd:date ;
+    responsibility:isAccountableFor orgdata:FounderCEO ;
+    responsibility:caresFor orgdata:ProductManager ;
+    responsibility:operates orgdata:ProductManager ;
+    dct:temporal :interval-obj-2 ;
+    objectives:needs :obj-1 ;
+    objectives:contributesTo :obj-4 ;
+    objectives:hasKeyResult :kr-2-1, :kr-2-2, :kr-2-3, :kr-2-4 .
+
+:interval-obj-2 a time:Interval ;
+    time:hasBeginning "2025-07-01"^^xsd:date ;
+    time:hasEnd "2025-09-30"^^xsd:date .
+
+:kr-2-1 a objectives:KeyResult ;
+    rdfs:label "Conduct OKR user interviews"@en ;
+    rdfs:comment "Gathers practical feedback from OKR users."@en ;
+    dct:description "Conduct 3 interviews with teams or individuals who actively use OKRs."@en ;
+    dct:isPartOf :obj-2 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-2-2 a objectives:KeyResult ;
+    rdfs:label "Document OKR configurations"@en ;
+    rdfs:comment "Captures diverse OKR setups."@en ;
+    dct:description "Document 3 realistic OKR configurations for different use cases (e.g., startup, university, NGO)."@en ;
+    dct:isPartOf :obj-2 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-2-3 a objectives:KeyResult ;
+    rdfs:label "Collect user feedback"@en ;
+    rdfs:comment "Collects feedback from various channels."@en ;
+    dct:description "Collect at least 10 items of feedback through GitHub issues, surveys, or direct interviews."@en ;
+    dct:isPartOf :obj-2 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-2-4 a objectives:KeyResult ;
+    rdfs:label "Prioritize top feature requests"@en ;
+    rdfs:comment "Determines the most requested features."@en ;
+    dct:description "Identify and prioritize the top 3 feature requests based on user feedback."@en ;
+    dct:isPartOf :obj-2 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+# Objective 3
+:obj-3 a objectives:Objective ;
+    rdfs:label "Achieving Interoperability Through Semantic Web Standards"@en;
+    rdfs:comment "Ensures interoperability of OKRs by aligning with Semantic Web standards."@en; 
+    dct:description "Ensure that OKRs are modeled and published using interoperable, standards-based formats and vocabularies."@en ;
+    objectives:category objectives:strategic ;
+    lifecycle:state lifecycle:Planned;
+    owl:versionInfo "1.0.0" ;
+    dct:created "2025-03-31"^^xsd:date ;
+    dct:modified "2025-03-31"^^xsd:date ;
+    responsibility:isAccountableFor orgdata:FounderCEO ;
+    responsibility:caresFor orgdata:ProductManager ;
+    responsibility:operates orgdata:ProductManager ;
+    dct:temporal :interval-obj-3 ;
+    objectives:contributesTo :obj-1 ;
+    objectives:hasKeyResult :kr-3-1, :kr-3-2, :kr-3-3, :kr-3-4 .
+
+:interval-obj-3 a time:Interval ;
+    time:hasBeginning "2025-04-01"^^xsd:date ;
+    time:hasEnd "2025-06-30"^^xsd:date .
+
+:kr-3-1 a objectives:KeyResult ;
+    rdfs:label "Publish OKR ontology"@en ;
+    rdfs:comment "Publishes an OWL ontology for OKRs."@en ;
+    dct:description "Publish the OKR ontology using OWL, including at least 2 classes and 5 properties."@en ;
+    dct:isPartOf :obj-3 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-3-2 a objectives:KeyResult ;
+    rdfs:label "Align with existing vocabularies"@en ;
+    rdfs:comment "Reuses well-known vocabularies."@en ;
+    dct:description "Align the ontology with at least one existing vocabulary (e.g., schema.org, SKOS, FOAF)."@en ;
+    dct:isPartOf :obj-3 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-3-3 a objectives:KeyResult ;
+    rdfs:label "Support RDF import/export"@en ;
+    rdfs:comment "Enables RDF data import and export."@en ;
+    dct:description "Support RDF import and export in both Turtle and JSON-LD formats."@en ;
+    dct:isPartOf :obj-3 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-3-4 a objectives:KeyResult ;
+    rdfs:label "Expose dereferenceable URIs"@en ;
+    rdfs:comment "Provides URIs that can be dereferenced."@en ;
+    dct:description "Expose dereferenceable URIs for all OKRs and concepts used in the ontology."@en ;
+    dct:isPartOf :obj-3 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+# Objective 4
+:obj-4 a objectives:Objective ;
+    rdfs:label "Growing a Collaborative Open Source Community"@en ;
+    rdfs:comment "Supports community building and contributions for Linked Objectives."@en ;
+    dct:description "Foster a healthy open-source community around Linked Objectives through transparency, onboarding, and early contributor support."@en ;
+    objectives:category objectives:strategic ;
+    lifecycle:state lifecycle:Planned;
+    owl:versionInfo "1.0.0" ;
+    dct:created "2025-03-31"^^xsd:date ;
+    dct:modified "2025-03-31"^^xsd:date ;
+    responsibility:isAccountableFor orgdata:FounderCEO ;
+    responsibility:caresFor orgdata:ProductManager ;
+    responsibility:operates orgdata:ProductManager ;
+    dct:temporal :interval-obj-4 ;
+    objectives:needs :obj-1, :obj-2 ;
+    objectives:hasKeyResult :kr-4-1, :kr-4-2, :kr-4-3, :kr-4-4 .
+
+:interval-obj-4 a time:Interval ;
+    time:hasBeginning "2026-01-01"^^xsd:date ;
+    time:hasEnd "2026-03-31"^^xsd:date .
+
+:kr-4-1 a objectives:KeyResult ;
+    rdfs:label "Publish community homepage"@en ;
+    rdfs:comment "Provides entry point for contributors."@en ;
+    dct:description "Publish a project homepage including roadmap, contribution guide, and onboarding instructions."@en ;
+    dct:isPartOf :obj-4 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-4-2 a objectives:KeyResult ;
+    rdfs:label "Merge external pull requests"@en ;
+    rdfs:comment "Integrates external contributions."@en ;
+    dct:description "Merge at least 2 pull requests from external contributors."@en ;
+    dct:isPartOf :obj-4 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-4-3 a objectives:KeyResult ;
+    rdfs:label "Publish good first issues"@en ;
+    rdfs:comment "Helps new contributors get started with beginner-friendly issues."@en ;
+    dct:description "Provide at least five beginner-friendly issues, clearly labeled for onboarding purposes."@en ;
+    dct:isPartOf :obj-4 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-4-4 a objectives:KeyResult ;
+    rdfs:label "Host public community call"@en ;
+    rdfs:comment "Connects with the community via a live session."@en ;
+    dct:description "Host one public community call or live demo session."@en ;
+    dct:isPartOf :obj-4 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+# Objective 5
+:obj-5 a objectives:Objective ;
+    rdfs:label "Ensuring Data Quality and Semantic Validity"@en ;
+    rdfs:comment "Introduces validation mechanisms for structural and semantic OKR integrity."@en;
+    dct:description "Implement validation mechanisms to guarantee the structural and semantic integrity of OKRs across the system."@en ;
+    objectives:category objectives:tactical ;
+    lifecycle:state lifecycle:Planned;
+    owl:versionInfo "1.0.0" ;
+    dct:created "2025-03-31"^^xsd:date ;
+    dct:modified "2025-03-31"^^xsd:date ;
+    responsibility:isAccountableFor orgdata:FounderCEO ;
+    responsibility:caresFor orgdata:ProductManager ;
+    responsibility:operates orgdata:ProductManager ;
+    dct:temporal :interval-obj-5 ;
+    objectives:needs :obj-1, :obj-3 ;
+    objectives:contributesTo :obj-2 ;
+    objectives:hasKeyResult :kr-5-1, :kr-5-2, :kr-5-3, :kr-5-4 .
+
+:interval-obj-5 a time:Interval ;
+    time:hasBeginning "2025-10-01"^^xsd:date ;
+    time:hasEnd "2025-12-31"^^xsd:date .
+
+:kr-5-1 a objectives:KeyResult ;
+    rdfs:label "Define validation rules"@en ;
+    rdfs:comment "Defines rules to ensure semantic OKR structure."@en ;
+    dct:description "Define validation rules for OKRs (e.g., each Key Result must be linked to one Objective)."@en ;
+    dct:isPartOf :obj-5 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-5-2 a objectives:KeyResult ;
+    rdfs:label "Implement SHACL or SPARQL validation"@en ;
+    rdfs:comment "Applies semantic validation techniques."@en ;
+    dct:description "Implement SHACL or SPARQL-based validation for semantic consistency."@en ;
+    dct:isPartOf :obj-5 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-5-3 a objectives:KeyResult ;
+    rdfs:label "Build validation UI view"@en ;
+    rdfs:comment "Shows errors and warnings in the UI."@en ;
+    dct:description "Build a validation view in the UI that highlights incorrect or incomplete OKRs."@en ;
+    dct:isPartOf :obj-5 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-5-4 a objectives:KeyResult ;
+    rdfs:label "Ensure zero critical validation errors"@en ;
+    rdfs:comment "Checks that test data is clean."@en ;
+    dct:description "Ensure all test data passes the validation rules with 0 critical errors."@en ;
+    dct:isPartOf :obj-5 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+# Objective 6
+:obj-6 a objectives:Objective ;
+    rdfs:label "Implementing Secure and Scalable User Management"@en ;
+    rdfs:comment "Implements secure, scalable user authentication and authorization."@en;
+    dct:description "Provide a secure and scalable authentication and authorization system for user access and role-based interactions."@en ;
+    objectives:category objectives:operational ;
+    lifecycle:state lifecycle:Planned;
+    owl:versionInfo "1.0.0" ;
+    dct:created "2025-03-31"^^xsd:date ;
+    dct:modified "2025-03-31"^^xsd:date ;
+    responsibility:isAccountableFor orgdata:FounderCEO ;
+    responsibility:caresFor orgdata:ProductManager ;
+    responsibility:operates orgdata:ProductManager ;
+    dct:temporal :interval-obj-6 ;
+    objectives:needs :obj-1 ;
+    objectives:contributesTo :obj-4 ;
+    objectives:hasKeyResult :kr-6-1, :kr-6-2, :kr-6-3, :kr-6-4 .
+
+:interval-obj-6 a time:Interval ;
+    time:hasBeginning "2025-10-01"^^xsd:date ;
+    time:hasEnd "2025-12-31"^^xsd:date .
+
+:kr-6-1 a objectives:KeyResult ;
+    rdfs:label "Implement JWT-based login"@en ;
+    rdfs:comment "Implements secure authentication via JWT."@en ;
+    dct:description "Implement user registration and login with email/password and basic JWT-based authentication."@en ;
+    dct:isPartOf :obj-6 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-6-2 a objectives:KeyResult ;
+    rdfs:label "Define user roles and permissions"@en ;
+    rdfs:comment "Adds role-based access control."@en ;
+    dct:description "Define at least 2 user roles (e.g., viewer, editor) and restrict access based on permissions."@en ;
+    dct:isPartOf :obj-6 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-6-3 a objectives:KeyResult ;
+    rdfs:label "Store RDF-compatible accounts"@en ;
+    rdfs:comment "Stores user accounts in RDF format."@en ;
+    dct:description "Store user accounts in a secure, RDF-compatible format."@en ;
+    dct:isPartOf :obj-6 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-6-4 a objectives:KeyResult ;
+    rdfs:label "Perform basic security audit"@en ;
+    rdfs:comment "Finds and fixes critical auth vulnerabilities."@en ;
+    dct:description "Conduct a basic security audit of authentication flows and fix any critical issues."@en ;
+    dct:isPartOf :obj-6 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+# Objective 7
+:obj-7 a objectives:Objective ;
+    rdfs:label "Enabling Deployment and Accessibility for Broader Adoption"@en ;
+    rdfs:comment "Enables deployment and testing of Linked Objectives in real environments."@en;
+    dct:description "Make 'Linked Objectives' easy to deploy, test, and access across different environments and user groups."@en ;
+    objectives:category objectives:operational ;
+    lifecycle:state lifecycle:Planned;
+    owl:versionInfo "1.0.0" ;
+    dct:created "2025-03-31"^^xsd:date ;
+    dct:modified "2025-03-31"^^xsd:date ;
+    responsibility:isAccountableFor orgdata:FounderCEO ;
+    responsibility:caresFor orgdata:ProductManager ;
+    responsibility:operates orgdata:ProductManager ;
+    dct:temporal :interval-obj-7 ;
+    objectives:needs :obj-1 ;
+    objectives:contributesTo :obj-2, :obj-4 ;
+    objectives:hasKeyResult :kr-7-1, :kr-7-2, :kr-7-3, :kr-7-4 .
+
+:interval-obj-7 a time:Interval ;
+    time:hasBeginning "2025-07-01"^^xsd:date ;
+    time:hasEnd "2025-09-30"^^xsd:date .
+
+:kr-7-1 a objectives:KeyResult ;
+    rdfs:label "Docker-based one-click deployment"@en ;
+    rdfs:comment "Enables fast setup via Docker."@en ;
+    dct:description "Provide a Docker-based one-click deployment option with default test data."@en ;
+    dct:isPartOf :obj-7 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-7-2 a objectives:KeyResult ;
+    rdfs:label "UI accessibility compliance"@en ;
+    rdfs:comment "Ensures accessibility for all users."@en ;
+    dct:description "Ensure the UI complies with WCAG 2.1 AA accessibility standards."@en ;
+    dct:isPartOf :obj-7 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-7-3 a objectives:KeyResult ;
+    rdfs:label "Public demo instance"@en ;
+    rdfs:comment "Hosts a testable instance for public access."@en ;
+    dct:description "Host a public demo instance of the tool with a resettable test dataset."@en ;
+    dct:isPartOf :obj-7 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .
+
+:kr-7-4 a objectives:KeyResult ;
+    rdfs:label "Improve load time"@en ;
+    rdfs:comment "Optimizes the overview page performance."@en ;
+    dct:description "Ensure the overview page loads in under 1 second."@en ;
+    dct:isPartOf :obj-7 ;
+    lifecycle:state lifecycle:Planned;
+    objectives:progress "0.0"^^xsd:decimal ;
+    dct:modified "2025-04-01"^^xsd:date ;
+    dct:created "2025-04-01"^^xsd:date .

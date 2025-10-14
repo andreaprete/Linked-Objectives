@@ -1,0 +1,259 @@
+# Copyright (c) 2025 SICK AG
+# Provided by Burkhard Weber, Head of Linked Data
+# Licensed under the MIT License
+#
+# RDF Turtle description of a fictional organization ("Common Semantics") and its fictional staff.
+# All names, roles, email addresses and entities are purely fictional and for demonstration purposes only.
+
+@prefix : <https://data.sick.com/res/dev/examples/common-semantics/> .
+
+@prefix org: <http://www.w3.org/ns/org#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+:CommonSemantics a org:Organization ;
+    foaf:name "Common Semantics" ;
+    foaf:homepage <https://common-semantics.org> ;
+    org:hasUnit :ExecutiveOffice, :ProductEngineering, :ProductCommunity, :Operations .
+
+### Executive Office
+:ExecutiveOffice a org:OrganizationalUnit ;
+    foaf:name "Executive Office" ;
+    org:hasPost :FounderCEO, :CTO .
+
+:FounderCEO a org:Post ;
+    org:role "Founder & Chief Executive Officer" ;
+    dct:description "Leads the company, sets overall vision and strategy, and represents Common Semantics externally." ;
+    org:heldBy :BurkhardWeber .
+
+:CTO a org:Post ;
+    org:role "Chief Technology Officer" ;
+    dct:description "Oversees technology strategy, software architecture, and innovation initiatives." ;
+    org:heldBy :LukasSchmidt .
+
+### Product & Engineering
+:ProductEngineering a org:OrganizationalUnit ;
+    foaf:name "Product & Engineering" ;
+    org:hasUnit :TeamCoreBackend, :TeamFrontendUX, :TeamDevOpsQA .
+
+:TeamCoreBackend a org:OrganizationalUnit ;
+    foaf:name "Team A – Core & Backend" ;
+    org:hasPost :BackendDev1, :BackendDev2, :BackendIntern .
+
+:BackendDev1 a org:Post ;
+    org:role "Backend Developer" ;
+    dct:description "Designs and implements backend services, APIs and core application logic." ;
+    org:heldBy :LeonFischer .
+
+:BackendDev2 a org:Post ;
+    org:role "Backend Developer" ;
+    dct:description "Contributes to backend system development and performance optimization." ;
+    org:heldBy :JonasWeber .
+
+:BackendIntern a org:Post ;
+    org:role "Backend Intern" ;
+    dct:description "Supports backend development tasks and learns software engineering practices." ;
+    org:heldBy :OliverBerg .
+
+:TeamFrontendUX a org:OrganizationalUnit ;
+    foaf:name "Team B – Frontend & UX" ;
+    org:hasPost :FrontendDev1, :UXDesigner, :AccessibilitySpecialist .
+
+:FrontendDev1 a org:Post ;
+    org:role "Frontend Developer" ;
+    dct:description "Develops and maintains user interfaces using modern web technologies." ;
+    org:heldBy :EmilyBecker .
+
+:UXDesigner a org:Post ;
+    org:role "UX Designer" ;
+    dct:description "Designs user experiences, prototypes and conducts usability research." ;
+    org:heldBy :SofiaKeller .
+
+:AccessibilitySpecialist a org:Post ;
+    org:role "Accessibility Specialist" ;
+    dct:description "Ensures digital accessibility standards are met across products." ;
+    org:heldBy :JanNeumann .
+
+:TeamDevOpsQA a org:OrganizationalUnit ;
+    foaf:name "Team C – DevOps & QA" ;
+    org:hasPost :DevOpsEngineer, :QATester, :SecurityEngineer .
+
+:DevOpsEngineer a org:Post ;
+    org:role "DevOps Engineer" ;
+    dct:description "Automates infrastructure and deployment processes, ensures CI/CD pipelines." ;
+    org:heldBy :TimSchaefer .
+
+:QATester a org:Post ;
+    org:role "QA Tester" ;
+    dct:description "Writes and executes test cases, ensures software quality before release." ;
+    org:heldBy :LauraHoffmann .
+
+:SecurityEngineer a org:Post ;
+    org:role "Security Engineer" ;
+    dct:description "Analyzes and improves the security of systems, services and applications." ;
+    org:heldBy :DanielSchwarz .
+
+### Product & Community
+:ProductCommunity a org:OrganizationalUnit ;
+    foaf:name "Product & Community" ;
+    org:hasPost :ProductManager, :CommunityManager, :Researcher, :ContentCreator, :LocalizationManager .
+
+:ProductManager a org:Post ;
+    org:role "Product Manager" ;
+    dct:description "Defines product vision, manages backlog and coordinates with development teams." ;
+    org:heldBy :AnnaMeier .
+
+:CommunityManager a org:Post ;
+    org:role "Community & Open Source Manager" ;
+    dct:description "Builds and maintains relationships with the developer community and manages open source engagement." ;
+    org:heldBy :NinaVogel .
+
+:Researcher a org:Post ;
+    org:role "Researcher / R&D" ;
+    dct:description "Conducts applied research and explores innovative approaches and technologies." ;
+    org:heldBy :FelixBraun .
+
+:ContentCreator a org:Post ;
+    org:role "Content Creator" ;
+    dct:description "Creates engaging written and visual content for internal and external audiences." ;
+    org:heldBy :MiraLang .
+
+:LocalizationManager a org:Post ;
+    org:role "Localization Manager" ;
+    dct:description "Manages translation processes and ensures cultural adaptation of content." ;
+    org:heldBy :CarlaWinter .
+
+### Operations
+:Operations a org:OrganizationalUnit ;
+    foaf:name "Operations" ;
+    org:hasPost :HRManager, :Marketing, :FinanceAdmin, :LegalAdvisor, :OfficeAssistant .
+
+:HRManager a org:Post ;
+    org:role "HR & Office Management" ;
+    dct:description "Handles recruitment, employee relations, and administrative office duties." ;
+    org:heldBy :TinaKrause .
+
+:Marketing a org:Post ;
+    org:role "Marketing & Communication" ;
+    dct:description "Develops and executes communication strategies and brand messaging." ;
+    org:heldBy :NinaVogel .
+
+:FinanceAdmin a org:Post ;
+    org:role "Finance & Administration" ;
+    dct:description "Manages budgeting, accounting and general administrative processes." ;
+    org:heldBy :EmilyBecker .
+
+:LegalAdvisor a org:Post ;
+    org:role "Legal Advisor" ;
+    dct:description "Provides legal counsel and ensures regulatory compliance across operations." ;
+    org:heldBy :SofiaKeller .
+
+:OfficeAssistant a org:Post ;
+    org:role "Office Assistant" ;
+    dct:description "Supports daily operations, scheduling and administrative assistance." ;
+    org:heldBy :JanNeumann .
+
+### People – fictional staff of Common Semantics
+
+:BurkhardWeber a foaf:Person ;
+    foaf:name "Burkhard Weber" ;
+    foaf:email "burkhard.weber@common-semantics.org" ;
+    foaf:accountName "weberb" ;
+    vcard:hasAddress [ vcard:locality "Waldkirch" ] .
+
+:LukasSchmidt a foaf:Person ;
+    foaf:name "Lukas Schmidt" ;
+    foaf:email "lukas.schmidt@common-semantics.org" ;
+    foaf:accountName "schmlu" ;
+    vcard:hasAddress [ vcard:locality "Furtwangen" ] .
+
+:AnnaMeier a foaf:Person ;
+    foaf:name "Anna Meier" ;
+    foaf:email "anna.meier@common-semantics.org" ;
+    foaf:accountName "meiean" ;
+    vcard:hasAddress [ vcard:locality "Karlsruhe" ] .
+
+:LeonFischer a foaf:Person ;
+    foaf:name "Leon Fischer" ;
+    foaf:email "leon.fischer@common-semantics.org" ;
+    foaf:accountName "fiscle" ;
+    vcard:hasAddress [ vcard:locality "Reute" ] .
+
+:JonasWeber a foaf:Person ;
+    foaf:name "Jonas Weber" ;
+    foaf:email "jonas.weber@common-semantics.org" ;
+    foaf:accountName "webejo" ;
+    vcard:hasAddress [ vcard:locality "Hamburg" ] .
+
+:EmilyBecker a foaf:Person ;
+    foaf:name "Emily Becker" ;
+    foaf:email "emily.becker@common-semantics.org" ;
+    foaf:accountName "beckem" ;
+    vcard:hasAddress [ vcard:locality "Freiburg" ] .
+
+:SofiaKeller a foaf:Person ;
+    foaf:name "Sofia Keller" ;
+    foaf:email "sofia.keller@common-semantics.org" ;
+    foaf:accountName "kellso" ;
+    vcard:hasAddress [ vcard:locality "Karlsruhe" ] .
+
+:TimSchaefer a foaf:Person ;
+    foaf:name "Tim Schäfer" ;
+    foaf:email "tim.schaefer@common-semantics.org" ;
+    foaf:accountName "schaet" ;
+    vcard:hasAddress [ vcard:locality "Waldkirch" ] .
+
+:LauraHoffmann a foaf:Person ;
+    foaf:name "Laura Hoffmann" ;
+    foaf:email "laura.hoffmann@common-semantics.org" ;
+    foaf:accountName "hoffla" ;
+    vcard:hasAddress [ vcard:locality "Furtwangen" ] .
+
+:NinaVogel a foaf:Person ;
+    foaf:name "Nina Vogel" ;
+    foaf:email "nina.vogel@common-semantics.org" ;
+    foaf:accountName "vogeni" ;
+    vcard:hasAddress [ vcard:locality "Reute" ] .
+
+:FelixBraun a foaf:Person ;
+    foaf:name "Felix Braun" ;
+    foaf:email "felix.braun@common-semantics.org" ;
+    foaf:accountName "braufe" ;
+    vcard:hasAddress [ vcard:locality "Freiburg" ] .
+
+:CarlaWinter a foaf:Person ;
+    foaf:name "Carla Winter" ;
+    foaf:email "carla.winter@common-semantics.org" ;
+    foaf:accountName "wintec" ;
+    vcard:hasAddress [ vcard:locality "Hamburg" ] .
+
+:DanielSchwarz a foaf:Person ;
+    foaf:name "Daniel Schwarz" ;
+    foaf:email "daniel.schwarz@common-semantics.org" ;
+    foaf:accountName "schwaz" ;
+    vcard:hasAddress [ vcard:locality "Reute" ] .
+
+:TinaKrause a foaf:Person ;
+    foaf:name "Tina Krause" ;
+    foaf:email "tina.krause@common-semantics.org" ;
+    foaf:accountName "krauti" ;
+    vcard:hasAddress [ vcard:locality "Waldkirch" ] .
+
+:JanNeumann a foaf:Person ;
+    foaf:name "Jan Neumann" ;
+    foaf:email "jan.neumann@common-semantics.org" ;
+    foaf:accountName "neumja" ;
+    vcard:hasAddress [ vcard:locality "Freiburg" ] .
+
+:MiraLang a foaf:Person ;
+    foaf:name "Mira Lang" ;
+    foaf:email "mira.lang@common-semantics.org" ;
+    foaf:accountName "langmi" ;
+    vcard:hasAddress [ vcard:locality "Karlsruhe" ] .
+
+:OliverBerg a foaf:Person ;
+    foaf:name "Oliver Berg" ;
+    foaf:email "oliver.berg@common-semantics.org" ;
+    foaf:accountName "beroli" ;
+    vcard:hasAddress [ vcard:locality "Furtwangen" ] .

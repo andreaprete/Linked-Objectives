@@ -1,0 +1,161 @@
+# Copyright (c) 2025 SICK AG
+# Provided by Burkhard Weber, Head of Linked Data
+# Licensed under the MIT License
+
+@prefix : <https://data.sick.com/voc/sam/objectives-model/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix terms: <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+#################################################################
+# Ontology Header
+#################################################################
+
+: a owl:Ontology ;
+    rdfs:label "Objectives Ontology"@en, "Ziele-Ontologie"@de ;
+    terms:creator <https://data.sick.com/res/sam/users/29460078-7119-4520-b98d-3004a36a79c5> ;
+    terms:description "An ontology for modeling Objectives and Key Results (OKRs) using semantic web principles and SKOS-based classification."@en ,
+                      "Eine Ontologie zur Modellierung von Zielen und Schlüsselergebnissen (OKRs) unter Verwendung semantischer Webprinzipien und SKOS-basierter Klassifikation."@de ;
+    terms:isVersionOf <https://data.sick.com/res/sam/profiles/e5ba650e-a01b-4af7-8cd7-212bc72011dd> ;
+    terms:issued "2025-04-02"^^xsd:date ;
+    terms:rights "Copyright © 2025 SICK AG"@en ;
+    vann:preferredNamespacePrefix "objectives" ;
+    vann:preferredNamespaceUri "https://data.sick.com/voc/sam/objectives-model/" ;
+    owl:priorVersion <https://data.sick.com/voc/sam/management/okr-model/0.0.2.20230323120000> ;
+    owl:versionIRI <https://data.sick.com/voc/sam/objectives-model/1.0.0> ;
+    owl:versionInfo "1.0.0" ;
+    skos:changeNote "Second version with generalized OKR model, SKOS-based categories, and core OWL properties." ;
+    skos:definition "Defines classes, properties, and concept schemes for semantically modeling Objectives and Key Results (OKRs)."@en ;
+    skos:prefLabel "Objectives and Key Results Ontology"@en .
+
+#################################################################
+# Classes
+#################################################################
+
+:Objective a owl:Class ;
+    rdfs:label "Objective"@en, "Ziel"@de ;
+    rdfs:comment "A qualitative goal that guides work toward a desired outcome."@en,
+                 "Ein qualitatives Ziel, das die Arbeit auf ein gewünschtes Ergebnis ausrichtet."@de ;
+    rdfs:isDefinedBy : .
+
+:KeyResult a owl:Class ;
+    rdfs:label "Key Result"@en, "Schlüsselergebnis"@de ;
+    rdfs:comment "A measurable outcome that contributes to achieving an objective."@en,
+                 "Ein messbares Ergebnis, das zur Erreichung eines Ziels beiträgt."@de ;
+    rdfs:isDefinedBy : .
+
+#################################################################
+# Object Properties
+#################################################################
+
+:hasKeyResult a owl:ObjectProperty ;
+    rdfs:domain :Objective ;
+    rdfs:range :KeyResult ;
+    rdfs:label "has key result"@en, "hat Schlüsselergebnis"@de ;
+    rdfs:comment "Links an objective to its key results."@en,
+                 "Verknüpft ein Ziel mit seinen Schlüsselergebnissen."@de ;
+    owl:inverseOf :isKeyResultOf ;
+    rdfs:isDefinedBy : .
+
+:isKeyResultOf a owl:ObjectProperty ;
+    rdfs:domain :KeyResult ;
+    rdfs:range :Objective ;
+    rdfs:label "is key result of"@en, "ist Schlüsselergebnis von"@de ;
+    rdfs:comment "Links a key result to the objective it supports."@en,
+                 "Verknüpft ein Schlüsselergebnis mit dem unterstützten Ziel."@de ;
+    rdfs:isDefinedBy : .
+
+:contributesTo a owl:ObjectProperty ;
+    rdfs:domain :Objective ;
+    rdfs:range :Objective ;
+    rdfs:label "contributes to"@en, "trägt bei zu"@de ;
+    rdfs:comment "Indicates that this objective contributes to another objective."@en,
+                 "Zeigt an, dass dieses Ziel zu einem anderen Ziel beiträgt."@de ;
+    rdfs:isDefinedBy : .
+
+:needs a owl:ObjectProperty ;
+    rdfs:domain :Objective ;
+    rdfs:range :Objective ;
+    rdfs:label "needs"@en, "benötigt"@de ;
+    rdfs:comment "Indicates that this objective depends on another objective."@en,
+                 "Zeigt an, dass dieses Ziel von einem anderen Ziel abhängt."@de ;
+    rdfs:isDefinedBy : .
+
+:category a owl:ObjectProperty ;
+    rdfs:domain :Objective ;
+    rdfs:range skos:Concept ;
+    rdfs:label "category"@en, "Kategorie"@de ;
+    rdfs:comment "The category assigned to an objective (e.g., operational, tactical, strategic)."@en,
+                 "Die einem Ziel zugewiesene Kategorie (z. B. operativ, taktisch, strategisch)."@de ;
+    rdfs:isDefinedBy : .
+
+#################################################################
+# Datatype Properties
+#################################################################
+
+:progress a owl:DatatypeProperty ;
+    rdfs:domain :KeyResult ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "progress"@en, "Fortschritt"@de ;
+    rdfs:comment "Represents the progress toward completing a key result, as a decimal value between 0.0 and 1.0 inclusive. This range is not enforced by OWL but expected by design."@en,
+                 "Repräsentiert den Fortschritt bei der Umsetzung eines Schlüsselergebnisses, als Dezimalwert zwischen 0,0 und 1,0. Dieser Bereich wird von OWL nicht erzwungen, ist aber konzeptionell vorgesehen."@de ;
+    rdfs:isDefinedBy : .
+
+#################################################################
+# SKOS Concept Scheme
+#################################################################
+
+:ObjectiveCategories a skos:ConceptScheme ;
+    skos:prefLabel "Objective Categories"@en, "Zielkategorien"@de ;
+    rdfs:isDefinedBy : ;
+    skos:hasTopConcept :operational, :tactical, :strategic .
+
+:operational a skos:Concept ;
+    skos:prefLabel "Operational"@en, "Operativ"@de ;
+    skos:definition "Short-term, execution-focused goals aimed at running the business efficiently."@en,
+                    "Kurzfristige, umsetzungsorientierte Ziele zur effizienten Geschäftsführung."@de ;
+    skos:topConceptOf :ObjectiveCategories ;
+    skos:inScheme :ObjectiveCategories ;
+    rdfs:isDefinedBy : .
+
+:tactical a skos:Concept ;
+    skos:prefLabel "Tactical"@en, "Taktisch"@de ;
+    skos:definition "Mid-term objectives that support strategic goals and involve planning and coordination."@en,
+                    "Mittelfristige Ziele, die strategische Ziele unterstützen und Planung und Koordination erfordern."@de ;
+    skos:topConceptOf :ObjectiveCategories ;
+    skos:inScheme :ObjectiveCategories ;
+    rdfs:isDefinedBy : .
+
+:strategic a skos:Concept ;
+    skos:prefLabel "Strategic"@en, "Strategisch"@de ;
+    skos:definition "Long-term objectives aligned with vision and mission, focused on transformative outcomes."@en,
+                    "Langfristige Ziele, die mit Vision und Mission übereinstimmen und auf transformative Ergebnisse abzielen."@de ;
+    skos:topConceptOf :ObjectiveCategories ;
+    skos:inScheme :ObjectiveCategories ;
+    rdfs:isDefinedBy : .
+
+#################################################################
+# Disjoint Classes
+#################################################################
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( :Objective :KeyResult ) .
+
+#################################################################
+# SHACL Shape for Validation
+#################################################################
+
+:ProgressShape a sh:NodeShape ;
+    sh:targetClass :KeyResult ;
+    sh:property [
+        sh:path :progress ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 1.0 ;
+        sh:message "Progress must be a decimal value between 0.0 and 1.0."@en ,
+                   "Der Fortschritt muss ein Dezimalwert zwischen 0,0 und 1,0 sein."@de ;
+    ] .

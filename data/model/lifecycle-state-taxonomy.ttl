@@ -1,0 +1,225 @@
+# Copyright (c) 2025 SICK AG
+# Provided by Burkhard Weber, Head of Linked Data
+# Licensed under the MIT License
+
+@prefix : <https://data.sick.com/voc/dev/lifecycle-state-taxonomy/> .
+
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+# ---------------------------------------------
+# General State Property
+# ---------------------------------------------
+
+:hasState a owl:ObjectProperty ;
+    rdfs:label "has state"@en ;
+    rdfs:comment "Indicates a general state associated with an entity, regardless of dimension."@en ;
+    rdfs:domain owl:Thing ;
+    rdfs:range skos:Concept .
+
+# ---------------------------------------------
+# Subproperties for each state dimension
+# ---------------------------------------------
+
+:hasDevelopmentState a owl:ObjectProperty ;
+    rdfs:label "has development state"@en ;
+    rdfs:comment "Indicates the current development progress of an entity."@en ;
+    rdfs:domain owl:Thing ;
+    rdfs:range skos:Concept ;
+    rdfs:subPropertyOf :hasState .
+
+:hasMaturityState a owl:ObjectProperty ;
+    rdfs:label "has maturity state"@en ;
+    rdfs:comment "Indicates the refinement or readiness level of an entity."@en ;
+    rdfs:domain owl:Thing ;
+    rdfs:range skos:Concept ;
+    rdfs:subPropertyOf :hasState .
+
+:hasDecisionState a owl:ObjectProperty ;
+    rdfs:label "has decision state"@en ;
+    rdfs:comment "Indicates the decision status of a proposal or item."@en ;
+    rdfs:domain owl:Thing ;
+    rdfs:range skos:Concept ;
+    rdfs:subPropertyOf :hasState .
+
+:hasReleaseState a owl:ObjectProperty ;
+    rdfs:label "has release state"@en ;
+    rdfs:comment "Indicates the availability or publication status of an entity."@en ;
+    rdfs:domain owl:Thing ;
+    rdfs:range skos:Concept ;
+    rdfs:subPropertyOf :hasState .
+
+:nextState a owl:ObjectProperty ;
+    rdfs:label "next state"@en ;
+    rdfs:comment "Represents a possible next logical state within the same state dimension. It is not mandatory and represents common transitions, not constraints."@en ;
+    rdfs:domain skos:Concept ;
+    rdfs:range skos:Concept .
+
+# ---------------------------------------------
+# Concept Schemes
+# ---------------------------------------------
+
+:DevelopmentStateScheme a skos:ConceptScheme ;
+    skos:prefLabel "Development State Scheme"@en ;
+    skos:definition "States describing the progress or planning level of an entity."@en .
+
+:MaturityStateScheme a skos:ConceptScheme ;
+    skos:prefLabel "Maturity State Scheme"@en ;
+    skos:definition "States indicating the refinement or readiness of an entity."@en .
+
+:DecisionStateScheme a skos:ConceptScheme ;
+    skos:prefLabel "Decision State Scheme"@en ;
+    skos:definition "States representing decision outcomes in a process."@en .
+
+:ReleaseStateScheme a skos:ConceptScheme ;
+    skos:prefLabel "Release State Scheme"@en ;
+    skos:definition "States representing the availability or status in a distribution lifecycle."@en .
+
+# ---------------------------------------------
+# Development States
+# ---------------------------------------------
+
+:DevelopmentStates a skos:OrderedCollection ;
+    skos:prefLabel "Ordered Development States"@en ;
+    skos:inScheme :DevelopmentStateScheme ;
+    rdf:first :Idea ;
+    rdf:rest ( :Evaluating :Planned :InProgress :OnHold :Aborted :Completed ) .
+
+:Idea a skos:Concept ;
+    skos:prefLabel "Idea"@en ;
+    skos:definition "An initial notion not yet evaluated."@en ;
+    skos:inScheme :DevelopmentStateScheme ;
+    :nextState :Evaluating .
+
+:Evaluating a skos:Concept ;
+    skos:prefLabel "Evaluating"@en ;
+    skos:definition "Currently under consideration or assessment."@en ;
+    skos:inScheme :DevelopmentStateScheme ;
+    :nextState :Planned .
+
+:Planned a skos:Concept ;
+    skos:prefLabel "Planned"@en ;
+    skos:definition "Scheduled for future execution."@en ;
+    skos:inScheme :DevelopmentStateScheme ;
+    :nextState :InProgress .
+
+:InProgress a skos:Concept ;
+    skos:prefLabel "In Progress"@en ;
+    skos:definition "Currently being carried out."@en ;
+    skos:inScheme :DevelopmentStateScheme ;
+    :nextState :OnHold .
+
+:OnHold a skos:Concept ;
+    skos:prefLabel "On Hold"@en ;
+    skos:definition "Temporarily paused with the possibility of continuation."@en ;
+    skos:inScheme :DevelopmentStateScheme ;
+    :nextState :Aborted .
+
+:Aborted a skos:Concept ;
+    skos:prefLabel "Aborted"@en ;
+    skos:definition "Intentionally stopped before completion."@en ;
+    skos:inScheme :DevelopmentStateScheme .
+
+:Completed a skos:Concept ;
+    skos:prefLabel "Completed"@en ;
+    skos:definition "Execution has been finished."@en ;
+    skos:inScheme :DevelopmentStateScheme .
+
+# ---------------------------------------------
+# Maturity States
+# ---------------------------------------------
+
+:MaturityStates a skos:OrderedCollection ;
+    skos:prefLabel "Ordered Maturity States"@en ;
+    skos:inScheme :MaturityStateScheme ;
+    rdf:first :Draft ;
+    rdf:rest ( :ApprovalAlpha :ApprovalBeta :ApprovalReleaseCandidate ) .
+
+:Draft a skos:Concept ;
+    skos:prefLabel "Draft"@en ;
+    skos:definition "Initial, unfinished version."@en ;
+    skos:inScheme :MaturityStateScheme ;
+    :nextState :ApprovalAlpha .
+
+:ApprovalAlpha a skos:Concept ;
+    skos:prefLabel "Approval Alpha"@en ;
+    skos:definition "Early internal version for limited feedback."@en ;
+    skos:inScheme :MaturityStateScheme ;
+    :nextState :ApprovalBeta .
+
+:ApprovalBeta a skos:Concept ;
+    skos:prefLabel "Approval Beta"@en ;
+    skos:definition "Exposed version for wider evaluation."@en ;
+    skos:inScheme :MaturityStateScheme ;
+    :nextState :ApprovalReleaseCandidate .
+
+:ApprovalReleaseCandidate a skos:Concept ;
+    skos:prefLabel "Approval Release Candidate"@en ;
+    skos:definition "Final version pending confirmation."@en ;
+    skos:inScheme :MaturityStateScheme .
+
+# ---------------------------------------------
+# Decision States
+# ---------------------------------------------
+
+:DecisionStates a skos:OrderedCollection ;
+    skos:prefLabel "Ordered Decision States"@en ;
+    skos:inScheme :DecisionStateScheme ;
+    rdf:first :Proposed ;
+    rdf:rest ( :Approved :Rejected :Cancelled ) .
+
+:Proposed a skos:Concept ;
+    skos:prefLabel "Proposed"@en ;
+    skos:definition "Suggested for consideration."@en ;
+    skos:inScheme :DecisionStateScheme ;
+    :nextState :Approved .
+
+:Approved a skos:Concept ;
+    skos:prefLabel "Approved"@en ;
+    skos:definition "Formally accepted or validated."@en ;
+    skos:inScheme :DecisionStateScheme .
+
+:Rejected a skos:Concept ;
+    skos:prefLabel "Rejected"@en ;
+    skos:definition "Formally declined or not accepted."@en ;
+    skos:inScheme :DecisionStateScheme .
+
+:Cancelled a skos:Concept ;
+    skos:prefLabel "Cancelled"@en ;
+    skos:definition "Withdrawn after initial planning or agreement."@en ;
+    skos:inScheme :DecisionStateScheme .
+
+# ---------------------------------------------
+# Release States
+# ---------------------------------------------
+
+:ReleaseStates a skos:OrderedCollection ;
+    skos:prefLabel "Ordered Release States"@en ;
+    skos:inScheme :ReleaseStateScheme ;
+    rdf:first :Released ;
+    rdf:rest ( :Deprecated :Withdrawn :Archived ) .
+
+:Released a skos:Concept ;
+    skos:prefLabel "Released"@en ;
+    skos:definition "Formally made available."@en ;
+    skos:inScheme :ReleaseStateScheme ;
+    :nextState :Deprecated .
+
+:Deprecated a skos:Concept ;
+    skos:prefLabel "Deprecated"@en ;
+    skos:definition "No longer recommended for use."@en ;
+    skos:inScheme :ReleaseStateScheme ;
+    :nextState :Withdrawn .
+
+:Withdrawn a skos:Concept ;
+    skos:prefLabel "Withdrawn"@en ;
+    skos:definition "Intentionally removed from active availability."@en ;
+    skos:inScheme :ReleaseStateScheme ;
+    :nextState :Archived .
+
+:Archived a skos:Concept ;
+    skos:prefLabel "Archived"@en ;
+    skos:definition "Preserved in inactive form for historical or reference purposes."@en ;
+    skos:inScheme :ReleaseStateScheme .
